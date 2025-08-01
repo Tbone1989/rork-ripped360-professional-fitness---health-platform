@@ -1,0 +1,213 @@
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import { Search, Filter, PlusCircle, FileText, Pill, Camera } from 'lucide-react-native';
+
+import { colors } from '@/constants/colors';
+import { Input } from '@/components/ui/Input';
+import { Button } from '@/components/ui/Button';
+import { TabBar } from '@/components/ui/TabBar';
+import { BloodworkCard } from '@/components/medical/BloodworkCard';
+import { SupplementCard } from '@/components/medical/SupplementCard';
+import { recentBloodworkResults } from '@/mocks/bloodwork';
+import { popularSupplements, peptidesMedicines } from '@/mocks/supplements';
+
+const tabs = [
+  { key: 'bloodwork', label: 'Bloodwork' },
+  { key: 'supplements', label: 'Supplements' },
+  { key: 'medicines', label: 'Medicines' },
+];
+
+export default function MedicalScreen() {
+  const router = useRouter();
+  const [activeTab, setActiveTab] = useState('bloodwork');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>Medical & Health</Text>
+          <TouchableOpacity 
+            style={styles.scanButton}
+            onPress={() => router.push('/medical/scan')}
+          >
+            <Camera size={20} color={colors.accent.primary} />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.searchContainer}>
+          <Input
+            placeholder={`Search ${activeTab}...`}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={styles.searchInput}
+            inputStyle={styles.searchInputText}
+          />
+          <TouchableOpacity style={styles.filterButton}>
+            <Filter size={20} color={colors.text.secondary} />
+          </TouchableOpacity>
+        </View>
+        
+        <TabBar
+          tabs={tabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          style={styles.tabBar}
+        />
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {activeTab === 'bloodwork' && (
+          <>
+            <View style={styles.actionSection}>
+              <Button
+                title="Upload New Results"
+                icon={<PlusCircle size={18} color={colors.text.primary} />}
+                onPress={() => router.push('/medical/upload')}
+                style={styles.actionButton}
+              />
+            </View>
+            
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Recent Results</Text>
+              {recentBloodworkResults.map((result) => (
+                <BloodworkCard key={result.id} result={result} />
+              ))}
+            </View>
+          </>
+        )}
+
+        {activeTab === 'supplements' && (
+          <>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Popular Supplements</Text>
+              {popularSupplements.map((supplement) => (
+                <SupplementCard 
+                  key={supplement.id} 
+                  item={supplement} 
+                  type="supplement" 
+                />
+              ))}
+            </View>
+          </>
+        )}
+
+        {activeTab === 'medicines' && (
+          <>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Peptides & Medicines</Text>
+              {peptidesMedicines.map((medicine) => (
+                <SupplementCard 
+                  key={medicine.id} 
+                  item={medicine} 
+                  type="medicine" 
+                />
+              ))}
+            </View>
+          </>
+        )}
+      </ScrollView>
+
+      {activeTab === 'bloodwork' && (
+        <TouchableOpacity 
+          style={styles.fab}
+          onPress={() => router.push('/medical/upload')}
+        >
+          <PlusCircle size={24} color={colors.text.primary} />
+        </TouchableOpacity>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
+  header: {
+    padding: 16,
+    paddingBottom: 0,
+    backgroundColor: colors.background.primary,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  scanButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  searchInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  searchInputText: {
+    paddingVertical: 10,
+  },
+  filterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 8,
+  },
+  tabBar: {
+    marginBottom: 16,
+  },
+  content: {
+    flex: 1,
+  },
+  actionSection: {
+    padding: 16,
+    paddingBottom: 8,
+  },
+  actionButton: {
+    alignSelf: 'flex-start',
+  },
+  section: {
+    padding: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 12,
+  },
+  fab: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: colors.accent.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+});
