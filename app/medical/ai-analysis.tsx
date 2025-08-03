@@ -253,16 +253,17 @@ const AIHealthAnalysisScreen: React.FC = () => {
         <View style={styles.resultHeader}>
           <Droplets size={24} color="#e74c3c" />
           <Text style={styles.resultTitle}>Bloodwork Analysis</Text>
-          <Badge variant="success" text={`${Math.round(analysis.confidence * 100)}% Confidence`} />
+          <Badge variant="success">{`${Math.round(analysis.confidence * 100)}% Confidence`}</Badge>
         </View>
         
         <View style={styles.healthStatus}>
           <Text style={styles.healthStatusLabel}>Overall Health:</Text>
           <Badge 
             variant={analysis.overallHealth === 'excellent' ? 'success' : 
-                   analysis.overallHealth === 'good' ? 'info' : 'warning'} 
-            text={analysis.overallHealth.toUpperCase()} 
-          />
+                   analysis.overallHealth === 'good' ? 'info' : 'warning'}
+          >
+            {analysis.overallHealth?.toUpperCase()}
+          </Badge>
         </View>
 
         <Text style={styles.sectionTitle}>Key Findings</Text>
@@ -272,9 +273,10 @@ const AIHealthAnalysisScreen: React.FC = () => {
               <Text style={styles.findingMarker}>{finding.marker}</Text>
               <Badge 
                 variant={finding.status === 'optimal' ? 'success' : 
-                       finding.status === 'normal' ? 'info' : 'warning'} 
-                text={finding.status} 
-              />
+                       finding.status === 'normal' ? 'info' : 'warning'}
+              >
+                {finding.status}
+              </Badge>
             </View>
             <Text style={styles.findingValue}>{finding.value} {finding.unit}</Text>
             <Text style={styles.findingInterpretation}>{finding.interpretation}</Text>
@@ -290,9 +292,10 @@ const AIHealthAnalysisScreen: React.FC = () => {
               <Text style={styles.supplementName}>{supp.name}</Text>
               <Badge 
                 variant={supp.priority === 'high' ? 'error' : 
-                       supp.priority === 'medium' ? 'warning' : 'info'} 
-                text={supp.priority} 
-              />
+                       supp.priority === 'medium' ? 'warning' : 'info'}
+              >
+                {supp.priority}
+              </Badge>
             </View>
             <Text style={styles.supplementPurpose}>{supp.purpose}</Text>
             <Text style={styles.supplementDosage}>Dosage: {supp.dosage}</Text>
@@ -329,16 +332,17 @@ const AIHealthAnalysisScreen: React.FC = () => {
         <View style={styles.resultHeader}>
           <Heart size={24} color="#f39c12" />
           <Text style={styles.resultTitle}>Digestive Health Analysis</Text>
-          <Badge variant="info" text={`${Math.round(analysis.confidence * 100)}% Confidence`} />
+          <Badge variant="info">{`${Math.round(analysis.confidence * 100)}% Confidence`}</Badge>
         </View>
 
         <View style={styles.healthStatus}>
           <Text style={styles.healthStatusLabel}>Digestive Health:</Text>
           <Badge 
             variant={analysis.overallDigestiveHealth === 'excellent' ? 'success' : 
-                   analysis.overallDigestiveHealth === 'good' ? 'info' : 'warning'} 
-            text={analysis.overallDigestiveHealth.toUpperCase()} 
-          />
+                   analysis.overallDigestiveHealth === 'good' ? 'info' : 'warning'}
+          >
+            {analysis.overallDigestiveHealth?.toUpperCase()}
+          </Badge>
         </View>
 
         <Text style={styles.sectionTitle}>Probiotic Recommendations</Text>
@@ -370,16 +374,17 @@ const AIHealthAnalysisScreen: React.FC = () => {
         <View style={styles.resultHeader}>
           <Shield size={24} color="#27ae60" />
           <Text style={styles.resultTitle}>Detox Analysis</Text>
-          <Badge variant="success" text={`${Math.round(analysis.confidence * 100)}% Confidence`} />
+          <Badge variant="success">{`${Math.round(analysis.confidence * 100)}% Confidence`}</Badge>
         </View>
 
         <View style={styles.healthStatus}>
           <Text style={styles.healthStatusLabel}>Detox Capacity:</Text>
           <Badge 
             variant={analysis.overallDetoxCapacity === 'excellent' ? 'success' : 
-                   analysis.overallDetoxCapacity === 'good' ? 'info' : 'warning'} 
-            text={analysis.overallDetoxCapacity.toUpperCase()} 
-          />
+                   analysis.overallDetoxCapacity === 'good' ? 'info' : 'warning'}
+          >
+            {analysis.overallDetoxCapacity?.toUpperCase()}
+          </Badge>
         </View>
 
         <Text style={styles.sectionTitle}>Detox Program: {analysis.detoxProgram?.name}</Text>
@@ -420,7 +425,7 @@ const AIHealthAnalysisScreen: React.FC = () => {
         <View style={styles.resultHeader}>
           <Brain size={24} color="#3498db" />
           <Text style={styles.resultTitle}>Health Issues Analysis</Text>
-          <Badge variant="info" text={`${Math.round(analysis.confidence * 100)}% Confidence`} />
+          <Badge variant="info">{`${Math.round(analysis.confidence * 100)}% Confidence`}</Badge>
         </View>
 
         <Text style={styles.sectionTitle}>Identified Issues</Text>
@@ -430,9 +435,10 @@ const AIHealthAnalysisScreen: React.FC = () => {
               <Text style={styles.healthIssueName}>{issue.issue}</Text>
               <Badge 
                 variant={issue.severity === 'severe' ? 'error' : 
-                       issue.severity === 'moderate' ? 'warning' : 'info'} 
-                text={issue.severity} 
-              />
+                       issue.severity === 'moderate' ? 'warning' : 'info'}
+              >
+                {issue.severity}
+              </Badge>
             </View>
             <Text style={styles.healthIssueCategory}>Category: {issue.category}</Text>
             <Text style={styles.healthIssueLikelihood}>Likelihood: {issue.likelihood}</Text>
