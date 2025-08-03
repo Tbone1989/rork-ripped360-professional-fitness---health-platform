@@ -30,10 +30,91 @@ import { Badge } from '@/components/ui/Badge';
 import { trpc } from '@/lib/trpc';
 
 interface HealthAnalysisResult {
-  bloodworkAnalysis?: any;
-  digestiveAnalysis?: any;
-  detoxAnalysis?: any;
-  healthIssuesAnalysis?: any;
+  bloodworkAnalysis?: {
+    confidence: number;
+    overallHealth: string;
+    keyFindings: Array<{
+      marker: string;
+      value: number;
+      unit: string;
+      status: string;
+      interpretation: string;
+      clinicalSignificance: string;
+    }>;
+    supplementRecommendations: Array<{
+      name: string;
+      purpose: string;
+      dosage: string;
+      timing: string;
+      duration: string;
+      priority: string;
+    }>;
+    bloodTypeRecommendations?: {
+      bloodType: string;
+      dietaryFocus: string[];
+      exerciseRecommendations: string[];
+    };
+    disclaimer: string;
+  };
+  digestiveAnalysis?: {
+    confidence: number;
+    overallDigestiveHealth: string;
+    probioticRecommendations: Array<{
+      strains: string[];
+      cfu: string;
+      purpose: string;
+      duration: string;
+    }>;
+    dietaryChanges: Array<{
+      change: string;
+      reasoning: string;
+      implementation: string;
+      timeline: string;
+    }>;
+  };
+  detoxAnalysis?: {
+    confidence: number;
+    overallDetoxCapacity: string;
+    detoxProgram: {
+      name: string;
+      totalDuration: string;
+      intensity: string;
+    };
+    detoxPhases: Array<{
+      phase: string;
+      duration: string;
+      focus: string[];
+      activities: string[];
+    }>;
+    liverHealth: {
+      status: string;
+      phase1Function: string;
+      phase2Function: string;
+    };
+    lifestyleChanges: string[];
+  };
+  healthIssuesAnalysis?: {
+    confidence: number;
+    identifiedIssues: Array<{
+      issue: string;
+      severity: string;
+      category: string;
+      likelihood: string;
+      symptoms: string[];
+      possibleCauses: string[];
+    }>;
+    treatmentProtocol: Array<{
+      condition: string;
+      approach: string;
+      duration: string;
+      phases: Array<{
+        phase: string;
+        duration: string;
+        goals: string[];
+      }>;
+    }>;
+    disclaimer: string;
+  };
 }
 
 const AIHealthAnalysisScreen: React.FC = () => {
@@ -59,7 +140,7 @@ const AIHealthAnalysisScreen: React.FC = () => {
       const symptoms = userInput.symptoms.split(',').map(s => s.trim()).filter(Boolean);
       const medications = userInput.medications.split(',').map(m => m.trim()).filter(Boolean);
 
-      let result;
+      let result: any;
       switch (analysisType) {
         case 'bloodwork':
           result = await bloodworkMutation.mutateAsync({
@@ -80,7 +161,7 @@ const AIHealthAnalysisScreen: React.FC = () => {
             includeDigestiveHealth: true,
             includeDetoxRecommendations: true,
           });
-          setResults(prev => ({ ...prev, bloodworkAnalysis: result.analysis }));
+          setResults(prev => ({ ...prev, bloodworkAnalysis: result.analysis as HealthAnalysisResult['bloodworkAnalysis'] }));
           break;
 
         case 'digestive':
@@ -92,7 +173,7 @@ const AIHealthAnalysisScreen: React.FC = () => {
             medications,
             stressLevel: 'moderate',
           });
-          setResults(prev => ({ ...prev, digestiveAnalysis: result.analysis }));
+          setResults(prev => ({ ...prev, digestiveAnalysis: result.analysis as HealthAnalysisResult['digestiveAnalysis'] }));
           break;
 
         case 'detox':
@@ -107,7 +188,7 @@ const AIHealthAnalysisScreen: React.FC = () => {
             },
             medications,
           });
-          setResults(prev => ({ ...prev, detoxAnalysis: result.analysis }));
+          setResults(prev => ({ ...prev, detoxAnalysis: result.analysis as HealthAnalysisResult['detoxAnalysis'] }));
           break;
 
         case 'issues':
@@ -122,7 +203,7 @@ const AIHealthAnalysisScreen: React.FC = () => {
             },
             concerns: userInput.concerns.split(',').map(c => c.trim()).filter(Boolean),
           });
-          setResults(prev => ({ ...prev, healthIssuesAnalysis: result.analysis }));
+          setResults(prev => ({ ...prev, healthIssuesAnalysis: result.analysis as HealthAnalysisResult['healthIssuesAnalysis'] }));
           break;
       }
 

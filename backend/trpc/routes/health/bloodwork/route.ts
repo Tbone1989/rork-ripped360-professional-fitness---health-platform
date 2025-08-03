@@ -141,7 +141,7 @@ const generateAIBloodworkAnalysis = async (bloodworkData: any, userProfile?: any
         marker: 'Iron',
         value: 45,
         unit: 'μg/dL',
-        status: 'abnormal',
+        status: 'borderline',
         interpretation: 'Iron levels are below optimal range',
         clinicalSignificance: 'May cause fatigue, weakness, and reduced exercise performance',
         recommendations: [
