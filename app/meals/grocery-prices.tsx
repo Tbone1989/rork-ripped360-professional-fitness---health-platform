@@ -234,9 +234,7 @@ export default function GroceryPricesScreen() {
       zipCode: location.zipCode,
       coordinates: location.coordinates
     };
-    setCurrentLocation(userLocation);
-    locationService.setCurrentLocation(userLocation);
-    setShowLocationPicker(false);
+    handleLocationChange(userLocation);
     setLocationSearchQuery('');
     setLocationSearchResults([]);
   };
@@ -419,10 +417,22 @@ export default function GroceryPricesScreen() {
                   </View>
                   
                   <View style={styles.storeActions}>
-                    <TouchableOpacity style={styles.directionsButton}>
+                    <TouchableOpacity 
+                      style={styles.directionsButton}
+                      onPress={() => {
+                        console.log('Get directions to:', comparison.lowestPrice.store.name);
+                        // In a real app, this would open maps with directions
+                      }}
+                    >
                       <Navigation size={16} color={colors.accent.primary} />
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.addToListButton}>
+                    <TouchableOpacity 
+                      style={styles.addToListButton}
+                      onPress={() => {
+                        console.log('Add to shopping list:', comparison.item.name);
+                        // In a real app, this would add item to shopping list
+                      }}
+                    >
                       <ShoppingCart size={16} color={colors.accent.primary} />
                     </TouchableOpacity>
                   </View>
@@ -469,7 +479,13 @@ export default function GroceryPricesScreen() {
                 </View>
                 
                 {comparison.prices.length > 3 && (
-                  <TouchableOpacity style={styles.viewAllButton}>
+                  <TouchableOpacity 
+                    style={styles.viewAllButton}
+                    onPress={() => {
+                      console.log('View all stores for:', comparison.item.name);
+                      // In a real app, this would show detailed price comparison
+                    }}
+                  >
                     <Text style={styles.viewAllText}>
                       View all {comparison.prices.length} stores
                     </Text>
@@ -482,14 +498,20 @@ export default function GroceryPricesScreen() {
                 <Button
                   title="Add to List"
                   variant="outline"
-                  onPress={() => {}}
+                  onPress={() => {
+                    console.log('Add to shopping list:', comparison.item.name);
+                    // In a real app, this would add item to shopping list
+                  }}
                   icon={<ShoppingCart size={16} color={colors.accent.primary} />}
                   style={styles.actionButton}
                 />
                 <Button
                   title="Price Alert"
                   variant="outline"
-                  onPress={() => {}}
+                  onPress={() => {
+                    console.log('Set price alert for:', comparison.item.name);
+                    // In a real app, this would set up price alerts
+                  }}
                   icon={<Bell size={16} color={colors.accent.primary} />}
                   style={styles.actionButton}
                 />
@@ -503,14 +525,20 @@ export default function GroceryPricesScreen() {
       <View style={styles.quickActions}>
         <Button
           title="Create Shopping List"
-          onPress={() => router.push('/meals/shopping-list')}
+          onPress={() => {
+            console.log('Create shopping list');
+            // In a real app, this would navigate to shopping list creation
+          }}
           icon={<ShoppingCart size={18} color={colors.text.primary} />}
           style={styles.quickActionButton}
         />
         <Button
           title="Set Price Alerts"
           variant="outline"
-          onPress={() => router.push('/meals/price-alerts')}
+          onPress={() => {
+            console.log('Set up price alerts');
+            // In a real app, this would navigate to price alerts setup
+          }}
           icon={<Bell size={18} color={colors.accent.primary} />}
           style={styles.quickActionButton}
         />
