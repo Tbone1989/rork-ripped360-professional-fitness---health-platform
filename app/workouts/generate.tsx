@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Zap, ChevronRight, Clock, Dumbbell, BarChart, Sparkles, TestTube, Users, BookOpen } from 'lucide-react-native';
 
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { ChipGroup } from '@/components/ui/ChipGroup';
-import { apiService } from '@/services/api';
+import { trpc } from '@/lib/trpc';
 
 const goalOptions = [
   { id: 'strength', label: 'Strength' },
@@ -52,6 +52,8 @@ export default function GenerateWorkoutScreen() {
   const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
   const [apiTestResult, setApiTestResult] = useState<string | null>(null);
 
+  const generateWorkoutMutation = trpc.fitness.generate.useMutation();
+
   const handleGenerate = async () => {
     setIsGenerating(true);
     setApiTestResult(null);
@@ -65,14 +67,29 @@ export default function GenerateWorkoutScreen() {
       };
       
       const startTime = Date.now();
-      const workoutData = await apiService.generateWorkout(preferences);
+      const workoutData = await generateWorkoutMutation.mutateAsync(preferences);
       const responseTime = Date.now() - startTime;
       
-      setGeneratedWorkout(workoutData);
-      setApiTestResult(`✓ API Response: ${responseTime}ms`);
+      // Transform the backend response to match the expected format
+      const transformedWorkout = {
+        name: `${preferences.type.charAt(0).toUpperCase() + preferences.type.slice(1)} Workout`,
+        description: `A comprehensive ${preferences.type} workout focusing on ${preferences.muscle.join(', ')} development.`,
+        exercises: workoutData.exercises.map((exercise: any) => ({
+          name: exercise.name,
+          sets: exercise.sets,
+          reps: exercise.reps.toString(),
+          rest: `${exercise.rest}s`,
+        })),
+        duration: `${preferences.duration} minutes`,
+        difficulty: preferences.difficulty.charAt(0).toUpperCase() + preferences.difficulty.slice(1),
+        notes: 'Focus on proper form and controlled movements. Adjust weights according to your fitness level.',
+      };
+      
+      setGeneratedWorkout(transformedWorkout);
+      setApiTestResult(`✓ tRPC Response: ${responseTime}ms`);
     } catch (error) {
       console.error('Error generating workout:', error);
-      setApiTestResult(`✗ API Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setApiTestResult(`✗ tRPC Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
       // Fallback to mock data
       setGeneratedWorkout({
