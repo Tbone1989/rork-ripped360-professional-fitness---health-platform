@@ -100,7 +100,7 @@ const getMockWorkout = (input: { type: string; muscle: string[]; difficulty: str
   };
 };
 
-export default publicProcedure
+export const generateWorkoutRoute = publicProcedure
   .input(z.object({
     type: z.string(),
     muscle: z.array(z.string()),

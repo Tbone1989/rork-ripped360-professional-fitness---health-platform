@@ -2,9 +2,9 @@ import { createTRPCRouter } from "./create-context";
 import hiRoute from "./routes/example/hi/route";
 import nutritionSearchRoute from "./routes/nutrition/search/route";
 import nutritionBarcodeRoute from "./routes/nutrition/barcode/route";
-import nutritionMealPlanRoute from "./routes/nutrition/meal-plan/route";
+import { generateMealPlanRoute } from "./routes/nutrition/meal-plan/route";
 import fitnessExercisesRoute from "./routes/fitness/exercises/route";
-import fitnessGenerateRoute from "./routes/fitness/generate/route";
+import { generateWorkoutRoute } from "./routes/fitness/generate/route";
 import healthBloodworkRoute from "./routes/health/bloodwork/route";
 import healthSupplementsSearchRoute from "./routes/health/supplements/search/route";
 import healthSupplementsBarcodeRoute from "./routes/health/supplements/barcode/route";
@@ -22,11 +22,11 @@ export const appRouter = createTRPCRouter({
   nutrition: createTRPCRouter({
     search: nutritionSearchRoute,
     barcode: nutritionBarcodeRoute,
-    mealPlan: nutritionMealPlanRoute,
+    mealPlan: generateMealPlanRoute,
   }),
   fitness: createTRPCRouter({
     exercises: fitnessExercisesRoute,
-    generate: fitnessGenerateRoute,
+    generate: generateWorkoutRoute,
   }),
   health: createTRPCRouter({
     bloodwork: healthBloodworkRoute,

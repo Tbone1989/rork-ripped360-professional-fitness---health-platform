@@ -106,7 +106,7 @@ const getMockMealPlan = (input: { calories: number; protein: number; carbs: numb
   };
 };
 
-export default publicProcedure
+export const generateMealPlanRoute = publicProcedure
   .input(z.object({
     calories: z.number(),
     protein: z.number(),
