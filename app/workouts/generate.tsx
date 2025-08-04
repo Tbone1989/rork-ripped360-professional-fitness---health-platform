@@ -73,16 +73,17 @@ export default function GenerateWorkoutScreen() {
       // Transform the backend response to match the expected format
       const transformedWorkout = {
         name: `${preferences.type.charAt(0).toUpperCase() + preferences.type.slice(1)} Workout`,
-        description: `A comprehensive ${preferences.type} workout focusing on ${preferences.muscle.join(', ')} development.`,
+        description: `A comprehensive ${preferences.type} workout with ${workoutData.exercises.length} exercises designed for maximum growth and development.`,
         exercises: workoutData.exercises.map((exercise: any) => ({
           name: exercise.name,
           sets: exercise.sets,
-          reps: exercise.reps.toString(),
+          reps: exercise.reps,
           rest: `${exercise.rest}s`,
+          muscle: exercise.muscle,
         })),
         duration: `${preferences.duration} minutes`,
         difficulty: preferences.difficulty.charAt(0).toUpperCase() + preferences.difficulty.slice(1),
-        notes: 'Focus on proper form and controlled movements. Adjust weights according to your fitness level.',
+        notes: `This ${workoutData.exercises.length}-exercise routine is optimized for ${preferences.type === 'hypertrophy' ? 'muscle growth' : preferences.type}. Focus on proper form and progressive overload. Rest periods are adjusted based on your ${preferences.difficulty} level.`,
       };
       
       setGeneratedWorkout(transformedWorkout);
@@ -91,39 +92,25 @@ export default function GenerateWorkoutScreen() {
       console.error('Error generating workout:', error);
       setApiTestResult(`✗ tRPC Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
       
-      // Fallback to mock data
+      // Fallback to mock data with 8-10 exercises
       setGeneratedWorkout({
-        name: 'Upper Body Strength Workout',
-        description: 'A comprehensive upper body workout focusing on strength development with compound movements and targeted isolation exercises.',
+        name: 'Complete Strength Training Workout',
+        description: 'A comprehensive 10-exercise workout designed for maximum muscle growth and strength development.',
         exercises: [
-          {
-            name: 'Barbell Bench Press',
-            sets: 4,
-            reps: '6-8',
-            rest: '2-3 min',
-          },
-          {
-            name: 'Pull-Ups',
-            sets: 4,
-            reps: '6-8',
-            rest: '2-3 min',
-          },
-          {
-            name: 'Seated Dumbbell Shoulder Press',
-            sets: 3,
-            reps: '8-10',
-            rest: '90-120 sec',
-          },
-          {
-            name: 'Barbell Bent Over Row',
-            sets: 3,
-            reps: '8-10',
-            rest: '90-120 sec',
-          },
+          { name: 'Barbell Bench Press', sets: 4, reps: '4-6', rest: '3 min', muscle: 'chest' },
+          { name: 'Deadlifts', sets: 4, reps: '3-5', rest: '3 min', muscle: 'back' },
+          { name: 'Squats', sets: 4, reps: '5-8', rest: '2-3 min', muscle: 'legs' },
+          { name: 'Pull-ups', sets: 3, reps: '6-10', rest: '90s', muscle: 'back' },
+          { name: 'Overhead Press', sets: 3, reps: '6-8', rest: '90s', muscle: 'shoulders' },
+          { name: 'Barbell Rows', sets: 3, reps: '6-8', rest: '90s', muscle: 'back' },
+          { name: 'Dips', sets: 3, reps: '8-12', rest: '75s', muscle: 'triceps' },
+          { name: 'Romanian Deadlifts', sets: 3, reps: '8-10', rest: '90s', muscle: 'hamstrings' },
+          { name: 'Close-Grip Bench Press', sets: 3, reps: '6-8', rest: '90s', muscle: 'triceps' },
+          { name: 'Weighted Chin-ups', sets: 3, reps: '5-8', rest: '2 min', muscle: 'biceps' },
         ],
-        duration: '45-60 minutes',
+        duration: '60-75 minutes',
         difficulty: 'Intermediate',
-        notes: 'Focus on proper form and controlled movements. Increase weight when you can complete the upper rep range with good form.',
+        notes: 'This 10-exercise routine targets all major muscle groups for maximum growth. Focus on progressive overload and proper form. Adjust rest periods based on your recovery needs.',
       });
     } finally {
       setIsGenerating(false);

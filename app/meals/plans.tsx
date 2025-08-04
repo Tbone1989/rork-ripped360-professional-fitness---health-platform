@@ -139,12 +139,13 @@ export default function MealPlansScreen() {
   const generateAIPlan = async () => {
     setIsGenerating(true);
     try {
+      // Enhanced preferences for better meal planning
       const preferences = {
-        calories: 2200,
-        protein: 150,
-        carbs: 200,
-        fat: 80,
-        meals: 5,
+        calories: 2400, // Increased for better distribution
+        protein: 160,
+        carbs: 240,
+        fat: 90,
+        meals: 6, // Increased to 6 meals per day for better nutrition timing
         restrictions: []
       };
       
@@ -152,7 +153,7 @@ export default function MealPlansScreen() {
       
       Alert.alert(
         'AI Meal Plan Generated!',
-        'Your personalized meal plan has been created based on your preferences.',
+        `Your personalized ${preferences.meals}-meal plan has been created with optimized nutrition timing throughout the day.`,
         [
           {
             text: 'View Plan',
