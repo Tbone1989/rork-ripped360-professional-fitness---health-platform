@@ -108,10 +108,28 @@ export const generateWorkoutRoute = publicProcedure
     duration: z.number()
   }))
   .mutation(async ({ input }) => {
-    console.log(`🏋️ Generating workout - type: ${input.type}, muscles: ${input.muscle.join(', ')}, difficulty: ${input.difficulty}, duration: ${input.duration}min`);
-    
-    const workout = getMockWorkout(input);
-    console.log(`✅ Generated workout: ${workout.name} with ${workout.exercises.length} exercises`);
-    
-    return workout;
+    try {
+      console.log(`🏋️ Generating workout - type: ${input.type}, muscles: ${input.muscle.join(', ')}, difficulty: ${input.difficulty}, duration: ${input.duration}min`);
+      
+      // Validate input
+      if (!input.type || !input.difficulty || !input.duration) {
+        throw new Error('Missing required parameters');
+      }
+      
+      const workout = getMockWorkout(input);
+      console.log(`✅ Generated workout: ${workout.name} with ${workout.exercises.length} exercises`);
+      
+      // Ensure we return a valid response
+      return {
+        id: workout.id,
+        name: workout.name,
+        duration: workout.duration,
+        exercises: workout.exercises,
+        success: true,
+        timestamp: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('❌ Error generating workout:', error);
+      throw new Error(`Failed to generate workout: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   });

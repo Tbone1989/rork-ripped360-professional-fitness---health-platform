@@ -66,19 +66,23 @@ export default function GenerateWorkoutScreen() {
         duration: parseInt(duration[0]) || 45
       };
       
+      console.log('🔄 Starting workout generation with preferences:', preferences);
+      
       const startTime = Date.now();
       const workoutData = await generateWorkoutMutation.mutateAsync(preferences);
       const responseTime = Date.now() - startTime;
       
+      console.log('✅ Workout generated successfully:', workoutData);
+      
       // Transform the backend response to match the expected format
       const transformedWorkout = {
-        name: `${preferences.type.charAt(0).toUpperCase() + preferences.type.slice(1)} Workout`,
+        name: workoutData.name || `${preferences.type.charAt(0).toUpperCase() + preferences.type.slice(1)} Workout`,
         description: `A comprehensive ${preferences.type} workout with ${workoutData.exercises.length} exercises designed for maximum growth and development.`,
         exercises: workoutData.exercises.map((exercise: any) => ({
           name: exercise.name,
           sets: exercise.sets,
           reps: exercise.reps,
-          rest: `${exercise.rest}s`,
+          rest: typeof exercise.rest === 'number' ? `${exercise.rest}s` : exercise.rest,
           muscle: exercise.muscle,
         })),
         duration: `${preferences.duration} minutes`,
@@ -87,16 +91,35 @@ export default function GenerateWorkoutScreen() {
       };
       
       setGeneratedWorkout(transformedWorkout);
-      setApiTestResult(`✓ tRPC Response: ${responseTime}ms`);
+      setApiTestResult(`✓ Backend Connected: ${responseTime}ms`);
     } catch (error) {
-      console.error('Error generating workout:', error);
-      setApiTestResult(`✗ tRPC Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('❌ Error generating workout:', error);
       
-      // Fallback to mock data with 8-10 exercises
-      setGeneratedWorkout({
-        name: 'Complete Strength Training Workout',
-        description: 'A comprehensive 10-exercise workout designed for maximum muscle growth and strength development.',
-        exercises: [
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+        
+        // Provide more specific error messages
+        if (errorMessage.includes('Backend server is not running')) {
+          errorMessage = 'Backend server offline - using fallback data';
+        } else if (errorMessage.includes('Failed to fetch')) {
+          errorMessage = 'Network connection failed - using fallback data';
+        } else if (errorMessage.includes('<!DOCTYPE')) {
+          errorMessage = 'Backend routing error - using fallback data';
+        }
+      }
+      
+      setApiTestResult(`✗ ${errorMessage}`);
+      
+      // Enhanced fallback with 8-10 exercises based on user preferences
+      const preferences = {
+        type: goals[0] || 'strength',
+        difficulty: difficulty[0] || 'intermediate',
+        duration: parseInt(duration[0]) || 45
+      };
+      
+      const fallbackExercises = {
+        strength: [
           { name: 'Barbell Bench Press', sets: 4, reps: '4-6', rest: '3 min', muscle: 'chest' },
           { name: 'Deadlifts', sets: 4, reps: '3-5', rest: '3 min', muscle: 'back' },
           { name: 'Squats', sets: 4, reps: '5-8', rest: '2-3 min', muscle: 'legs' },
@@ -108,9 +131,65 @@ export default function GenerateWorkoutScreen() {
           { name: 'Close-Grip Bench Press', sets: 3, reps: '6-8', rest: '90s', muscle: 'triceps' },
           { name: 'Weighted Chin-ups', sets: 3, reps: '5-8', rest: '2 min', muscle: 'biceps' },
         ],
-        duration: '60-75 minutes',
-        difficulty: 'Intermediate',
-        notes: 'This 10-exercise routine targets all major muscle groups for maximum growth. Focus on progressive overload and proper form. Adjust rest periods based on your recovery needs.',
+        hypertrophy: [
+          { name: 'Incline Dumbbell Press', sets: 4, reps: '8-12', rest: '90s', muscle: 'chest' },
+          { name: 'Lat Pulldowns', sets: 4, reps: '10-15', rest: '75s', muscle: 'back' },
+          { name: 'Leg Press', sets: 4, reps: '12-20', rest: '90s', muscle: 'legs' },
+          { name: 'Dumbbell Shoulder Press', sets: 3, reps: '10-15', rest: '75s', muscle: 'shoulders' },
+          { name: 'Cable Rows', sets: 3, reps: '10-15', rest: '75s', muscle: 'back' },
+          { name: 'Leg Curls', sets: 3, reps: '12-20', rest: '60s', muscle: 'hamstrings' },
+          { name: 'Bicep Curls', sets: 3, reps: '10-15', rest: '60s', muscle: 'biceps' },
+          { name: 'Tricep Extensions', sets: 3, reps: '10-15', rest: '60s', muscle: 'triceps' },
+          { name: 'Lateral Raises', sets: 3, reps: '12-20', rest: '60s', muscle: 'shoulders' },
+          { name: 'Chest Flyes', sets: 3, reps: '10-15', rest: '75s', muscle: 'chest' },
+        ],
+        endurance: [
+          { name: 'Burpees', sets: 3, reps: '15-25', rest: '45s', muscle: 'full-body' },
+          { name: 'Mountain Climbers', sets: 3, reps: '20-30', rest: '30s', muscle: 'core' },
+          { name: 'Jump Squats', sets: 3, reps: '20-30', rest: '45s', muscle: 'legs' },
+          { name: 'Push-ups', sets: 3, reps: '15-25', rest: '30s', muscle: 'chest' },
+          { name: 'High Knees', sets: 3, reps: '30-45', rest: '30s', muscle: 'cardio' },
+          { name: 'Plank', sets: 3, reps: '45-90s', rest: '45s', muscle: 'core' },
+          { name: 'Jumping Jacks', sets: 3, reps: '25-40', rest: '30s', muscle: 'cardio' },
+          { name: 'Lunges', sets: 3, reps: '20-30', rest: '45s', muscle: 'legs' },
+          { name: 'Russian Twists', sets: 3, reps: '30-50', rest: '30s', muscle: 'core' },
+          { name: 'Bear Crawls', sets: 3, reps: '15-25', rest: '45s', muscle: 'full-body' },
+        ],
+        'fat-loss': [
+          { name: 'HIIT Sprints', sets: 5, reps: '30s', rest: '60s', muscle: 'cardio' },
+          { name: 'Kettlebell Swings', sets: 4, reps: '20-30', rest: '45s', muscle: 'full-body' },
+          { name: 'Battle Ropes', sets: 4, reps: '30s', rest: '60s', muscle: 'full-body' },
+          { name: 'Box Jumps', sets: 3, reps: '15-20', rest: '60s', muscle: 'legs' },
+          { name: 'Thrusters', sets: 3, reps: '12-20', rest: '45s', muscle: 'full-body' },
+          { name: 'Rowing Machine', sets: 4, reps: '250m', rest: '90s', muscle: 'cardio' },
+          { name: 'Bike Sprints', sets: 5, reps: '20s', rest: '40s', muscle: 'cardio' },
+          { name: 'Burpee Box Jumps', sets: 3, reps: '10-15', rest: '60s', muscle: 'full-body' },
+          { name: 'Turkish Get-ups', sets: 3, reps: '5-8', rest: '75s', muscle: 'full-body' },
+          { name: 'Medicine Ball Slams', sets: 4, reps: '15-25', rest: '45s', muscle: 'full-body' },
+        ],
+        general: [
+          { name: 'Push-ups', sets: 3, reps: '10-15', rest: '60s', muscle: 'chest' },
+          { name: 'Squats', sets: 3, reps: '12-20', rest: '60s', muscle: 'legs' },
+          { name: 'Plank', sets: 3, reps: '30-60s', rest: '60s', muscle: 'core' },
+          { name: 'Lunges', sets: 3, reps: '10-15', rest: '60s', muscle: 'legs' },
+          { name: 'Glute Bridges', sets: 3, reps: '12-20', rest: '45s', muscle: 'glutes' },
+          { name: 'Wall Sit', sets: 3, reps: '30-60s', rest: '60s', muscle: 'legs' },
+          { name: 'Calf Raises', sets: 3, reps: '15-25', rest: '45s', muscle: 'calves' },
+          { name: 'Side Plank', sets: 2, reps: '20-45s', rest: '45s', muscle: 'core' },
+          { name: 'Pike Push-ups', sets: 3, reps: '8-15', rest: '60s', muscle: 'shoulders' },
+          { name: 'Dead Bug', sets: 3, reps: '10-15', rest: '45s', muscle: 'core' },
+        ]
+      };
+      
+      const selectedExercises = fallbackExercises[preferences.type as keyof typeof fallbackExercises] || fallbackExercises.general;
+      
+      setGeneratedWorkout({
+        name: `${preferences.type.charAt(0).toUpperCase() + preferences.type.slice(1)} Workout (Offline)`,
+        description: `A comprehensive ${preferences.type} workout with ${selectedExercises.length} exercises designed for maximum growth and development. Generated using offline data.`,
+        exercises: selectedExercises,
+        duration: `${preferences.duration} minutes`,
+        difficulty: preferences.difficulty.charAt(0).toUpperCase() + preferences.difficulty.slice(1),
+        notes: `This ${selectedExercises.length}-exercise routine is optimized for ${preferences.type === 'hypertrophy' ? 'muscle growth' : preferences.type}. Focus on proper form and progressive overload. Rest periods are adjusted based on your ${preferences.difficulty} level. Note: This workout was generated offline due to backend connectivity issues.`,
       });
     } finally {
       setIsGenerating(false);

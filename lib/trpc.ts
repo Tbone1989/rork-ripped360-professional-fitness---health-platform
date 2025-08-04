@@ -26,24 +26,40 @@ export const trpcClient = trpc.createClient({
     httpLink({
       url: `${getBaseUrl()}/api/trpc`,
       transformer: superjson,
-      fetch: (url, options) => {
+      fetch: async (url, options) => {
         console.log('🔄 tRPC Request:', url);
-        return fetch(url, {
-          ...options,
-          headers: {
-            ...options?.headers,
-            'Content-Type': 'application/json',
-          },
-        }).then((response) => {
+        try {
+          const response = await fetch(url, {
+            ...options,
+            headers: {
+              ...options?.headers,
+              'Content-Type': 'application/json',
+            },
+          });
+          
           console.log('📡 tRPC Response:', response.status, response.statusText);
+          
           if (!response.ok) {
             console.error('❌ tRPC Error Response:', response.status, response.statusText);
+            
+            // Check if response is HTML (backend not running)
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('text/html')) {
+              throw new Error('Backend server is not running. Please start the backend server.');
+            }
           }
+          
           return response;
-        }).catch((error) => {
+        } catch (error) {
           console.error('❌ tRPC Network Error:', error);
+          
+          // Provide more specific error messages
+          if (error instanceof TypeError && error.message === 'Failed to fetch') {
+            throw new Error('Cannot connect to backend server. Please ensure the backend is running on the correct port.');
+          }
+          
           throw error;
-        });
+        }
       },
     }),
   ],
