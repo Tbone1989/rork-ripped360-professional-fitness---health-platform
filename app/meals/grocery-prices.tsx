@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, Modal, Alert } from 'react-native';
+import React, { useState, useMemo, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, Modal, Alert, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { 
   Search, 
@@ -14,7 +14,9 @@ import {
   Bell,
   Tag,
   X,
-  Check
+  Check,
+  Crosshair,
+  Loader
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -25,74 +27,60 @@ import { ChipGroup } from '@/components/ui/ChipGroup';
 import { Badge } from '@/components/ui/Badge';
 import { createPriceComparisons, mockGroceryStores } from '@/mocks/groceryData';
 import { PriceComparison, GrocerySearchFilters, GroceryCategory } from '@/types/grocery';
-
-interface UserLocation {
-  city: string;
-  state: string;
-  zipCode?: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-}
-
-const availableLocations: UserLocation[] = [
-  {
-    city: 'Springfield',
-    state: 'IL',
-    zipCode: '62701',
-    coordinates: { latitude: 39.7817, longitude: -89.6501 }
-  },
-  {
-    city: 'Chicago',
-    state: 'IL', 
-    zipCode: '60601',
-    coordinates: { latitude: 41.8781, longitude: -87.6298 }
-  },
-  {
-    city: 'Peoria',
-    state: 'IL',
-    zipCode: '61602',
-    coordinates: { latitude: 40.6936, longitude: -89.5890 }
-  },
-  {
-    city: 'Rockford',
-    state: 'IL',
-    zipCode: '61101',
-    coordinates: { latitude: 42.2711, longitude: -89.0940 }
-  },
-  {
-    city: 'Champaign',
-    state: 'IL',
-    zipCode: '61820',
-    coordinates: { latitude: 40.1164, longitude: -88.2434 }
-  }
-];
-
-function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 3959; // Earth's radius in miles
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  return R * c;
-}
+import locationService, { UserLocation, LocationSearchResult } from '@/services/locationService';
 
 export default function GroceryPricesScreen() {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
-  const [currentLocation, setCurrentLocation] = useState<UserLocation>(availableLocations[0]);
+  const [currentLocation, setCurrentLocation] = useState<UserLocation | null>(null);
+  const [locationSearchQuery, setLocationSearchQuery] = useState('');
+  const [locationSearchResults, setLocationSearchResults] = useState<LocationSearchResult[]>([]);
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [isSearchingLocations, setIsSearchingLocations] = useState(false);
   const [filters, setFilters] = useState<GrocerySearchFilters>({
     sortBy: 'price',
     maxDistance: 5
   });
 
+  // Initialize with default location
+  useEffect(() => {
+    if (!currentLocation) {
+      setCurrentLocation({
+        city: 'Springfield',
+        state: 'IL',
+        zipCode: '62701',
+        coordinates: { latitude: 39.7817, longitude: -89.6501 }
+      });
+    }
+  }, []);
+
+  // Search locations when query changes
+  useEffect(() => {
+    const searchLocations = async () => {
+      if (locationSearchQuery.length > 2) {
+        setIsSearchingLocations(true);
+        try {
+          const results = await locationService.searchLocations(locationSearchQuery);
+          setLocationSearchResults(results);
+        } catch (error) {
+          console.error('Error searching locations:', error);
+        } finally {
+          setIsSearchingLocations(false);
+        }
+      } else {
+        setLocationSearchResults([]);
+      }
+    };
+
+    const timeoutId = setTimeout(searchLocations, 300);
+    return () => clearTimeout(timeoutId);
+  }, [locationSearchQuery]);
+
   const priceComparisons = useMemo(() => {
+    if (!currentLocation) return [];
+    
     const comparisons = createPriceComparisons();
     // Update store distances based on current location
     return comparisons.map(comparison => ({
@@ -101,7 +89,7 @@ export default function GroceryPricesScreen() {
         ...price,
         store: {
           ...price.store,
-          distance: calculateDistance(
+          distance: locationService.calculateDistance(
             currentLocation.coordinates.latitude,
             currentLocation.coordinates.longitude,
             price.store.coordinates.latitude,
@@ -113,7 +101,7 @@ export default function GroceryPricesScreen() {
         ...comparison.lowestPrice,
         store: {
           ...comparison.lowestPrice.store,
-          distance: calculateDistance(
+          distance: locationService.calculateDistance(
             currentLocation.coordinates.latitude,
             currentLocation.coordinates.longitude,
             comparison.lowestPrice.store.coordinates.latitude,
@@ -194,16 +182,20 @@ export default function GroceryPricesScreen() {
 
   const handleLocationChange = (location: UserLocation) => {
     setCurrentLocation(location);
+    locationService.setCurrentLocation(location);
     setShowLocationPicker(false);
   };
 
   const getCurrentLocationText = () => {
+    if (!currentLocation) return 'Select Location';
     return `${currentLocation.city}, ${currentLocation.state}`;
   };
 
   const getNearbyStoresCount = () => {
+    if (!currentLocation) return 0;
+    
     return mockGroceryStores.filter(store => {
-      const distance = calculateDistance(
+      const distance = locationService.calculateDistance(
         currentLocation.coordinates.latitude,
         currentLocation.coordinates.longitude,
         store.coordinates.latitude,
@@ -211,6 +203,42 @@ export default function GroceryPricesScreen() {
       );
       return distance <= (filters.maxDistance || 10);
     }).length;
+  };
+
+  const handleGetCurrentLocation = async () => {
+    setIsLoadingLocation(true);
+    try {
+      const location = await locationService.getCurrentLocation();
+      if (location) {
+        setCurrentLocation(location);
+        locationService.setCurrentLocation(location);
+        Alert.alert('Location Updated', `Found your location: ${location.city}, ${location.state}`);
+      } else {
+        Alert.alert(
+          'Location Access Denied', 
+          'Please enable location services to find stores near you, or manually select your location.'
+        );
+      }
+    } catch (error) {
+      console.error('Error getting current location:', error);
+      Alert.alert('Location Error', 'Unable to get your current location. Please try again or select manually.');
+    } finally {
+      setIsLoadingLocation(false);
+    }
+  };
+
+  const handleLocationSelect = (location: LocationSearchResult) => {
+    const userLocation: UserLocation = {
+      city: location.city,
+      state: location.state,
+      zipCode: location.zipCode,
+      coordinates: location.coordinates
+    };
+    setCurrentLocation(userLocation);
+    locationService.setCurrentLocation(userLocation);
+    setShowLocationPicker(false);
+    setLocationSearchQuery('');
+    setLocationSearchResults([]);
   };
 
   return (
@@ -511,8 +539,90 @@ export default function GroceryPricesScreen() {
               Select your location to find the best grocery prices near you
             </Text>
             
-            {availableLocations.map((location) => {
-              const isSelected = location.city === currentLocation.city && location.state === currentLocation.state;
+            {/* Current Location Button */}
+            <TouchableOpacity 
+              style={styles.currentLocationButton}
+              onPress={handleGetCurrentLocation}
+              disabled={isLoadingLocation}
+            >
+              <View style={styles.currentLocationContent}>
+                <View style={styles.currentLocationIcon}>
+                  {isLoadingLocation ? (
+                    <ActivityIndicator size="small" color={colors.accent.primary} />
+                  ) : (
+                    <Crosshair size={20} color={colors.accent.primary} />
+                  )}
+                </View>
+                <View style={styles.currentLocationInfo}>
+                  <Text style={styles.currentLocationTitle}>
+                    {isLoadingLocation ? 'Getting your location...' : 'Use Current Location'}
+                  </Text>
+                  <Text style={styles.currentLocationSubtitle}>
+                    Automatically detect your location
+                  </Text>
+                </View>
+              </View>
+            </TouchableOpacity>
+            
+            {/* Search Location */}
+            <View style={styles.locationSearchSection}>
+              <Text style={styles.locationSearchLabel}>Or search for a location:</Text>
+              <Input
+                placeholder="Enter city, state, or zip code"
+                value={locationSearchQuery}
+                onChangeText={setLocationSearchQuery}
+                style={styles.locationSearchInput}
+              />
+              
+              {/* Search Results */}
+              {isSearchingLocations && (
+                <View style={styles.searchingIndicator}>
+                  <ActivityIndicator size="small" color={colors.accent.primary} />
+                  <Text style={styles.searchingText}>Searching...</Text>
+                </View>
+              )}
+              
+              {locationSearchResults.length > 0 && (
+                <View style={styles.searchResults}>
+                  {locationSearchResults.map((location) => (
+                    <TouchableOpacity
+                      key={location.id}
+                      style={styles.searchResultItem}
+                      onPress={() => handleLocationSelect(location)}
+                    >
+                      <View style={styles.searchResultIcon}>
+                        <MapPin size={16} color={colors.text.secondary} />
+                      </View>
+                      <Text style={styles.searchResultText}>
+                        {location.displayName}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              )}
+            </View>
+            
+            {/* Divider */}
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>Popular Locations</Text>
+              <View style={styles.dividerLine} />
+            </View>
+            
+            {/* Available Locations */}
+            {mockGroceryStores.reduce((uniqueLocations: any[], store) => {
+              const locationKey = `${store.city}-${store.state}`;
+              if (!uniqueLocations.find(loc => `${loc.city}-${loc.state}` === locationKey)) {
+                uniqueLocations.push({
+                  city: store.city,
+                  state: store.state,
+                  zipCode: store.zipCode,
+                  coordinates: store.coordinates
+                });
+              }
+              return uniqueLocations;
+            }, []).map((location) => {
+              const isSelected = currentLocation && location.city === currentLocation.city && location.state === currentLocation.state;
               
               return (
                 <TouchableOpacity
@@ -552,7 +662,7 @@ export default function GroceryPricesScreen() {
             
             <View style={styles.modalFooter}>
               <Text style={styles.modalFooterText}>
-                Don't see your location? We're expanding to more areas soon!
+                Don&apos;t see your location? We&apos;re expanding to more areas soon!
               </Text>
             </View>
           </ScrollView>
@@ -1006,5 +1116,100 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     textAlign: 'center',
     lineHeight: 20,
+  },
+  currentLocationButton: {
+    backgroundColor: colors.accent.primary + '10',
+    borderRadius: 12,
+    marginBottom: 24,
+    borderWidth: 2,
+    borderColor: colors.accent.primary + '30',
+  },
+  currentLocationContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+  },
+  currentLocationIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background.tertiary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  currentLocationInfo: {
+    flex: 1,
+  },
+  currentLocationTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.accent.primary,
+  },
+  currentLocationSubtitle: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
+  locationSearchSection: {
+    marginBottom: 24,
+  },
+  locationSearchLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text.primary,
+    marginBottom: 8,
+  },
+  locationSearchInput: {
+    marginBottom: 12,
+  },
+  searchingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    gap: 8,
+  },
+  searchingText: {
+    fontSize: 14,
+    color: colors.text.secondary,
+  },
+  searchResults: {
+    backgroundColor: colors.background.secondary,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  searchResultItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  searchResultIcon: {
+    marginRight: 12,
+  },
+  searchResultText: {
+    fontSize: 14,
+    color: colors.text.primary,
+    flex: 1,
+  },
+  divider: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border.light,
+  },
+  dividerText: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    fontWeight: '500',
+    paddingHorizontal: 16,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
 });
