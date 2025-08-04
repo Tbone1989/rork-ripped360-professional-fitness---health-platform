@@ -181,9 +181,12 @@ export default function GroceryPricesScreen() {
   };
 
   const handleLocationChange = (location: UserLocation) => {
+    console.log('Changing location to:', location);
     setCurrentLocation(location);
     locationService.setCurrentLocation(location);
     setShowLocationPicker(false);
+    setLocationSearchQuery('');
+    setLocationSearchResults([]);
   };
 
   const getCurrentLocationText = () => {
@@ -228,6 +231,7 @@ export default function GroceryPricesScreen() {
   };
 
   const handleLocationSelect = (location: LocationSearchResult) => {
+    console.log('Selecting location from search:', location);
     const userLocation: UserLocation = {
       city: location.city,
       state: location.state,
@@ -235,8 +239,6 @@ export default function GroceryPricesScreen() {
       coordinates: location.coordinates
     };
     handleLocationChange(userLocation);
-    setLocationSearchQuery('');
-    setLocationSearchResults([]);
   };
 
   return (
@@ -267,7 +269,11 @@ export default function GroceryPricesScreen() {
           </View>
           <TouchableOpacity 
             style={styles.changeLocationButton}
-            onPress={() => setShowLocationPicker(true)}
+            onPress={() => {
+              console.log('Change location button pressed');
+              setShowLocationPicker(true);
+            }}
+            activeOpacity={0.7}
           >
             <Text style={styles.changeLocationText}>Change</Text>
           </TouchableOpacity>
@@ -617,6 +623,7 @@ export default function GroceryPricesScreen() {
                       key={location.id}
                       style={styles.searchResultItem}
                       onPress={() => handleLocationSelect(location)}
+                      activeOpacity={0.7}
                     >
                       <View style={styles.searchResultIcon}>
                         <MapPin size={16} color={colors.text.secondary} />
@@ -638,7 +645,7 @@ export default function GroceryPricesScreen() {
             </View>
             
             {/* Available Locations */}
-            {mockGroceryStores.reduce((uniqueLocations: any[], store) => {
+            {mockGroceryStores.reduce((uniqueLocations: UserLocation[], store) => {
               const locationKey = `${store.city}-${store.state}`;
               if (!uniqueLocations.find(loc => `${loc.city}-${loc.state}` === locationKey)) {
                 uniqueLocations.push({
@@ -659,7 +666,11 @@ export default function GroceryPricesScreen() {
                     styles.locationOption,
                     isSelected && styles.locationOptionSelected
                   ]}
-                  onPress={() => handleLocationChange(location)}
+                  onPress={() => {
+                    console.log('Location option pressed:', location);
+                    handleLocationChange(location);
+                  }}
+                  activeOpacity={0.7}
                 >
                   <View style={styles.locationOptionContent}>
                     <View style={styles.locationOptionIcon}>

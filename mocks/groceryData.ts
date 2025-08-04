@@ -115,6 +115,77 @@ export const mockGroceryStores: GroceryStore[] = [
       { day: 'Sunday', open: '9:00 AM', close: '8:00 PM' }
     ],
     features: ['discount', 'organic', 'special-buys']
+  },
+  // Chicago stores
+  {
+    id: '6',
+    name: 'Jewel-Osco',
+    chain: 'Jewel-Osco',
+    address: '100 N State St',
+    city: 'Chicago',
+    state: 'IL',
+    zipCode: '60601',
+    phone: '(312) 555-0100',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/04/Jewel-Osco-Logo.png',
+    distance: 3.2,
+    coordinates: { latitude: 41.8781, longitude: -87.6298 },
+    hours: [
+      { day: 'Monday', open: '6:00 AM', close: '12:00 AM' },
+      { day: 'Tuesday', open: '6:00 AM', close: '12:00 AM' },
+      { day: 'Wednesday', open: '6:00 AM', close: '12:00 AM' },
+      { day: 'Thursday', open: '6:00 AM', close: '12:00 AM' },
+      { day: 'Friday', open: '6:00 AM', close: '12:00 AM' },
+      { day: 'Saturday', open: '6:00 AM', close: '12:00 AM' },
+      { day: 'Sunday', open: '6:00 AM', close: '11:00 PM' }
+    ],
+    features: ['pharmacy', 'deli', 'bakery', 'floral']
+  },
+  {
+    id: '7',
+    name: 'Mariano\'s',
+    chain: 'Mariano\'s',
+    address: '40 S State St',
+    city: 'Chicago',
+    state: 'IL',
+    zipCode: '60603',
+    phone: '(312) 555-0200',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/04/Marianos-Logo.png',
+    distance: 3.5,
+    coordinates: { latitude: 41.8819, longitude: -87.6278 },
+    hours: [
+      { day: 'Monday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Tuesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Wednesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Thursday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Friday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Saturday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Sunday', open: '6:00 AM', close: '10:00 PM' }
+    ],
+    features: ['pharmacy', 'deli', 'bakery', 'sushi', 'prepared-foods']
+  },
+  // Peoria stores
+  {
+    id: '8',
+    name: 'Hy-Vee',
+    chain: 'Hy-Vee',
+    address: '2900 W Lake Ave',
+    city: 'Peoria',
+    state: 'IL',
+    zipCode: '61602',
+    phone: '(309) 555-0300',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/04/Hy-Vee-Logo.png',
+    distance: 4.1,
+    coordinates: { latitude: 40.6936, longitude: -89.5890 },
+    hours: [
+      { day: 'Monday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Tuesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Wednesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Thursday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Friday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Saturday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Sunday', open: '6:00 AM', close: '10:00 PM' }
+    ],
+    features: ['pharmacy', 'deli', 'bakery', 'floral', 'fuel']
   }
 ];
 
