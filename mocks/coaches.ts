@@ -56,6 +56,30 @@ export const featuredCoaches: Coach[] = [
     profileImageUrl: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=500',
     coverImageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1000',
     featured: true,
+    pricingVisibility: 'upfront',
+    packageDeals: [
+      {
+        id: 'pkg1',
+        name: 'Strength Foundation',
+        description: '4-week intensive strength building program',
+        sessions: 8,
+        duration: 4,
+        price: 800,
+        discount: 15,
+        features: ['Personalized workout plans', 'Nutrition guidance', 'Progress tracking', 'Video form analysis'],
+        popular: true,
+      },
+      {
+        id: 'pkg2',
+        name: 'Athletic Performance',
+        description: '8-week comprehensive athletic development',
+        sessions: 16,
+        duration: 8,
+        price: 1400,
+        discount: 20,
+        features: ['Sport-specific training', 'Recovery protocols', 'Mental performance coaching', 'Competition prep'],
+      },
+    ],
   },
   {
     id: '2',
@@ -111,6 +135,19 @@ export const featuredCoaches: Coach[] = [
     profileImageUrl: 'https://images.unsplash.com/photo-1609952542840-df54cfddc3fb?q=80&w=500',
     coverImageUrl: 'https://images.unsplash.com/photo-1599058917765-a780eda07a3e?q=80&w=1000',
     featured: true,
+    pricingVisibility: 'after_contact',
+    packageDeals: [
+      {
+        id: 'pkg3',
+        name: 'CrossFit Fundamentals',
+        description: '6-week CrossFit basics and nutrition coaching',
+        sessions: 12,
+        duration: 6,
+        price: 950,
+        discount: 12,
+        features: ['Movement fundamentals', 'Scaling techniques', 'Meal planning', 'Community support'],
+      },
+    ],
   },
   {
     id: '3',
@@ -167,6 +204,19 @@ export const featuredCoaches: Coach[] = [
     profileImageUrl: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=500',
     coverImageUrl: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?q=80&w=1000',
     featured: true,
+    pricingVisibility: 'consultation_required',
+    consultationFee: 50,
+    packageDeals: [
+      {
+        id: 'pkg4',
+        name: 'Injury Recovery Program',
+        description: 'Customized rehabilitation and return-to-activity plan',
+        sessions: 10,
+        duration: 5,
+        price: 1200,
+        features: ['Movement assessment', 'Corrective exercises', 'Pain management', 'Return-to-sport protocol'],
+      },
+    ],
   },
 ];
 
@@ -229,6 +279,7 @@ export const allCoaches: Coach[] = [
     ],
     profileImageUrl: 'https://images.unsplash.com/photo-1594381898411-846e7d193883?q=80&w=500',
     coverImageUrl: 'https://images.unsplash.com/photo-1575052814086-f385e2e2ad1b?q=80&w=1000',
+    pricingVisibility: 'upfront',
   },
   {
     id: '5',
@@ -284,5 +335,19 @@ export const allCoaches: Coach[] = [
     ],
     profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=500',
     coverImageUrl: 'https://images.unsplash.com/photo-1517838277536-f5f99be501cd?q=80&w=1000',
+    pricingVisibility: 'after_contact',
+    packageDeals: [
+      {
+        id: 'pkg5',
+        name: 'Contest Prep Intensive',
+        description: '12-week bodybuilding competition preparation',
+        sessions: 24,
+        duration: 12,
+        price: 2200,
+        discount: 25,
+        features: ['Posing coaching', 'Peak week protocol', 'Stage presence training', 'Photo shoot prep'],
+        popular: true,
+      },
+    ],
   },
 ];

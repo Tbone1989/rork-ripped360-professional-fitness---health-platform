@@ -13,6 +13,9 @@ export interface Coach {
   profileImageUrl: string;
   coverImageUrl?: string;
   featured?: boolean;
+  pricingVisibility: 'upfront' | 'after_contact' | 'consultation_required';
+  consultationFee?: number; // Optional consultation fee
+  packageDeals?: CoachingPackage[];
 }
 
 export interface Certification {
@@ -57,6 +60,19 @@ export interface CoachingPlan {
   sessionsPerWeek: number;
   price: number;
   features: string[];
+  visible: boolean; // Whether price is visible to clients
+}
+
+export interface CoachingPackage {
+  id: string;
+  name: string;
+  description: string;
+  sessions: number;
+  duration: number; // in weeks
+  price: number;
+  discount?: number; // percentage discount from individual sessions
+  features: string[];
+  popular?: boolean;
 }
 
 export interface Message {

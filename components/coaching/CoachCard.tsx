@@ -96,7 +96,18 @@ export const CoachCard: React.FC<CoachCardProps> = ({
       
       <View style={styles.footer}>
         <Text style={styles.experience}>{coach.experience} years experience</Text>
-        <Text style={styles.rate}>${coach.hourlyRate}/hour</Text>
+        {coach.pricingVisibility === 'upfront' ? (
+          <Text style={styles.rate}>${coach.hourlyRate}/hour</Text>
+        ) : coach.pricingVisibility === 'after_contact' ? (
+          <Text style={styles.contactForPrice}>Contact for pricing</Text>
+        ) : (
+          <View style={styles.consultationContainer}>
+            <Text style={styles.consultationText}>Consultation required</Text>
+            {coach.consultationFee && (
+              <Text style={styles.consultationFee}>${coach.consultationFee}</Text>
+            )}
+          </View>
+        )}
       </View>
     </TouchableOpacity>
   );
@@ -179,6 +190,25 @@ const styles = StyleSheet.create({
   },
   rate: {
     fontSize: 14,
+    fontWeight: '600',
+    color: colors.accent.primary,
+  },
+  contactForPrice: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: colors.text.secondary,
+    fontStyle: 'italic',
+  },
+  consultationContainer: {
+    alignItems: 'flex-end',
+  },
+  consultationText: {
+    fontSize: 11,
+    color: colors.text.secondary,
+    fontStyle: 'italic',
+  },
+  consultationFee: {
+    fontSize: 12,
     fontWeight: '600',
     color: colors.accent.primary,
   },
