@@ -18,6 +18,27 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { trpc } from '@/lib/trpc';
 
+interface ApiStatus {
+  name: string;
+  key: string;
+  configured: boolean;
+  status: 'active' | 'placeholder' | 'missing';
+  endpoint?: string;
+}
+
+interface ApiStatusResponse {
+  apis: ApiStatus[];
+  summary: {
+    total: number;
+    configured: number;
+    placeholder: number;
+    missing: number;
+    active: number;
+  };
+  recommendations: string[];
+  timestamp: string;
+}
+
 export default function ApiStatusScreen() {
   const [refreshing, setRefreshing] = useState(false);
   
@@ -149,7 +170,7 @@ export default function ApiStatusScreen() {
       {apiStatus?.recommendations && apiStatus.recommendations.length > 0 && (
         <Card style={styles.recommendationsCard}>
           <Text style={styles.recommendationsTitle}>Recommendations</Text>
-          {apiStatus.recommendations.map((recommendation: string, index: number) => (
+          {apiStatus.recommendations.map((recommendation, index) => (
             <View key={index} style={styles.recommendationItem}>
               <AlertCircle size={16} color={colors.status.warning} />
               <Text style={styles.recommendationText}>{recommendation}</Text>
@@ -162,7 +183,7 @@ export default function ApiStatusScreen() {
       <View style={styles.apiSection}>
         <Text style={styles.sectionTitle}>API Configuration Details</Text>
         
-        {apiStatus?.apis.map((api: any, index: number) => (
+        {apiStatus?.apis.map((api, index) => (
           <Card key={index} style={styles.apiCard}>
             <View style={styles.apiHeader}>
               <View style={styles.apiInfo}>
