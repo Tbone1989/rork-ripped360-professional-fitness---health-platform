@@ -208,36 +208,41 @@ export const generateWorkoutRoute = publicProcedure
         throw new Error('Missing required parameters');
       }
       
-      // Try APIs in order of preference
-      const apiAttempts = [
-        { name: 'RIP360', fn: () => generateWithRip360(input) },
-        { name: 'API Ninjas', fn: () => generateWithApiNinjas(input) },
-      ];
+      // Check if we should force mock data
+      const forceMockData = process.env.EXPO_PUBLIC_FORCE_MOCK_DATA === 'true';
       
-      for (const api of apiAttempts) {
-        try {
-          console.log(`🔄 Trying ${api.name} API...`);
-          const result = await api.fn();
-          if (result && result.exercises && result.exercises.length > 0) {
-            console.log(`✅ ${api.name} API success: Generated workout with ${result.exercises.length} exercises`);
-            return {
-              id: result.id,
-              name: result.name,
-              duration: result.duration,
-              exercises: result.exercises,
-              success: true,
-              timestamp: new Date().toISOString(),
-              source: api.name
-            };
+      if (!forceMockData) {
+        // Try APIs in order of preference
+        const apiAttempts = [
+          { name: 'RIP360', fn: () => generateWithRip360(input) },
+          { name: 'API Ninjas', fn: () => generateWithApiNinjas(input) },
+        ];
+        
+        for (const api of apiAttempts) {
+          try {
+            console.log(`🔄 Trying ${api.name} API...`);
+            const result = await api.fn();
+            if (result && result.exercises && result.exercises.length > 0) {
+              console.log(`✅ ${api.name} API success: Generated workout with ${result.exercises.length} exercises`);
+              return {
+                id: result.id,
+                name: result.name,
+                duration: result.duration,
+                exercises: result.exercises,
+                success: true,
+                timestamp: new Date().toISOString(),
+                source: api.name
+              };
+            }
+          } catch (error) {
+            console.warn(`⚠️ ${api.name} API failed:`, error instanceof Error ? error.message : 'Unknown error');
+            continue;
           }
-        } catch (error) {
-          console.warn(`⚠️ ${api.name} API failed:`, error instanceof Error ? error.message : 'Unknown error');
-          continue;
         }
       }
       
       // Fallback to mock data
-      console.log('🔄 All APIs failed, using mock data');
+      console.log(forceMockData ? '🔄 Using mock data (forced)' : '🔄 All APIs failed, using mock data');
       const workout = getMockWorkout(input);
       console.log(`✅ Mock data: Generated workout with ${workout.exercises.length} exercises`);
       
@@ -248,10 +253,22 @@ export const generateWorkoutRoute = publicProcedure
         exercises: workout.exercises,
         success: true,
         timestamp: new Date().toISOString(),
-        source: 'Mock'
+        source: forceMockData ? 'Mock (Forced)' : 'Mock (Fallback)'
       };
     } catch (error) {
       console.error('❌ Error generating workout:', error);
-      throw new Error(`Failed to generate workout: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // As a last resort, return a basic workout
+      const basicWorkout = getMockWorkout(input);
+      return {
+        id: basicWorkout.id,
+        name: basicWorkout.name,
+        duration: basicWorkout.duration,
+        exercises: basicWorkout.exercises,
+        success: false,
+        timestamp: new Date().toISOString(),
+        source: 'Emergency Fallback',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      };
     }
   });

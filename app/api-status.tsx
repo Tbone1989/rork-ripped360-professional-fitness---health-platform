@@ -170,7 +170,7 @@ export default function ApiStatusScreen() {
       {apiStatus?.recommendations && apiStatus.recommendations.length > 0 && (
         <Card style={styles.recommendationsCard}>
           <Text style={styles.recommendationsTitle}>Recommendations</Text>
-          {apiStatus.recommendations.map((recommendation, index) => (
+          {apiStatus.recommendations.map((recommendation: string, index: number) => (
             <View key={index} style={styles.recommendationItem}>
               <AlertCircle size={16} color={colors.status.warning} />
               <Text style={styles.recommendationText}>{recommendation}</Text>
@@ -183,7 +183,7 @@ export default function ApiStatusScreen() {
       <View style={styles.apiSection}>
         <Text style={styles.sectionTitle}>API Configuration Details</Text>
         
-        {apiStatus?.apis.map((api, index) => (
+        {apiStatus?.apis.map((api: ApiStatus, index: number) => (
           <Card key={index} style={styles.apiCard}>
             <View style={styles.apiHeader}>
               <View style={styles.apiInfo}>
