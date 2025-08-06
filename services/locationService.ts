@@ -123,9 +123,21 @@ class LocationService {
 
   private async reverseGeocode(coordinates: LocationCoordinates): Promise<UserLocation | null> {
     try {
+      // Try Google Geocoding API first if available
+      const googleApiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
+      
+      if (googleApiKey && googleApiKey !== 'google_places_api_key_active') {
+        console.log('🌐 Using Google Geocoding API for reverse geocoding');
+        try {
+          const location = await this.reverseGeocodeWithGoogle(coordinates, googleApiKey);
+          if (location) return location;
+        } catch (error) {
+          console.warn('Google Geocoding API failed, falling back:', error);
+        }
+      }
+      
       if (Platform.OS === 'web') {
-        // For web, we'll use a mock implementation or external service
-        // In a real app, you'd use a service like Google Maps Geocoding API
+        // For web, use mock implementation
         return this.mockReverseGeocode(coordinates);
       } else {
         // For mobile, use expo-location reverse geocoding
@@ -146,6 +158,43 @@ class LocationService {
     } catch (error) {
       console.error('Reverse geocoding error:', error);
       return this.mockReverseGeocode(coordinates);
+    }
+  }
+
+  private async reverseGeocodeWithGoogle(coordinates: LocationCoordinates, apiKey: string): Promise<UserLocation | null> {
+    try {
+      const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinates.latitude},${coordinates.longitude}&key=${apiKey}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Google Geocoding API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.status !== 'OK' || !data.results.length) {
+        throw new Error(`Google Geocoding API status: ${data.status}`);
+      }
+      
+      const result = data.results[0];
+      const addressComponents = result.address_components || [];
+      
+      const cityComponent = addressComponents.find((comp: any) => comp.types.includes('locality'));
+      const stateComponent = addressComponents.find((comp: any) => comp.types.includes('administrative_area_level_1'));
+      const zipComponent = addressComponents.find((comp: any) => comp.types.includes('postal_code'));
+      const countryComponent = addressComponents.find((comp: any) => comp.types.includes('country'));
+      
+      return {
+        city: cityComponent?.long_name || 'Unknown City',
+        state: stateComponent?.short_name || 'Unknown State',
+        zipCode: zipComponent?.long_name,
+        coordinates,
+        address: result.formatted_address,
+        country: countryComponent?.short_name || 'US'
+      };
+    } catch (error) {
+      console.error('Google Geocoding API error:', error);
+      throw error;
     }
   }
 
@@ -172,9 +221,18 @@ class LocationService {
 
   async searchLocations(query: string): Promise<LocationSearchResult[]> {
     try {
-      // In a real app, you'd use a geocoding service like Google Places API
-      // For now, we'll use mock data with filtering
+      // Try Google Places API first if available
+      const googleApiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
+      
+      if (googleApiKey && googleApiKey !== 'google_places_api_key_active') {
+        console.log('🌐 Using Google Places API for location search');
+        return await this.searchWithGooglePlaces(query, googleApiKey);
+      }
+      
+      // Fallback to enhanced mock data with more comprehensive US locations
+      console.log('🔄 Using enhanced mock location data');
       const mockResults: LocationSearchResult[] = [
+        // Illinois
         {
           id: '1',
           displayName: 'Springfield, IL 62701',
@@ -199,67 +257,137 @@ class LocationService {
           zipCode: '61602',
           coordinates: { latitude: 40.6936, longitude: -89.5890 }
         },
+        // California
         {
           id: '4',
-          displayName: 'Rockford, IL 61101',
-          city: 'Rockford',
-          state: 'IL',
-          zipCode: '61101',
-          coordinates: { latitude: 42.2711, longitude: -89.0940 }
+          displayName: 'Los Angeles, CA 90210',
+          city: 'Los Angeles',
+          state: 'CA',
+          zipCode: '90210',
+          coordinates: { latitude: 34.0522, longitude: -118.2437 }
         },
         {
           id: '5',
-          displayName: 'Champaign, IL 61820',
-          city: 'Champaign',
-          state: 'IL',
-          zipCode: '61820',
-          coordinates: { latitude: 40.1164, longitude: -88.2434 }
+          displayName: 'San Francisco, CA 94102',
+          city: 'San Francisco',
+          state: 'CA',
+          zipCode: '94102',
+          coordinates: { latitude: 37.7749, longitude: -122.4194 }
         },
         {
           id: '6',
-          displayName: 'Aurora, IL 60505',
-          city: 'Aurora',
-          state: 'IL',
-          zipCode: '60505',
-          coordinates: { latitude: 41.7606, longitude: -88.3201 }
+          displayName: 'San Diego, CA 92101',
+          city: 'San Diego',
+          state: 'CA',
+          zipCode: '92101',
+          coordinates: { latitude: 32.7157, longitude: -117.1611 }
         },
+        // New York
         {
           id: '7',
-          displayName: 'Joliet, IL 60431',
-          city: 'Joliet',
-          state: 'IL',
-          zipCode: '60431',
-          coordinates: { latitude: 41.5250, longitude: -88.0817 }
+          displayName: 'New York, NY 10001',
+          city: 'New York',
+          state: 'NY',
+          zipCode: '10001',
+          coordinates: { latitude: 40.7128, longitude: -74.0060 }
         },
         {
           id: '8',
-          displayName: 'Naperville, IL 60540',
-          city: 'Naperville',
-          state: 'IL',
-          zipCode: '60540',
-          coordinates: { latitude: 41.7508, longitude: -88.1535 }
+          displayName: 'Buffalo, NY 14201',
+          city: 'Buffalo',
+          state: 'NY',
+          zipCode: '14201',
+          coordinates: { latitude: 42.8864, longitude: -78.8784 }
         },
+        // Texas
         {
           id: '9',
-          displayName: 'Elgin, IL 60120',
-          city: 'Elgin',
-          state: 'IL',
-          zipCode: '60120',
-          coordinates: { latitude: 42.0354, longitude: -88.2826 }
+          displayName: 'Houston, TX 77001',
+          city: 'Houston',
+          state: 'TX',
+          zipCode: '77001',
+          coordinates: { latitude: 29.7604, longitude: -95.3698 }
         },
         {
           id: '10',
-          displayName: 'Waukegan, IL 60085',
-          city: 'Waukegan',
-          state: 'IL',
-          zipCode: '60085',
-          coordinates: { latitude: 42.3636, longitude: -87.8448 }
+          displayName: 'Dallas, TX 75201',
+          city: 'Dallas',
+          state: 'TX',
+          zipCode: '75201',
+          coordinates: { latitude: 32.7767, longitude: -96.7970 }
+        },
+        {
+          id: '11',
+          displayName: 'Austin, TX 73301',
+          city: 'Austin',
+          state: 'TX',
+          zipCode: '73301',
+          coordinates: { latitude: 30.2672, longitude: -97.7431 }
+        },
+        // Florida
+        {
+          id: '12',
+          displayName: 'Miami, FL 33101',
+          city: 'Miami',
+          state: 'FL',
+          zipCode: '33101',
+          coordinates: { latitude: 25.7617, longitude: -80.1918 }
+        },
+        {
+          id: '13',
+          displayName: 'Orlando, FL 32801',
+          city: 'Orlando',
+          state: 'FL',
+          zipCode: '32801',
+          coordinates: { latitude: 28.5383, longitude: -81.3792 }
+        },
+        // More states
+        {
+          id: '14',
+          displayName: 'Denver, CO 80201',
+          city: 'Denver',
+          state: 'CO',
+          zipCode: '80201',
+          coordinates: { latitude: 39.7392, longitude: -104.9903 }
+        },
+        {
+          id: '15',
+          displayName: 'Seattle, WA 98101',
+          city: 'Seattle',
+          state: 'WA',
+          zipCode: '98101',
+          coordinates: { latitude: 47.6062, longitude: -122.3321 }
+        },
+        {
+          id: '16',
+          displayName: 'Atlanta, GA 30301',
+          city: 'Atlanta',
+          state: 'GA',
+          zipCode: '30301',
+          coordinates: { latitude: 33.7490, longitude: -84.3880 }
+        },
+        {
+          id: '17',
+          displayName: 'Phoenix, AZ 85001',
+          city: 'Phoenix',
+          state: 'AZ',
+          zipCode: '85001',
+          coordinates: { latitude: 33.4484, longitude: -112.0740 }
+        },
+        {
+          id: '18',
+          displayName: 'Las Vegas, NV 89101',
+          city: 'Las Vegas',
+          state: 'NV',
+          zipCode: '89101',
+          coordinates: { latitude: 36.1699, longitude: -115.1398 }
         }
       ];
 
       const filtered = mockResults.filter(result => 
         result.displayName.toLowerCase().includes(query.toLowerCase()) ||
         result.city.toLowerCase().includes(query.toLowerCase()) ||
+        result.state.toLowerCase().includes(query.toLowerCase()) ||
         result.zipCode?.includes(query)
       );
 
@@ -267,6 +395,46 @@ class LocationService {
     } catch (error) {
       console.error('Error searching locations:', error);
       return [];
+    }
+  }
+
+  private async searchWithGooglePlaces(query: string, apiKey: string): Promise<LocationSearchResult[]> {
+    try {
+      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&type=locality&key=${apiKey}`;
+      
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`Google Places API error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (data.status !== 'OK') {
+        console.warn('Google Places API status:', data.status);
+        throw new Error(`Google Places API status: ${data.status}`);
+      }
+      
+      return data.results.slice(0, 10).map((place: any, index: number) => {
+        const addressComponents = place.address_components || [];
+        const cityComponent = addressComponents.find((comp: any) => comp.types.includes('locality'));
+        const stateComponent = addressComponents.find((comp: any) => comp.types.includes('administrative_area_level_1'));
+        const zipComponent = addressComponents.find((comp: any) => comp.types.includes('postal_code'));
+        
+        return {
+          id: place.place_id || `google-${index}`,
+          displayName: place.formatted_address || place.name,
+          city: cityComponent?.long_name || 'Unknown City',
+          state: stateComponent?.short_name || 'Unknown State',
+          zipCode: zipComponent?.long_name,
+          coordinates: {
+            latitude: place.geometry.location.lat,
+            longitude: place.geometry.location.lng
+          }
+        };
+      });
+    } catch (error) {
+      console.error('Google Places API error:', error);
+      throw error;
     }
   }
 

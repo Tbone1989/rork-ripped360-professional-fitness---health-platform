@@ -14,6 +14,7 @@ import healthIssuesRoute from "./routes/health/issues/route";
 import coachingListRoute from "./routes/coaching/list/route";
 import coachingSessionsRoute from "./routes/coaching/sessions/route";
 import coachingMessagesRoute from "./routes/coaching/messages/route";
+import checkApiStatusRoute from "./routes/system/api-status/route";
 
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
@@ -49,6 +50,9 @@ export const appRouter = createTRPCRouter({
       list: coachingMessagesRoute.getMessagesRoute,
       send: coachingMessagesRoute.sendMessageRoute,
     }),
+  }),
+  system: createTRPCRouter({
+    apiStatus: checkApiStatusRoute,
   }),
 });
 

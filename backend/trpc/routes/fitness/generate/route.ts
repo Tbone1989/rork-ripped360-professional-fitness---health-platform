@@ -1,6 +1,98 @@
 import { z } from "zod";
 import { publicProcedure } from "../../../create-context";
 
+const API_KEYS = {
+  RIP360_NINJA: process.env.EXPO_PUBLIC_RIP360_NINJA_API_KEY || '',
+  API_NINJAS: process.env.EXPO_PUBLIC_API_NINJAS_KEY || '',
+};
+
+const API_ENDPOINTS = {
+  RIP360_NINJA: process.env.EXPO_PUBLIC_NINJA_API_URL || 'https://api.rip360.com/fitness',
+  API_NINJAS: 'https://api.api-ninjas.com/v1',
+};
+
+const makeApiRequest = async (url: string, headers: Record<string, string>, method: string = 'GET', body?: string): Promise<any> => {
+  console.log(`🌐 Making ${method} API request to: ${url}`);
+  console.log(`🔑 Headers:`, Object.keys(headers));
+  
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Rip360-Mobile-App/1.0',
+      ...headers,
+    },
+    body,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`❌ API Error: ${response.status} ${response.statusText}`, errorText);
+    throw new Error(`API Error: ${response.status} ${response.statusText}`);
+  }
+
+  const data = await response.json();
+  console.log(`✅ API Success: Received data`);
+  return data;
+};
+
+const generateWithRip360 = async (input: { type: string; muscle: string[]; difficulty: string; duration: number }) => {
+  if (!API_KEYS.RIP360_NINJA) throw new Error('RIP360_NINJA API key not found');
+  
+  const url = `${API_ENDPOINTS.RIP360_NINJA}/workout/generate`;
+  const data = await makeApiRequest(url, {
+    'X-API-Key': API_KEYS.RIP360_NINJA,
+  }, 'POST', JSON.stringify(input));
+  
+  return data;
+};
+
+const generateWithApiNinjas = async (input: { type: string; muscle: string[]; difficulty: string; duration: number }) => {
+  if (!API_KEYS.API_NINJAS) throw new Error('API Ninjas key not found');
+  
+  // API Ninjas doesn't have workout generation, so we'll use their exercises endpoint
+  // and create a workout from the exercises
+  const exercises = [];
+  
+  for (const muscle of input.muscle.slice(0, 3)) { // Limit to 3 muscle groups
+    try {
+      const url = `${API_ENDPOINTS.API_NINJAS}/exercises?muscle=${encodeURIComponent(muscle)}&type=${encodeURIComponent(input.type)}`;
+      const muscleExercises = await makeApiRequest(url, {
+        'X-Api-Key': API_KEYS.API_NINJAS,
+      });
+      
+      if (Array.isArray(muscleExercises) && muscleExercises.length > 0) {
+        // Take 2-3 exercises per muscle group
+        const selectedExercises = muscleExercises.slice(0, 3).map((exercise: any) => ({
+          name: exercise.name,
+          sets: input.difficulty === 'beginner' ? 3 : input.difficulty === 'advanced' ? 5 : 4,
+          reps: input.type === 'strength' ? '4-6' : input.type === 'hypertrophy' ? '8-12' : '12-15',
+          rest: input.type === 'strength' ? 180 : input.type === 'hypertrophy' ? 90 : 60,
+          muscle: exercise.muscle,
+          instructions: exercise.instructions?.split('. ') || [],
+        }));
+        
+        exercises.push(...selectedExercises);
+      }
+    } catch (error) {
+      console.warn(`Failed to get exercises for ${muscle}:`, error);
+    }
+  }
+  
+  if (exercises.length === 0) {
+    throw new Error('No exercises found');
+  }
+  
+  return {
+    id: `workout-${Date.now()}`,
+    name: `${input.type.charAt(0).toUpperCase() + input.type.slice(1)} Workout`,
+    duration: input.duration,
+    exercises: exercises.slice(0, Math.min(10, exercises.length)), // Limit to 10 exercises
+    success: true,
+    timestamp: new Date().toISOString()
+  };
+};
+
 const getMockWorkout = (input: { type: string; muscle: string[]; difficulty: string; duration: number }) => {
   const exercisesByType = {
     strength: [
@@ -116,17 +208,47 @@ export const generateWorkoutRoute = publicProcedure
         throw new Error('Missing required parameters');
       }
       
-      const workout = getMockWorkout(input);
-      console.log(`✅ Generated workout: ${workout.name} with ${workout.exercises.length} exercises`);
+      // Try APIs in order of preference
+      const apiAttempts = [
+        { name: 'RIP360', fn: () => generateWithRip360(input) },
+        { name: 'API Ninjas', fn: () => generateWithApiNinjas(input) },
+      ];
       
-      // Ensure we return a valid response
+      for (const api of apiAttempts) {
+        try {
+          console.log(`🔄 Trying ${api.name} API...`);
+          const result = await api.fn();
+          if (result && result.exercises && result.exercises.length > 0) {
+            console.log(`✅ ${api.name} API success: Generated workout with ${result.exercises.length} exercises`);
+            return {
+              id: result.id,
+              name: result.name,
+              duration: result.duration,
+              exercises: result.exercises,
+              success: true,
+              timestamp: new Date().toISOString(),
+              source: api.name
+            };
+          }
+        } catch (error) {
+          console.warn(`⚠️ ${api.name} API failed:`, error instanceof Error ? error.message : 'Unknown error');
+          continue;
+        }
+      }
+      
+      // Fallback to mock data
+      console.log('🔄 All APIs failed, using mock data');
+      const workout = getMockWorkout(input);
+      console.log(`✅ Mock data: Generated workout with ${workout.exercises.length} exercises`);
+      
       return {
         id: workout.id,
         name: workout.name,
         duration: workout.duration,
         exercises: workout.exercises,
         success: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        source: 'Mock'
       };
     } catch (error) {
       console.error('❌ Error generating workout:', error);
