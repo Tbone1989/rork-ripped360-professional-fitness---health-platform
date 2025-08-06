@@ -35,7 +35,7 @@ interface ApiStatusResponse {
     missing: number;
     active: number;
   };
-  recommendations: string[];
+  recommendations: (string | null)[];
   timestamp: string;
 }
 
@@ -170,7 +170,7 @@ export default function ApiStatusScreen() {
       {apiStatus?.recommendations && apiStatus.recommendations.length > 0 && (
         <Card style={styles.recommendationsCard}>
           <Text style={styles.recommendationsTitle}>Recommendations</Text>
-          {apiStatus.recommendations.map((recommendation: string, index: number) => (
+          {apiStatus.recommendations.filter((rec): rec is string => rec !== null).map((recommendation: string, index: number) => (
             <View key={index} style={styles.recommendationItem}>
               <AlertCircle size={16} color={colors.status.warning} />
               <Text style={styles.recommendationText}>{recommendation}</Text>
