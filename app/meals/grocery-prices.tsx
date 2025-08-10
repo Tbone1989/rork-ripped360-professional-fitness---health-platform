@@ -462,8 +462,7 @@ export default function GroceryPricesScreen() {
                     <TouchableOpacity 
                       style={styles.addToListButton}
                       onPress={() => {
-                        console.log('Add to shopping list:', comparison.item.name);
-                        // In a real app, this would add item to shopping list
+                        router.push(`/meals/shopping-list?item=${encodeURIComponent(comparison.item.name)}`)
                       }}
                     >
                       <ShoppingCart size={16} color={colors.accent.primary} />
@@ -532,8 +531,7 @@ export default function GroceryPricesScreen() {
                   title="Add to List"
                   variant="outline"
                   onPress={() => {
-                    console.log('Add to shopping list:', comparison.item.name);
-                    // In a real app, this would add item to shopping list
+                    router.push(`/meals/shopping-list?item=${encodeURIComponent(comparison.item.name)}`)
                   }}
                   icon={<ShoppingCart size={16} color={colors.accent.primary} />}
                   style={styles.actionButton}
@@ -559,8 +557,7 @@ export default function GroceryPricesScreen() {
         <Button
           title="Create Shopping List"
           onPress={() => {
-            console.log('Create shopping list');
-            // In a real app, this would navigate to shopping list creation
+            router.push('/meals/shopping-list')
           }}
           icon={<ShoppingCart size={18} color={colors.text.primary} />}
           style={styles.quickActionButton}
@@ -569,8 +566,7 @@ export default function GroceryPricesScreen() {
           title="Set Price Alerts"
           variant="outline"
           onPress={() => {
-            console.log('Set up price alerts');
-            // In a real app, this would navigate to price alerts setup
+            router.push('/meals/price-alerts')
           }}
           icon={<Bell size={18} color={colors.accent.primary} />}
           style={styles.quickActionButton}
