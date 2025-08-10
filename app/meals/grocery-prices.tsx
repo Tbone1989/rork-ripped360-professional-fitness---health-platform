@@ -47,12 +47,21 @@ export default function GroceryPricesScreen() {
   // Initialize with default location
   useEffect(() => {
     if (!currentLocation) {
-      setCurrentLocation({
-        city: 'Springfield',
-        state: 'IL',
-        zipCode: '62701',
-        coordinates: { latitude: 39.7817, longitude: -89.6501 }
-      });
+      (async () => {
+        try {
+          console.log('Requesting current location on mount...');
+          const loc = await locationService.getCurrentLocation();
+          if (loc) {
+            console.log('Current location acquired on mount:', loc);
+            setCurrentLocation(loc);
+            locationService.setCurrentLocation(loc);
+          } else {
+            console.warn('Current location not available on mount');
+          }
+        } catch (e) {
+          console.error('Failed to acquire current location on mount', e);
+        }
+      })();
     }
   }, []);
 
@@ -255,6 +264,7 @@ export default function GroceryPricesScreen() {
             <TouchableOpacity 
               style={styles.headerButton}
               onPress={() => setShowFilters(!showFilters)}
+              testID="toggle-filters"
             >
               <Filter size={20} color={colors.accent.primary} />
             </TouchableOpacity>
@@ -279,6 +289,7 @@ export default function GroceryPricesScreen() {
               setShowLocationPicker(true);
             }}
             activeOpacity={0.7}
+            testID="change-location"
           >
             <Text style={styles.changeLocationText}>Change</Text>
           </TouchableOpacity>
@@ -292,6 +303,7 @@ export default function GroceryPricesScreen() {
           value={searchQuery}
           onChangeText={setSearchQuery}
           style={styles.searchInput}
+          testID="search-input"
         />
       </View>
 
@@ -594,7 +606,7 @@ export default function GroceryPricesScreen() {
               onPress={handleGetCurrentLocation}
               disabled={isLoadingLocation}
             >
-              <View style={styles.currentLocationContent}>
+              <View style={styles.currentLocationContent} testID="use-current-location">
                 <View style={styles.currentLocationIcon}>
                   {isLoadingLocation ? (
                     <ActivityIndicator size="small" color={colors.accent.primary} />
@@ -639,6 +651,7 @@ export default function GroceryPricesScreen() {
                       style={styles.searchResultItem}
                       onPress={() => handleLocationSelect(location)}
                       activeOpacity={0.7}
+                      testID={`location-result-${location.id}`}
                     >
                       <View style={styles.searchResultIcon}>
                         <MapPin size={16} color={colors.text.secondary} />
@@ -686,6 +699,7 @@ export default function GroceryPricesScreen() {
                     handleLocationChange(location);
                   }}
                   activeOpacity={0.7}
+                  testID={`popular-location-${location.city}-${location.state}`}
                 >
                   <View style={styles.locationOptionContent}>
                     <View style={styles.locationOptionIcon}>

@@ -23,6 +23,7 @@ interface InputProps {
   style?: ViewStyle;
   inputStyle?: TextStyle;
   labelStyle?: TextStyle;
+  testID?: string;
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   maxLength?: number;
@@ -49,6 +50,7 @@ export const Input: React.FC<InputProps> = ({
   editable = true,
   onBlur,
   onFocus,
+  testID,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -71,6 +73,7 @@ export const Input: React.FC<InputProps> = ({
     <View style={[styles.container, style]}>
       {label && <Text style={[styles.label, labelStyle]}>{label}</Text>}
       <View
+        testID={testID ? `${testID}-container` : undefined}
         style={[
           styles.inputContainer,
           isFocused && styles.inputContainerFocused,
@@ -79,6 +82,7 @@ export const Input: React.FC<InputProps> = ({
         ]}
       >
         <TextInput
+          testID={testID}
           style={[
             styles.input,
             multiline && styles.multilineInput,
