@@ -256,6 +256,214 @@ export const mockGroceryStores: GroceryStore[] = [
       { day: 'Sunday', open: '9:00 AM', close: '8:00 PM' }
     ],
     features: ['discount', 'organic']
+  },
+  // Additional South Florida stores
+  {
+    id: '12',
+    name: 'Trader Joe\'s Boca Raton',
+    chain: 'Trader Joe\'s',
+    address: '855 S Federal Hwy',
+    city: 'Boca Raton',
+    state: 'FL',
+    zipCode: '33432',
+    phone: '(561) 555-0203',
+    logo: 'https://1000logos.net/wp-content/uploads/2023/01/Trader-Joes-logo.png',
+    distance: 6.5,
+    coordinates: { latitude: 26.3398, longitude: -80.0866 },
+    hours: [
+      { day: 'Monday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Tuesday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Wednesday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Thursday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Friday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Saturday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Sunday', open: '8:00 AM', close: '9:00 PM' }
+    ],
+    features: ['organic', 'prepared-foods']
+  },
+  {
+    id: '13',
+    name: 'The Fresh Market Boca Raton',
+    chain: 'The Fresh Market',
+    address: '1000 N Federal Hwy',
+    city: 'Boca Raton',
+    state: 'FL',
+    zipCode: '33432',
+    phone: '(561) 555-0303',
+    logo: 'https://1000logos.net/wp-content/uploads/2022/12/The-Fresh-Market-Logo.png',
+    distance: 7.1,
+    coordinates: { latitude: 26.365, longitude: -80.074 },
+    hours: [
+      { day: 'Monday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Tuesday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Wednesday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Thursday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Friday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Saturday', open: '8:00 AM', close: '9:00 PM' },
+      { day: 'Sunday', open: '8:00 AM', close: '9:00 PM' }
+    ],
+    features: ['produce', 'seafood', 'butcher']
+  },
+  {
+    id: '14',
+    name: 'Winn-Dixie Delray Beach',
+    chain: 'Winn-Dixie',
+    address: '14595 S Military Trl',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33484',
+    phone: '(561) 555-0404',
+    logo: 'https://1000logos.net/wp-content/uploads/2020/05/Winn-Dixie-logo.png',
+    distance: 2.9,
+    coordinates: { latitude: 26.4571, longitude: -80.1333 },
+    hours: [
+      { day: 'Monday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Friday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Sunday', open: '7:00 AM', close: '10:00 PM' }
+    ],
+    features: ['pharmacy', 'deli', 'bakery']
+  },
+  {
+    id: '15',
+    name: 'Whole Foods Market Boca Raton',
+    chain: 'Whole Foods',
+    address: '1400 Glades Rd',
+    city: 'Boca Raton',
+    state: 'FL',
+    zipCode: '33431',
+    phone: '(561) 555-0505',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/04/Whole-Foods-Market-Logo.png',
+    distance: 9.2,
+    coordinates: { latitude: 26.3683, longitude: -80.1289 },
+    hours: [
+      { day: 'Monday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Friday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Sunday', open: '7:00 AM', close: '9:00 PM' }
+    ],
+    features: ['organic', 'deli', 'bakery', 'prepared-foods']
+  },
+  {
+    id: '16',
+    name: 'Target Boca Raton',
+    chain: 'Target',
+    address: '21637 State Road 7',
+    city: 'Boca Raton',
+    state: 'FL',
+    zipCode: '33428',
+    phone: '(561) 555-0606',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/04/Target-Logo.png',
+    distance: 11.0,
+    coordinates: { latitude: 26.355, longitude: -80.207 },
+    hours: [
+      { day: 'Monday', open: '8:00 AM', close: '10:00 PM' },
+      { day: 'Tuesday', open: '8:00 AM', close: '10:00 PM' },
+      { day: 'Wednesday', open: '8:00 AM', close: '10:00 PM' },
+      { day: 'Thursday', open: '8:00 AM', close: '10:00 PM' },
+      { day: 'Friday', open: '8:00 AM', close: '10:00 PM' },
+      { day: 'Saturday', open: '8:00 AM', close: '10:00 PM' },
+      { day: 'Sunday', open: '8:00 AM', close: '9:00 PM' }
+    ],
+    features: ['pharmacy', 'grocery']
+  },
+  {
+    id: '17',
+    name: 'Costco Boca Raton',
+    chain: 'Costco',
+    address: '17800 Congress Ave',
+    city: 'Boca Raton',
+    state: 'FL',
+    zipCode: '33487',
+    phone: '(561) 555-0707',
+    logo: 'https://1000logos.net/wp-content/uploads/2017/05/Costco-logo.png',
+    distance: 8.3,
+    coordinates: { latitude: 26.4003, longitude: -80.0967 },
+    hours: [
+      { day: 'Monday', open: '10:00 AM', close: '8:30 PM' },
+      { day: 'Tuesday', open: '10:00 AM', close: '8:30 PM' },
+      { day: 'Wednesday', open: '10:00 AM', close: '8:30 PM' },
+      { day: 'Thursday', open: '10:00 AM', close: '8:30 PM' },
+      { day: 'Friday', open: '10:00 AM', close: '8:30 PM' },
+      { day: 'Saturday', open: '9:30 AM', close: '6:00 PM' },
+      { day: 'Sunday', open: '10:00 AM', close: '6:00 PM' }
+    ],
+    features: ['wholesale', 'pharmacy']
+  },
+  {
+    id: '18',
+    name: 'Sprouts Farmers Market Boca Raton',
+    chain: 'Sprouts',
+    address: '22100 S State Road 7',
+    city: 'Boca Raton',
+    state: 'FL',
+    zipCode: '33428',
+    phone: '(561) 555-0808',
+    logo: 'https://1000logos.net/wp-content/uploads/2021/05/Sprouts-Logo.png',
+    distance: 10.6,
+    coordinates: { latitude: 26.348, longitude: -80.2078 },
+    hours: [
+      { day: 'Monday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Friday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Sunday', open: '7:00 AM', close: '9:00 PM' }
+    ],
+    features: ['organic', 'bulk']
+  },
+  {
+    id: '19',
+    name: 'Aldi Boca Raton',
+    chain: 'ALDI',
+    address: '21759 State Road 7',
+    city: 'Boca Raton',
+    state: 'FL',
+    zipCode: '33428',
+    phone: '(561) 555-0909',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/04/Aldi-Logo.png',
+    distance: 10.9,
+    coordinates: { latitude: 26.3555, longitude: -80.2064 },
+    hours: [
+      { day: 'Monday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Tuesday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Wednesday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Thursday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Friday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Saturday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Sunday', open: '9:00 AM', close: '8:00 PM' }
+    ],
+    features: ['discount']
+  },
+  {
+    id: '20',
+    name: 'Publix Super Market at Linton Commons',
+    chain: 'Publix',
+    address: '4801 Linton Blvd',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33445',
+    phone: '(561) 555-1010',
+    logo: 'https://1000logos.net/wp-content/uploads/2020/09/Publix-Logo.png',
+    distance: 3.4,
+    coordinates: { latitude: 26.4385, longitude: -80.1158 },
+    hours: [
+      { day: 'Monday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Friday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Sunday', open: '7:00 AM', close: '9:00 PM' }
+    ],
+    features: ['pharmacy', 'bakery', 'deli']
   }
 ];
 
@@ -501,16 +709,54 @@ export const mockGroceryPrices: GroceryPrice[] = [
   { id: '64', itemId: '8', storeId: '11', price: 3.19, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' }
 ];
 
+function seededRandom(seed: string): number {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(31, h) + seed.charCodeAt(i) | 0;
+  const x = Math.sin(h) * 10000;
+  return x - Math.floor(x);
+}
+
+function priceRangeForItem(itemId: string): { min: number; max: number } {
+  switch (itemId) {
+    case '1': return { min: 0.39, max: 0.99 }; // bananas per lb
+    case '2': return { min: 3.49, max: 6.99 }; // chicken breast per lb
+    case '3': return { min: 0.89, max: 1.99 }; // greek yogurt each
+    case '4': return { min: 1.79, max: 3.99 }; // brown rice 2lb
+    case '5': return { min: 1.29, max: 3.49 }; // broccoli per lb
+    case '6': return { min: 7.99, max: 13.99 }; // salmon per lb
+    case '7': return { min: 0.79, max: 1.99 }; // avocado each
+    case '8': return { min: 2.99, max: 4.99 }; // oats 18oz
+    default: return { min: 1.0, max: 10.0 };
+  }
+}
+
 export function createPriceComparisons(): PriceComparison[] {
   return mockGroceryItems.map(item => {
-    const itemPrices = mockGroceryPrices
-      .filter(price => price.itemId === item.id)
-      .map(price => ({
-        ...price,
-        store: mockGroceryStores.find(store => store.id === price.storeId)!
-      }))
-      .sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
+    const existing = mockGroceryPrices.filter(price => price.itemId === item.id);
+    const withStores = mockGroceryStores.map(store => {
+      const found = existing.find(p => p.storeId === store.id);
+      if (found) {
+        return { ...found, store };
+      }
+      const rng = seededRandom(`${item.id}-${store.id}`);
+      const range = priceRangeForItem(item.id);
+      const base = range.min + (range.max - range.min) * rng;
+      const sale = rng > 0.85 ? parseFloat((base * 0.85).toFixed(2)) : undefined;
+      return {
+        id: `${item.id}-${store.id}-gen`,
+        itemId: item.id,
+        storeId: store.id,
+        price: parseFloat(base.toFixed(2)),
+        salePrice: sale,
+        unit: existing[0]?.unit || 'each',
+        size: existing[0]?.size || '1 each',
+        inStock: rng > 0.1,
+        lastUpdated: new Date().toISOString(),
+        store,
+      } as any;
+    });
 
+    const itemPrices = withStores.sort((a, b) => (a.salePrice || a.price) - (b.salePrice || b.price));
     const prices = itemPrices.map(p => p.salePrice || p.price);
     const averagePrice = prices.reduce((sum, price) => sum + price, 0) / prices.length;
     const lowestPrice = itemPrices[0];
@@ -521,7 +767,7 @@ export function createPriceComparisons(): PriceComparison[] {
       prices: itemPrices,
       lowestPrice,
       averagePrice,
-      savings
+      savings,
     };
   });
 }

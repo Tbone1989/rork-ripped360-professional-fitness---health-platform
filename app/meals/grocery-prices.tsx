@@ -41,7 +41,7 @@ export default function GroceryPricesScreen() {
   const [isSearchingLocations, setIsSearchingLocations] = useState(false);
   const [filters, setFilters] = useState<GrocerySearchFilters>({
     sortBy: 'price',
-    maxDistance: 5
+    maxDistance: 10
   });
 
   useEffect(() => {
@@ -367,7 +367,7 @@ export default function GroceryPricesScreen() {
           <View style={styles.filterSection}>
             <Text style={styles.filterLabel}>Max Distance</Text>
             <View style={styles.distanceOptions}>
-              {[1, 3, 5, 10].map(distance => (
+              {[1, 3, 5, 10, 15, 20].map(distance => (
                 <TouchableOpacity
                   key={distance}
                   style={[
@@ -516,39 +516,46 @@ export default function GroceryPricesScreen() {
               <View style={styles.priceComparison}>
                 <Text style={styles.comparisonTitle}>Price Comparison</Text>
                 <View style={styles.priceList}>
-                  {comparison.prices.slice(0, 3).map((priceData, index) => {
-                    const price = priceData.salePrice || priceData.price;
-                    const isLowest = index === 0;
-                    
-                    return (
-                      <View key={priceData.id} style={styles.priceItem}>
-                        <View style={styles.priceStoreInfo}>
-                          <Text style={[
-                            styles.priceStoreName,
-                            isLowest && styles.priceStoreNameBest
-                          ]}>
-                            {priceData.store.name}
-                          </Text>
-                          <Text style={styles.priceStoreDistance}>
-                            {priceData.store.distance?.toFixed(1)} mi
-                          </Text>
-                        </View>
-                        <View style={styles.priceValue}>
-                          <Text style={[
-                            styles.priceAmount,
-                            isLowest && styles.priceAmountBest
-                          ]}>
-                            {formatPrice(price)}
-                          </Text>
-                          {priceData.salePrice && (
-                            <Text style={styles.priceOriginal}>
-                              {formatPrice(priceData.price)}
+                  {(() => {
+                    const maxD = filters.maxDistance ?? Number.MAX_SAFE_INTEGER;
+                    const local = comparison.prices.filter(p => (p.store.distance ?? Number.MAX_SAFE_INTEGER) <= maxD);
+                    const list = (local.length > 0
+                      ? [...local].sort((a,b)=> (a.salePrice ?? a.price) - (b.salePrice ?? b.price))
+                      : [...comparison.prices].sort((a,b)=> (a.store.distance ?? 0) - (b.store.distance ?? 0))
+                    ).slice(0,3);
+                    return list.map((priceData, index) => {
+                      const price = priceData.salePrice || priceData.price;
+                      const isLowest = index === 0;
+                      return (
+                        <View key={priceData.id} style={styles.priceItem}>
+                          <View style={styles.priceStoreInfo}>
+                            <Text style={[
+                              styles.priceStoreName,
+                              isLowest && styles.priceStoreNameBest
+                            ]}>
+                              {priceData.store.name}
                             </Text>
-                          )}
+                            <Text style={styles.priceStoreDistance}>
+                              {priceData.store.distance?.toFixed(1)} mi
+                            </Text>
+                          </View>
+                          <View style={styles.priceValue}>
+                            <Text style={[
+                              styles.priceAmount,
+                              isLowest && styles.priceAmountBest
+                            ]}>
+                              {formatPrice(price)}
+                            </Text>
+                            {priceData.salePrice && (
+                              <Text style={styles.priceOriginal}>
+                                {formatPrice(priceData.price)}
+                              </Text>
+                            )}
+                          </View>
                         </View>
-                      </View>
-                    );
-                  })}
+                      );
+                    });
+                  })()}
                 </View>
                 
                 {comparison.prices.length > 3 && (
