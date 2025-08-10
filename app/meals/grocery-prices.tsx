@@ -149,8 +149,13 @@ export default function GroceryPricesScreen() {
     // Distance filter
     if (filters.maxDistance) {
       filtered = filtered.filter(comparison => 
-        comparison.lowestPrice.store.distance! <= filters.maxDistance!
+        (comparison.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) <= (filters.maxDistance ?? Number.MAX_SAFE_INTEGER)
       );
+    }
+
+    // Auto-widen distance if nothing found
+    if (filtered.length === 0 && priceComparisons.length > 0) {
+      filtered = priceComparisons.filter(comparison => (comparison.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) <= 25);
     }
 
     // Sort
@@ -356,6 +361,16 @@ export default function GroceryPricesScreen() {
 
       {/* Price Comparisons */}
       <View style={styles.resultsSection}>
+        {filteredComparisons.length === 0 && (
+          <Card style={styles.comparisonCard}>
+            <Text style={styles.summaryText}>No stores found within your filters.</Text>
+            <View style={{ height: 8 }} />
+            <Button
+              title={`Expand distance to 25 mi`}
+              onPress={() => setFilters(prev => ({ ...prev, maxDistance: 25 }))}
+            />
+          </Card>
+        )}
         {filteredComparisons.map((comparison) => {
           const savingsPercentage = calculateSavingsPercentage(comparison);
           const currentPrice = comparison.lowestPrice.salePrice || comparison.lowestPrice.price;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { 
@@ -112,10 +112,38 @@ const mealPlans: MealPlan[] = [
   }
 ];
 
+import { useMedicalStore } from '@/store/medicalStore';
+import { MedicalCondition } from '@/types/medical';
+
 export default function MealPlansScreen() {
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState('all');
-  const [isGenerating, setIsGenerating] = useState(false);
+  const [isGenerating, setIsGenerating] = useState<boolean>(false);
+  const medicalProfile = useMedicalStore(state => state.medicalProfile);
+
+  const healthRestrictions = useMemo<string[]>(() => {
+    const conditions = medicalProfile?.conditions ?? [];
+    const normalized = conditions.map((c: MedicalCondition) => c.name.toLowerCase());
+    const restrictions: string[] = [];
+
+    if (normalized.some(n => n.includes('diabetes') || n.includes('pre-diabetes') || n.includes('prediabetes'))) {
+      restrictions.push('low-glycemic', 'controlled-carbs', 'no-added-sugar', 'high-fiber');
+    }
+    if (normalized.some(n => n.includes('hypertension') || n.includes('high blood pressure') || n.includes('blood pressure'))) {
+      restrictions.push('low-sodium', 'dash-diet');
+    }
+    if (normalized.some(n => n.includes('kidney'))) {
+      restrictions.push('renal-friendly');
+    }
+    if (normalized.some(n => n.includes('celiac') || n.includes('gluten'))) {
+      restrictions.push('gluten-free');
+    }
+    if (normalized.some(n => n.includes('lactose') || n.includes('dairy'))) {
+      restrictions.push('dairy-free');
+    }
+
+    return Array.from(new Set(restrictions));
+  }, [medicalProfile?.conditions]);
 
   const filterOptions = [
     { id: 'all', label: 'All Plans' },
@@ -136,18 +164,18 @@ export default function MealPlansScreen() {
     return true;
   });
 
-  const generateAIPlan = async () => {
+  const generateAIPlan = async (): Promise<void> => {
     setIsGenerating(true);
     try {
       // Enhanced preferences for better meal planning
       const preferences = {
-        calories: 2400, // Increased for better distribution
-        protein: 160,
-        carbs: 240,
-        fat: 90,
-        meals: 6, // Increased to 6 meals per day for better nutrition timing
-        restrictions: []
-      };
+        calories: 2200,
+        protein: 150,
+        carbs: 220,
+        fat: 70,
+        meals: 5,
+        restrictions: healthRestrictions,
+      } as const;
       
       const generatedPlan = await apiService.generateMealPlan(preferences);
       
@@ -238,7 +266,7 @@ export default function MealPlansScreen() {
                 {isGenerating ? 'Generating...' : 'Generate AI Meal Plan'}
               </Text>
               <Text style={styles.aiDescription}>
-                {isGenerating ? 'Creating your personalized plan' : 'Get a custom plan tailored to your goals'}
+                {isGenerating ? 'Creating your personalized plan' : healthRestrictions.length > 0 ? `Health-aware (${healthRestrictions.join(', ')})` : 'Get a custom plan tailored to your goals'}
               </Text>
             </View>
           </TouchableOpacity>
