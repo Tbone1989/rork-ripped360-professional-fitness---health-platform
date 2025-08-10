@@ -1,7 +1,7 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { StyleSheet, View, Text, FlatList, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
-import { Bell, Plus, Tag, Trash2, ChevronRight } from 'lucide-react-native';
+import { Bell, Plus, Trash2, ChevronRight } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
@@ -52,7 +52,7 @@ export default function PriceAlertsScreen() {
     <View style={styles.alertRow} testID={`price-alert-${a.id}`}>
       <View style={styles.alertInfo}>
         <Text style={styles.alertName}>{a.itemName}</Text>
-        <Text style={styles.alertMeta}>Notify when <= ${a.targetPrice.toFixed(2)}</Text>
+        <Text style={styles.alertMeta}>{'Notify when <= $' + a.targetPrice.toFixed(2)}</Text>
       </View>
       <View style={styles.alertActions}>
         <TouchableOpacity onPress={() => toggleAlert(a.id)} style={styles.alertToggle} testID={`toggle-${a.id}`}>
