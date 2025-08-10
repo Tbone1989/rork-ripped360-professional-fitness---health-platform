@@ -32,23 +32,38 @@ class LocationService {
   async requestLocationPermission(): Promise<boolean> {
     try {
       if (Platform.OS === 'web') {
-        // For web, use browser geolocation API
         return new Promise((resolve) => {
-          if ('geolocation' in navigator) {
-            navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-              this.locationPermissionGranted = result.state === 'granted';
-              resolve(this.locationPermissionGranted);
-            }).catch(() => {
+          try {
+            if ('geolocation' in navigator) {
+              // Some browsers don't support navigator.permissions. If missing, optimistically proceed to trigger prompt.
+              const perms = (navigator as any)?.permissions?.query?.({ name: 'geolocation' as any }) ?? null;
+              if (perms && typeof (perms as Promise<any>).then === 'function') {
+                (perms as Promise<any>)
+                  .then((result: { state: 'granted' | 'prompt' | 'denied' }) => {
+                    this.locationPermissionGranted = result.state === 'granted' || result.state === 'prompt';
+                    resolve(this.locationPermissionGranted);
+                  })
+                  .catch(() => {
+                    // If querying perms fails, allow getCurrentPosition to trigger prompt
+                    this.locationPermissionGranted = true;
+                    resolve(true);
+                  });
+              } else {
+                // Fallback: allow and let getCurrentPosition prompt
+                this.locationPermissionGranted = true;
+                resolve(true);
+              }
+            } else {
               this.locationPermissionGranted = false;
               resolve(false);
-            });
-          } else {
-            this.locationPermissionGranted = false;
-            resolve(false);
+            }
+          } catch {
+            console.warn('navigator.permissions check failed, proceeding to prompt');
+            this.locationPermissionGranted = true;
+            resolve(true);
           }
         });
       } else {
-        // For mobile, use expo-location
         const { status } = await Location.requestForegroundPermissionsAsync();
         this.locationPermissionGranted = status === 'granted';
         return this.locationPermissionGranted;
@@ -107,10 +122,17 @@ class LocationService {
 
   private async getCurrentLocationMobile(): Promise<UserLocation | null> {
     try {
+      // Try last known first for speed
+      const lastKnown = await Location.getLastKnownPositionAsync();
+      if (lastKnown?.coords) {
+        const { latitude, longitude } = lastKnown.coords;
+        return await this.reverseGeocode({ latitude, longitude });
+      }
+
       const location = await Location.getCurrentPositionAsync({
         accuracy: Location.Accuracy.Balanced,
         timeInterval: 10000,
-        distanceInterval: 100
+        distanceInterval: 100,
       });
 
       const { latitude, longitude } = location.coords;
@@ -144,11 +166,12 @@ class LocationService {
         if (nominatim) return nominatim;
         return this.mockReverseGeocode(coordinates);
       } else {
+        // On mobile, try platform reverse geocode; if it fails, fallback to a minimal result with just coordinates
         const results = await Location.reverseGeocodeAsync(coordinates);
         if (results.length > 0) {
           const result = results[0];
           return {
-            city: result.city || 'Unknown City',
+            city: result.city || result.subregion || 'Unknown City',
             state: result.region || 'Unknown State',
             zipCode: result.postalCode || undefined,
             coordinates,
@@ -156,8 +179,12 @@ class LocationService {
             country: result.country || 'US'
           };
         }
+        return {
+          city: 'My Area',
+          state: 'Unknown',
+          coordinates,
+        } as UserLocation;
       }
-      return null;
     } catch (error) {
       console.error('Reverse geocoding error:', error);
       return this.mockReverseGeocode(coordinates);
@@ -167,26 +194,21 @@ class LocationService {
   private async reverseGeocodeWithGoogle(coordinates: LocationCoordinates, apiKey: string): Promise<UserLocation | null> {
     try {
       const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${coordinates.latitude},${coordinates.longitude}&key=${apiKey}`;
-      
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Google Geocoding API error: ${response.status}`);
       }
-      
       const data = await response.json();
-      
-      if (data.status !== 'OK' || !data.results.length) {
+      if (data.status !== 'OK' || !data.results?.length) {
         throw new Error(`Google Geocoding API status: ${data.status}`);
       }
-      
       const result = data.results[0];
       const addressComponents = result.address_components || [];
-      
-      const cityComponent = addressComponents.find((comp: any) => comp.types.includes('locality'));
-      const stateComponent = addressComponents.find((comp: any) => comp.types.includes('administrative_area_level_1'));
-      const zipComponent = addressComponents.find((comp: any) => comp.types.includes('postal_code'));
-      const countryComponent = addressComponents.find((comp: any) => comp.types.includes('country'));
-      
+      const cityComponent = addressComponents.find((comp: any) => comp.types?.includes('locality'))
+        ?? addressComponents.find((comp: any) => comp.types?.includes('postal_town'));
+      const stateComponent = addressComponents.find((comp: any) => comp.types?.includes('administrative_area_level_1'));
+      const zipComponent = addressComponents.find((comp: any) => comp.types?.includes('postal_code'));
+      const countryComponent = addressComponents.find((comp: any) => comp.types?.includes('country'));
       return {
         city: cityComponent?.long_name || 'Unknown City',
         state: stateComponent?.short_name || 'Unknown State',
