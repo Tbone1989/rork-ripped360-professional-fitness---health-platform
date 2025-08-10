@@ -248,20 +248,48 @@ class LocationService {
     try {
       const googleApiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
 
+      // 1) If query looks like a US ZIP, try Zippopotam.us first for high-quality results
+      const zipMatch = query.trim().match(/^\d{5}$/);
+      if (zipMatch) {
+        try {
+          const resp = await fetch(`https://api.zippopotam.us/us/${zipMatch[0]}`);
+          if (resp.ok) {
+            const data = await resp.json();
+            const place = (data.places?.[0]) ?? null;
+            if (place) {
+              const lat = parseFloat(place.latitude);
+              const lng = parseFloat(place.longitude);
+              const city = place["place name"] as string;
+              const stateAbbr = place["state abbreviation"] as string;
+              const result: LocationSearchResult = {
+                id: `zip-${zipMatch[0]}`,
+                displayName: `${city}, ${stateAbbr} ${zipMatch[0]}`,
+                city,
+                state: stateAbbr,
+                zipCode: zipMatch[0],
+                coordinates: { latitude: lat, longitude: lng },
+              };
+              return [result];
+            }
+          }
+        } catch (e) {
+          console.warn('ZIP lookup failed, falling back:', e);
+        }
+      }
+
+      // 2) Try Google Places if key provided
       if (googleApiKey && googleApiKey !== 'google_places_api_key_active') {
         console.log('🌐 Using Google Places API for location search');
         try {
           return await this.searchWithGooglePlaces(query, googleApiKey);
         } catch (err) {
           console.warn('Google Places search failed, attempting Nominatim:', err);
-          if (Platform.OS === 'web') {
-            const nominatim = await this.searchWithNominatim(query);
-            if (nominatim.length) return nominatim;
-          }
+          // 3) Always try Nominatim on any platform as a fallback
+          const nominatim = await this.searchWithNominatim(query);
+          if (nominatim.length) return nominatim;
         }
-      }
-
-      if (Platform.OS === 'web') {
+      } else {
+        // 3) No Google key: use Nominatim on all platforms
         const nominatim = await this.searchWithNominatim(query);
         if (nominatim.length) return nominatim;
       }
@@ -427,6 +455,19 @@ class LocationService {
         result.zipCode?.includes(query)
       );
 
+      // If a ZIP-only query reached here with no results, synthesize a minimal entry
+      if (zipMatch && filtered.length === 0) {
+        const zipOnly: LocationSearchResult = {
+          id: `zip-${zipMatch[0]}-fallback`,
+          displayName: `ZIP ${zipMatch[0]}`,
+          city: 'Unknown City',
+          state: 'Unknown',
+          zipCode: zipMatch[0],
+          coordinates: { latitude: 0, longitude: 0 },
+        };
+        return [zipOnly];
+      }
+
       return filtered.slice(0, 10); // Limit to 10 results
     } catch (error) {
       console.error('Error searching locations:', error);
@@ -480,15 +521,19 @@ class LocationService {
       const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
       if (!response.ok) throw new Error(`Nominatim reverse error: ${response.status}`);
       const data = await response.json();
-      const address = data.address || {};
-      return {
-        city: address.city || address.town || address.village || 'Unknown City',
-        state: address.state || 'Unknown State',
+      const address = data.address || {} as any;
+      const city = address.city || address.town || address.village || address.hamlet || 'Unknown City';
+      const state = address.state || address.region || 'Unknown State';
+      const countryCode = (address.country_code?.toUpperCase?.() ?? 'US') as string;
+      const result: UserLocation = {
+        city,
+        state,
         zipCode: address.postcode,
         coordinates,
         address: data.display_name,
-        country: address.country_code?.toUpperCase() || 'US',
+        country: countryCode,
       };
+      return result;
     } catch (e) {
       console.warn('Nominatim reverse geocoding failed:', e);
       return null;
