@@ -157,10 +157,10 @@ export default function GroceryPricesScreen() {
     { id: 'rating' as const, label: 'Best Rating' }
   ];
 
-  const filteredComparisons = useMemo(() => {
+  const computedComparisons = useMemo(() => {
     let filtered = priceComparisons;
+    let note: 'none' | 'expanded' | 'nearest' = 'none';
 
-    // Search filter
     if (searchQuery) {
       filtered = filtered.filter(comparison =>
         comparison.item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -169,24 +169,29 @@ export default function GroceryPricesScreen() {
       );
     }
 
-    // Category filter
     if (filters.category) {
       filtered = filtered.filter(comparison => comparison.item.category === filters.category);
     }
 
-    // Distance filter
     if (filters.maxDistance) {
       filtered = filtered.filter(comparison => 
         (comparison.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) <= (filters.maxDistance ?? Number.MAX_SAFE_INTEGER)
       );
     }
 
-    // Auto-widen distance if nothing found
     if (filtered.length === 0 && priceComparisons.length > 0) {
-      filtered = priceComparisons.filter(comparison => (comparison.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) <= 25);
+      const expanded = priceComparisons.filter(c => (c.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) <= 25);
+      if (expanded.length > 0) {
+        note = 'expanded';
+        filtered = expanded;
+      } else {
+        note = 'nearest';
+        filtered = [...priceComparisons]
+          .sort((a, b) => (a.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) - (b.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER))
+          .slice(0, 10);
+      }
     }
 
-    // Sort
     switch (filters.sortBy) {
       case 'price':
         filtered.sort((a, b) => (a.lowestPrice.salePrice || a.lowestPrice.price) - (b.lowestPrice.salePrice || b.lowestPrice.price));
@@ -198,12 +203,11 @@ export default function GroceryPricesScreen() {
         filtered.sort((a, b) => a.item.name.localeCompare(b.item.name));
         break;
       case 'rating':
-        // Sort by rating if available, fallback to price
         filtered.sort((a, b) => (a.lowestPrice.salePrice || a.lowestPrice.price) - (b.lowestPrice.salePrice || b.lowestPrice.price));
         break;
     }
 
-    return filtered;
+    return { list: filtered, note } as const;
   }, [priceComparisons, searchQuery, filters]);
 
   const formatPrice = (price: number) => `$${price.toFixed(2)}`;
@@ -385,8 +389,15 @@ export default function GroceryPricesScreen() {
 
       <View style={styles.summarySection}>
         <Text style={styles.summaryText}>
-          Found {filteredComparisons.length} items • Sorted by {sortOptions.find(opt => opt.id === filters.sortBy)?.label}
+          Found {computedComparisons.list.length} items • Sorted by {sortOptions.find(opt => opt.id === filters.sortBy)?.label}
         </Text>
+        {computedComparisons.note !== 'none' && (
+          <View style={styles.sampleNotice}>
+            <Text style={styles.sampleNoticeText}>
+              {computedComparisons.note === 'expanded' ? 'No nearby stores in your selected distance. Expanded search to 25 miles.' : 'No nearby stores. Showing the nearest options we could find.'}
+            </Text>
+          </View>
+        )}
         {!currentLocation && (
           <View style={styles.sampleNotice}>
             <Text style={styles.sampleNoticeText}>Location not set. Using a sample area. Tap Change to pick yours.</Text>
@@ -396,7 +407,7 @@ export default function GroceryPricesScreen() {
 
       {/* Price Comparisons */}
       <View style={styles.resultsSection}>
-        {filteredComparisons.length === 0 && (
+        {computedComparisons.list.length === 0 && (
           <Card style={styles.comparisonCard}>
             <Text style={styles.summaryText}>No stores found within your filters.</Text>
             <View style={{ height: 8 }} />
@@ -406,7 +417,7 @@ export default function GroceryPricesScreen() {
             />
           </Card>
         )}
-        {filteredComparisons.map((comparison) => {
+        {computedComparisons.list.map((comparison) => {
           const savingsPercentage = calculateSavingsPercentage(comparison);
           const currentPrice = comparison.lowestPrice.salePrice || comparison.lowestPrice.price;
           const isOnSale = !!comparison.lowestPrice.salePrice;
