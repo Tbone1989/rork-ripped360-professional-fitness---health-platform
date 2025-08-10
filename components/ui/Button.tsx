@@ -25,6 +25,7 @@ interface ButtonProps {
   style?: ViewStyle;
   textStyle?: TextStyle;
   fullWidth?: boolean;
+  testID?: string;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -38,6 +39,7 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
   fullWidth = false,
+  testID,
 }) => {
   const getContainerStyle = (): ViewStyle => {
     const baseStyle: ViewStyle = {
@@ -136,6 +138,7 @@ export const Button: React.FC<ButtonProps> = ({
       disabled={disabled || loading}
       style={[getContainerStyle(), style]}
       activeOpacity={0.8}
+      testID={testID}
     >
       {renderButton()}
     </TouchableOpacity>

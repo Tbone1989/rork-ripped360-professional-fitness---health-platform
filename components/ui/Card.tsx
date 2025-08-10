@@ -9,6 +9,7 @@ interface CardProps {
   titleStyle?: TextStyle;
   footer?: React.ReactNode;
   footerStyle?: ViewStyle;
+  testID?: string;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -18,9 +19,10 @@ export const Card: React.FC<CardProps> = ({
   titleStyle,
   footer,
   footerStyle,
+  testID,
 }) => {
   return (
-    <View style={[styles.container, style]}>
+    <View style={[styles.container, style]} testID={testID}>
       {title && <Text style={[styles.title, titleStyle]}>{title}</Text>}
       <View style={styles.content}>{children}</View>
       {footer && <View style={[styles.footer, footerStyle]}>{footer}</View>}

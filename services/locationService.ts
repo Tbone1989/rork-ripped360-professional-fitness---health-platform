@@ -123,24 +123,27 @@ class LocationService {
 
   private async reverseGeocode(coordinates: LocationCoordinates): Promise<UserLocation | null> {
     try {
-      // Try Google Geocoding API first if available
       const googleApiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
-      
+
       if (googleApiKey && googleApiKey !== 'google_places_api_key_active') {
         console.log('🌐 Using Google Geocoding API for reverse geocoding');
         try {
           const location = await this.reverseGeocodeWithGoogle(coordinates, googleApiKey);
           if (location) return location;
         } catch (error) {
-          console.warn('Google Geocoding API failed, falling back:', error);
+          console.warn('Google Geocoding API failed, attempting Nominatim:', error);
+          if (Platform.OS === 'web') {
+            const nominatim = await this.reverseGeocodeWithNominatim(coordinates);
+            if (nominatim) return nominatim;
+          }
         }
       }
-      
+
       if (Platform.OS === 'web') {
-        // For web, use mock implementation
+        const nominatim = await this.reverseGeocodeWithNominatim(coordinates);
+        if (nominatim) return nominatim;
         return this.mockReverseGeocode(coordinates);
       } else {
-        // For mobile, use expo-location reverse geocoding
         const results = await Location.reverseGeocodeAsync(coordinates);
         if (results.length > 0) {
           const result = results[0];
@@ -221,15 +224,26 @@ class LocationService {
 
   async searchLocations(query: string): Promise<LocationSearchResult[]> {
     try {
-      // Try Google Places API first if available
       const googleApiKey = process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY;
-      
+
       if (googleApiKey && googleApiKey !== 'google_places_api_key_active') {
         console.log('🌐 Using Google Places API for location search');
-        return await this.searchWithGooglePlaces(query, googleApiKey);
+        try {
+          return await this.searchWithGooglePlaces(query, googleApiKey);
+        } catch (err) {
+          console.warn('Google Places search failed, attempting Nominatim:', err);
+          if (Platform.OS === 'web') {
+            const nominatim = await this.searchWithNominatim(query);
+            if (nominatim.length) return nominatim;
+          }
+        }
       }
-      
-      // Fallback to enhanced mock data with more comprehensive US locations
+
+      if (Platform.OS === 'web') {
+        const nominatim = await this.searchWithNominatim(query);
+        if (nominatim.length) return nominatim;
+      }
+
       console.log('🔄 Using enhanced mock location data');
       const mockResults: LocationSearchResult[] = [
         // Illinois
@@ -401,25 +415,25 @@ class LocationService {
   private async searchWithGooglePlaces(query: string, apiKey: string): Promise<LocationSearchResult[]> {
     try {
       const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&type=locality&key=${apiKey}`;
-      
+
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`Google Places API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       if (data.status !== 'OK') {
         console.warn('Google Places API status:', data.status);
         throw new Error(`Google Places API status: ${data.status}`);
       }
-      
+
       return data.results.slice(0, 10).map((place: any, index: number) => {
         const addressComponents = place.address_components || [];
         const cityComponent = addressComponents.find((comp: any) => comp.types.includes('locality'));
         const stateComponent = addressComponents.find((comp: any) => comp.types.includes('administrative_area_level_1'));
         const zipComponent = addressComponents.find((comp: any) => comp.types.includes('postal_code'));
-        
+
         return {
           id: place.place_id || `google-${index}`,
           displayName: place.formatted_address || place.name,
@@ -428,13 +442,58 @@ class LocationService {
           zipCode: zipComponent?.long_name,
           coordinates: {
             latitude: place.geometry.location.lat,
-            longitude: place.geometry.location.lng
-          }
+            longitude: place.geometry.location.lng,
+          },
         };
       });
     } catch (error) {
       console.error('Google Places API error:', error);
       throw error;
+    }
+  }
+
+  private async reverseGeocodeWithNominatim(coordinates: LocationCoordinates): Promise<UserLocation | null> {
+    try {
+      const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${coordinates.latitude}&lon=${coordinates.longitude}`;
+      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!response.ok) throw new Error(`Nominatim reverse error: ${response.status}`);
+      const data = await response.json();
+      const address = data.address || {};
+      return {
+        city: address.city || address.town || address.village || 'Unknown City',
+        state: address.state || 'Unknown State',
+        zipCode: address.postcode,
+        coordinates,
+        address: data.display_name,
+        country: address.country_code?.toUpperCase() || 'US',
+      };
+    } catch (e) {
+      console.warn('Nominatim reverse geocoding failed:', e);
+      return null;
+    }
+  }
+
+  private async searchWithNominatim(query: string): Promise<LocationSearchResult[]> {
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&q=${encodeURIComponent(query)}&addressdetails=1&limit=10`;
+      const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+      if (!response.ok) throw new Error(`Nominatim search error: ${response.status}`);
+      const results = await response.json();
+      return results.map((r: any, index: number) => {
+        const addr = r.address || {};
+        const city = addr.city || addr.town || addr.village || r.display_name;
+        return {
+          id: r.place_id?.toString() || `osm-${index}`,
+          displayName: r.display_name,
+          city: city,
+          state: addr.state || 'Unknown State',
+          zipCode: addr.postcode,
+          coordinates: { latitude: parseFloat(r.lat), longitude: parseFloat(r.lon) },
+        } as LocationSearchResult;
+      });
+    } catch (e) {
+      console.warn('Nominatim search failed:', e);
+      return [];
     }
   }
 

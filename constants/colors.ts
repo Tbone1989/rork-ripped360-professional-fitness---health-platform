@@ -29,7 +29,7 @@ export const colors = {
     focused: 'rgba(229, 57, 53, 0.5)',
   },
   gradient: {
-    primary: ['#E53935', '#D32F2F'],
-    secondary: ['#1E1E1E', '#121212'],
+    primary: ['#E53935', '#D32F2F'] as const,
+    secondary: ['#1E1E1E', '#121212'] as const,
   },
-};
+} as const;
