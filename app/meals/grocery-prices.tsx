@@ -174,9 +174,11 @@ export default function GroceryPricesScreen() {
     }
 
     if (filters.maxDistance) {
-      filtered = filtered.filter(comparison => 
-        (comparison.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) <= (filters.maxDistance ?? Number.MAX_SAFE_INTEGER)
-      );
+      filtered = filtered.filter(comparison => {
+        const maxD = filters.maxDistance ?? Number.MAX_SAFE_INTEGER;
+        const hasLocal = comparison.prices.some(p => (p.store.distance ?? Number.MAX_SAFE_INTEGER) <= maxD);
+        return hasLocal;
+      });
     }
 
     if (filtered.length === 0 && priceComparisons.length > 0) {
@@ -418,9 +420,14 @@ export default function GroceryPricesScreen() {
           </Card>
         )}
         {computedComparisons.list.map((comparison) => {
-          const savingsPercentage = calculateSavingsPercentage(comparison);
-          const currentPrice = comparison.lowestPrice.salePrice || comparison.lowestPrice.price;
-          const isOnSale = !!comparison.lowestPrice.salePrice;
+          const maxD = filters.maxDistance ?? Number.MAX_SAFE_INTEGER;
+          const localPrices = comparison.prices.filter(p => (p.store.distance ?? Number.MAX_SAFE_INTEGER) <= maxD);
+          const displayBest = (localPrices.length > 0
+            ? localPrices.reduce((a, b) => ((a.salePrice ?? a.price) <= (b.salePrice ?? b.price) ? a : b))
+            : comparison.lowestPrice);
+          const savingsPercentage = calculateSavingsPercentage({ ...comparison, lowestPrice: displayBest });
+          const currentPrice = displayBest.salePrice || displayBest.price;
+          const isOnSale = !!displayBest.salePrice;
 
           return (
             <Card key={comparison.item.id} style={styles.comparisonCard}>
@@ -474,11 +481,11 @@ export default function GroceryPricesScreen() {
                 
                 <View style={styles.storeInfo}>
                   <View style={styles.storeDetails}>
-                    <Text style={styles.storeName}>{comparison.lowestPrice.store.name}</Text>
+                    <Text style={styles.storeName}>{displayBest.store.name}</Text>
                     <View style={styles.storeLocation}>
                       <MapPin size={12} color={colors.text.secondary} />
                       <Text style={styles.storeDistance}>
-                        {comparison.lowestPrice.store.distance?.toFixed(1)} mi away
+                        {displayBest.store.distance?.toFixed(1)} mi away
                       </Text>
                     </View>
                   </View>
@@ -487,7 +494,7 @@ export default function GroceryPricesScreen() {
                     <TouchableOpacity 
                       style={styles.directionsButton}
                       onPress={() => {
-                        console.log('Get directions to:', comparison.lowestPrice.store.name);
+                        console.log('Get directions to:', displayBest.store.name);
                         // In a real app, this would open maps with directions
                       }}
                     >

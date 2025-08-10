@@ -186,6 +186,76 @@ export const mockGroceryStores: GroceryStore[] = [
       { day: 'Sunday', open: '6:00 AM', close: '10:00 PM' }
     ],
     features: ['pharmacy', 'deli', 'bakery', 'floral', 'fuel']
+  },
+  // South Florida stores
+  {
+    id: '9',
+    name: 'Publix Super Market',
+    chain: 'Publix',
+    address: '1615 S Federal Hwy',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33483',
+    phone: '(561) 555-0101',
+    logo: 'https://1000logos.net/wp-content/uploads/2020/09/Publix-Logo.png',
+    distance: 1.2,
+    coordinates: { latitude: 26.4416, longitude: -80.0730 },
+    hours: [
+      { day: 'Monday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Friday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Sunday', open: '7:00 AM', close: '9:00 PM' }
+    ],
+    features: ['pharmacy', 'bakery', 'deli', 'seafood']
+  },
+  {
+    id: '10',
+    name: 'Walmart Neighborhood Market',
+    chain: 'Walmart',
+    address: '16205 S Military Trl',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33484',
+    phone: '(561) 555-0102',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/09/Walmart-Logo.png',
+    distance: 3.0,
+    coordinates: { latitude: 26.4455, longitude: -80.1350 },
+    hours: [
+      { day: 'Monday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Tuesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Wednesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Thursday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Friday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Saturday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Sunday', open: '6:00 AM', close: '11:00 PM' }
+    ],
+    features: ['pharmacy', 'grocery']
+  },
+  {
+    id: '11',
+    name: 'ALDI',
+    chain: 'ALDI',
+    address: '14530 S Military Trl',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33484',
+    phone: '(561) 555-0103',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/04/Aldi-Logo.png',
+    distance: 2.6,
+    coordinates: { latitude: 26.4552, longitude: -80.1253 },
+    hours: [
+      { day: 'Monday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Tuesday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Wednesday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Thursday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Friday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Saturday', open: '9:00 AM', close: '8:00 PM' },
+      { day: 'Sunday', open: '9:00 AM', close: '8:00 PM' }
+    ],
+    features: ['discount', 'organic']
   }
 ];
 
@@ -395,7 +465,40 @@ export const mockGroceryPrices: GroceryPrice[] = [
   { id: '37', itemId: '8', storeId: '2', price: 3.79, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
   { id: '38', itemId: '8', storeId: '3', price: 3.69, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
   { id: '39', itemId: '8', storeId: '4', price: 4.29, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
-  { id: '40', itemId: '8', storeId: '5', price: 3.29, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' }
+  { id: '40', itemId: '8', storeId: '5', price: 3.29, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // South Florida prices (Publix 9, Walmart NM 10, ALDI 11)
+  // Bananas
+  { id: '41', itemId: '1', storeId: '9', price: 0.69, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '42', itemId: '1', storeId: '10', price: 0.58, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '43', itemId: '1', storeId: '11', price: 0.49, unit: 'lb', size: '1 lb', salePrice: 0.45, saleEndDate: '2024-01-20', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // Chicken Breast
+  { id: '44', itemId: '2', storeId: '9', price: 4.49, unit: 'lb', size: '1 lb', salePrice: 3.99, saleEndDate: '2024-01-18', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '45', itemId: '2', storeId: '10', price: 3.89, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '46', itemId: '2', storeId: '11', price: 3.69, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // Greek Yogurt
+  { id: '47', itemId: '3', storeId: '9', price: 1.39, unit: 'each', size: '170g', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '48', itemId: '3', storeId: '10', price: 1.19, unit: 'each', size: '170g', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '49', itemId: '3', storeId: '11', price: 1.09, unit: 'each', size: '170g', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // Brown Rice
+  { id: '50', itemId: '4', storeId: '9', price: 2.79, unit: 'each', size: '2 lb bag', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '51', itemId: '4', storeId: '10', price: 2.39, unit: 'each', size: '2 lb bag', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '52', itemId: '4', storeId: '11', price: 2.09, unit: 'each', size: '2 lb bag', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // Broccoli
+  { id: '53', itemId: '5', storeId: '9', price: 2.29, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '54', itemId: '5', storeId: '10', price: 1.98, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '55', itemId: '5', storeId: '11', price: 1.79, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // Salmon
+  { id: '56', itemId: '6', storeId: '9', price: 12.49, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '57', itemId: '6', storeId: '10', price: 9.29, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '58', itemId: '6', storeId: '11', price: 8.99, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // Avocado
+  { id: '59', itemId: '7', storeId: '9', price: 1.49, unit: 'each', size: '1 each', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '60', itemId: '7', storeId: '10', price: 1.18, unit: 'each', size: '1 each', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '61', itemId: '7', storeId: '11', price: 0.99, unit: 'each', size: '1 each', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  // Oats
+  { id: '62', itemId: '8', storeId: '9', price: 3.79, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '63', itemId: '8', storeId: '10', price: 3.39, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '64', itemId: '8', storeId: '11', price: 3.19, unit: 'each', size: '18 oz', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' }
 ];
 
 export function createPriceComparisons(): PriceComparison[] {
