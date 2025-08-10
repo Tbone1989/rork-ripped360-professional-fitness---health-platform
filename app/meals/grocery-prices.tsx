@@ -46,6 +46,7 @@ export default function GroceryPricesScreen() {
   const [showAllModal, setShowAllModal] = useState<boolean>(false);
   const [selectedComparison, setSelectedComparison] = useState<PriceComparison | null>(null);
   const [allSort, setAllSort] = useState<'price' | 'distance'>('price');
+  const [allIncludeFar, setAllIncludeFar] = useState<boolean>(false);
 
   useEffect(() => {
     if (!currentLocation) {
@@ -653,9 +654,14 @@ export default function GroceryPricesScreen() {
             {selectedComparison && (
               <>
                 <View style={styles.allStoresHeader}>
-                  <Text style={styles.summaryText}>
-                    Showing {selectedComparison.prices.length} stores
-                  </Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.summaryText}>
+                      {allIncludeFar ? `Showing all ${selectedComparison.prices.length} stores` : `Showing nearby stores (within ${filters.maxDistance ?? 10} mi)`}
+                    </Text>
+                    <Text style={[styles.summaryText, { marginTop: 4 }]}>
+                      Prices are sample data for demo only
+                    </Text>
+                  </View>
                   <View style={styles.allStoresSortTabs}>
                     <TouchableOpacity
                       style={[styles.sortTab, allSort === 'price' && styles.sortTabActive]}
@@ -673,12 +679,24 @@ export default function GroceryPricesScreen() {
                     </TouchableOpacity>
                   </View>
                 </View>
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <TouchableOpacity
+                    onPress={() => setAllIncludeFar(prev => !prev)}
+                    style={[styles.distanceOption, allIncludeFar && styles.distanceOptionSelected]}
+                    testID="toggle-include-far"
+                  >
+                    <Text style={[styles.distanceOptionText, allIncludeFar && styles.distanceOptionTextSelected]}>
+                      {allIncludeFar ? 'Include far stores' : 'Only nearby stores'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
 
                 <View style={styles.allStoresList}>
                   {(() => {
                     const maxD = filters.maxDistance ?? Number.MAX_SAFE_INTEGER;
                     const withDistance = selectedComparison.prices.map(p => p);
-                    const sorted = withDistance.sort((a,b) => {
+                    const scoped = allIncludeFar ? withDistance : withDistance.filter(p => (p.store.distance ?? Number.MAX_SAFE_INTEGER) <= maxD);
+                    const sorted = scoped.sort((a,b) => {
                       if (allSort === 'price') {
                         return (a.salePrice ?? a.price) - (b.salePrice ?? b.price);
                       }
