@@ -44,7 +44,6 @@ export default function GroceryPricesScreen() {
     maxDistance: 5
   });
 
-  // Initialize with default location
   useEffect(() => {
     if (!currentLocation) {
       (async () => {
@@ -56,10 +55,30 @@ export default function GroceryPricesScreen() {
             setCurrentLocation(loc);
             locationService.setCurrentLocation(loc);
           } else {
-            console.warn('Current location not available on mount');
+            console.warn('Current location not available on mount, using sample location');
+            const fallbackStore = mockGroceryStores[0];
+            const fallbackLocation: UserLocation = {
+              city: fallbackStore.city,
+              state: fallbackStore.state,
+              zipCode: fallbackStore.zipCode,
+              coordinates: fallbackStore.coordinates,
+              address: fallbackStore.address
+            };
+            setCurrentLocation(fallbackLocation);
+            locationService.setCurrentLocation(fallbackLocation);
           }
         } catch (e) {
           console.error('Failed to acquire current location on mount', e);
+          const fallbackStore = mockGroceryStores[0];
+          const fallbackLocation: UserLocation = {
+            city: fallbackStore.city,
+            state: fallbackStore.state,
+            zipCode: fallbackStore.zipCode,
+            coordinates: fallbackStore.coordinates,
+            address: fallbackStore.address
+          };
+          setCurrentLocation(fallbackLocation);
+          locationService.setCurrentLocation(fallbackLocation);
         }
       })();
     }
@@ -364,11 +383,15 @@ export default function GroceryPricesScreen() {
         </Card>
       )}
 
-      {/* Results Summary */}
       <View style={styles.summarySection}>
         <Text style={styles.summaryText}>
           Found {filteredComparisons.length} items • Sorted by {sortOptions.find(opt => opt.id === filters.sortBy)?.label}
         </Text>
+        {!currentLocation && (
+          <View style={styles.sampleNotice}>
+            <Text style={styles.sampleNoticeText}>Location not set. Using a sample area. Tap Change to pick yours.</Text>
+          </View>
+        )}
       </View>
 
       {/* Price Comparisons */}
@@ -850,6 +873,16 @@ const styles = StyleSheet.create({
   },
   summaryText: {
     fontSize: 14,
+    color: colors.text.secondary,
+  },
+  sampleNotice: {
+    marginTop: 8,
+    backgroundColor: colors.background.secondary,
+    padding: 8,
+    borderRadius: 8,
+  },
+  sampleNoticeText: {
+    fontSize: 12,
     color: colors.text.secondary,
   },
   resultsSection: {
