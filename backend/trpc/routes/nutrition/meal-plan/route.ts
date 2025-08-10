@@ -1,6 +1,35 @@
 import { z } from "zod";
 import { publicProcedure } from "../../../create-context";
 
+const API_KEYS = {
+  RIP360_NUTRITION: process.env.EXPO_PUBLIC_RIP360_NUTRITION_API_KEY ?? '',
+};
+
+const API_ENDPOINTS = {
+  RIP360_NUTRITION: process.env.EXPO_PUBLIC_NUTRITION_API_URL ?? 'https://api.rip360.com/nutrition',
+};
+
+const makeApiRequest = async (url: string, body: any, headers: Record<string, string>): Promise<any> => {
+  console.log(`🌐 Making POST API request to: ${url}`);
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Rip360-Mobile-App/1.0',
+      ...headers,
+    },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`❌ API Error: ${res.status} ${res.statusText}`, text);
+    throw new Error(`API Error: ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  console.log('✅ API Success for meal plan');
+  return data;
+};
+
 const getMockMealPlan = (input: { calories: number; protein: number; carbs: number; fat: number; meals: number; restrictions: string[] }) => {
   const mealTemplates = {
     breakfast: [
@@ -46,24 +75,22 @@ const getMockMealPlan = (input: { calories: number; protein: number; carbs: numb
   const generateDayMeals = (dayNum: number) => {
     const dayMeals: any = { day: dayNum };
     const caloriesPerMeal = Math.floor(input.calories / input.meals);
-    
+
     const mealTypes = ['breakfast', 'lunch', 'dinner', 'snack', 'pre-workout', 'post-workout'];
     const selectedMealTypes = mealTypes.slice(0, input.meals);
-    
-    // Ensure we always have breakfast, lunch, dinner for 3+ meals
+
     if (input.meals >= 3) {
       selectedMealTypes[0] = 'breakfast';
       selectedMealTypes[1] = 'lunch';
       selectedMealTypes[2] = 'dinner';
     }
-    
+
     selectedMealTypes.forEach((mealType, index) => {
       const templates = mealTemplates[mealType as keyof typeof mealTemplates] || mealTemplates.snack;
       const selectedTemplate = templates[Math.floor(Math.random() * templates.length)];
-      
-      // Adjust calories based on meal distribution
+
       const calorieMultiplier = caloriesPerMeal / selectedTemplate.base_calories;
-      
+
       dayMeals[mealType] = {
         name: selectedTemplate.name,
         calories: Math.round(selectedTemplate.base_calories * calorieMultiplier),
@@ -73,10 +100,10 @@ const getMockMealPlan = (input: { calories: number; protein: number; carbs: numb
         time: getMealTime(mealType, index),
       };
     });
-    
+
     return dayMeals;
   };
-  
+
   const getMealTime = (mealType: string, index: number) => {
     const times = {
       breakfast: '7:00 AM',
@@ -89,7 +116,6 @@ const getMockMealPlan = (input: { calories: number; protein: number; carbs: numb
     return times[mealType as keyof typeof times] || `${8 + index * 2}:00 ${index < 3 ? 'AM' : 'PM'}`;
   };
 
-  // Generate 7 days of meals
   const meals = Array.from({ length: 7 }, (_, i) => generateDayMeals(i + 1));
 
   return {
@@ -117,9 +143,18 @@ export const generateMealPlanRoute = publicProcedure
   }))
   .mutation(async ({ input }) => {
     console.log(`🍽️ Generating meal plan - calories: ${input.calories}, protein: ${input.protein}g, meals: ${input.meals}/day`);
-    
+
+    try {
+      const url = `${API_ENDPOINTS.RIP360_NUTRITION}/meal-plan/generate`;
+      const mealPlan = await makeApiRequest(url, input, { 'X-API-Key': API_KEYS.RIP360_NUTRITION });
+      console.log(`✅ Generated meal plan via API`);
+      return mealPlan;
+    } catch (e) {
+      console.warn('⚠️ Nutrition API failed, using mock meal plan');
+    }
+
     const mealPlan = getMockMealPlan(input);
-    console.log(`✅ Generated meal plan: ${mealPlan.name} with ${mealPlan.mealsPerDay} meals per day`);
-    
+    console.log(`✅ Generated meal plan (mock fallback): ${mealPlan.name} with ${mealPlan.mealsPerDay} meals per day`);
+
     return mealPlan;
   });

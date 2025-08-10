@@ -101,8 +101,38 @@ interface DetoxRecommendations {
   lifestyleChanges: string[];
 }
 
+const API_KEYS = {
+  BLOODWORK_AI: process.env.EXPO_PUBLIC_BLOODWORK_AI_API_KEY ?? '',
+};
+
+const API_ENDPOINTS = {
+  BLOODWORK_AI: process.env.EXPO_PUBLIC_BLOODWORK_AI_API_URL ?? 'https://api.rip360.com/health/bloodwork',
+};
+
+const callBloodworkAI = async (payload: any) => {
+  if (!API_KEYS.BLOODWORK_AI) throw new Error('BLOODWORK_AI key not found');
+  const url = `${API_ENDPOINTS.BLOODWORK_AI}/analyze`;
+  console.log('🌐 Calling Bloodwork AI endpoint');
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'User-Agent': 'Rip360-Mobile-App/1.0',
+      'X-API-Key': API_KEYS.BLOODWORK_AI,
+    },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error(`❌ Bloodwork AI Error: ${res.status} ${res.statusText}`, text);
+    throw new Error(`API Error: ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  console.log('✅ Bloodwork AI success');
+  return data?.analysis ?? data;
+};
+
 const generateAIBloodworkAnalysis = async (bloodworkData: any, userProfile?: any): Promise<AIBloodworkAnalysis> => {
-  // Simulate AI analysis with comprehensive health insights
   const analysis: AIBloodworkAnalysis = {
     id: `analysis_${Date.now()}`,
     userId: bloodworkData.userId || 'user_123',
@@ -358,20 +388,41 @@ export const analyzeBloodworkProcedure = publicProcedure
   }))
   .mutation(async ({ input }) => {
     console.log(`🩸 Analyzing bloodwork with AI-powered insights`);
-    
+
+    // Try real AI endpoint first
     try {
-      // Simulate API call to AI service
+      const payload = {
+        bloodworkData: input.bloodworkData,
+        userProfile: input.userProfile,
+        flags: {
+          includeBloodType: input.includeBloodType ?? true,
+          includeDigestiveHealth: input.includeDigestiveHealth ?? true,
+          includeDetox: input.includeDetoxRecommendations ?? false,
+        },
+      };
+      const apiAnalysis = await callBloodworkAI(payload);
+      console.log('✅ Bloodwork AI returned analysis');
+      return {
+        success: true,
+        analysis: apiAnalysis as AIBloodworkAnalysis,
+        timestamp: new Date().toISOString(),
+        source: 'BloodworkAI',
+      };
+    } catch (err) {
+      console.warn('⚠️ Bloodwork AI failed, using local analysis fallback');
+    }
+
+    try {
       const analysis = await generateAIBloodworkAnalysis(
         input.bloodworkData,
         input.userProfile
       );
-      
       console.log(`✅ Generated comprehensive analysis with ${analysis.keyFindings.length} key findings`);
-      
       return {
         success: true,
         analysis,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        source: 'Mock (Fallback)'
       };
     } catch (error) {
       console.error('❌ Error analyzing bloodwork:', error);
