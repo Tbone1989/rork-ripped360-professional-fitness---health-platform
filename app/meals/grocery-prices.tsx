@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, Modal, Alert, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { 
@@ -43,6 +43,9 @@ export default function GroceryPricesScreen() {
     sortBy: 'price',
     maxDistance: 10
   });
+  const [showAllModal, setShowAllModal] = useState<boolean>(false);
+  const [selectedComparison, setSelectedComparison] = useState<PriceComparison | null>(null);
+  const [allSort, setAllSort] = useState<'price' | 'distance'>('price');
 
   useEffect(() => {
     if (!currentLocation) {
@@ -562,9 +565,13 @@ export default function GroceryPricesScreen() {
                   <TouchableOpacity 
                     style={styles.viewAllButton}
                     onPress={() => {
-                      console.log('View all stores for:', comparison.item.name);
-                      // In a real app, this would show detailed price comparison
+                      console.log('Opening all stores modal for:', comparison.item.name);
+                      setSelectedComparison(comparison);
+                      setAllSort('price');
+                      setShowAllModal(true);
                     }}
+                    testID={`view-all-stores-${comparison.item.id}`}
+                    activeOpacity={0.7}
                   >
                     <Text style={styles.viewAllText}>
                       View all {comparison.prices.length} stores
@@ -620,6 +627,90 @@ export default function GroceryPricesScreen() {
           style={styles.quickActionButton}
         />
       </View>
+
+      {/* All Stores Modal */}
+      <Modal
+        visible={showAllModal}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowAllModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {selectedComparison ? `All stores • ${selectedComparison.item.name}` : 'All stores'}
+            </Text>
+            <TouchableOpacity 
+              style={styles.modalCloseButton}
+              onPress={() => setShowAllModal(false)}
+              testID="close-all-stores"
+            >
+              <X size={24} color={colors.text.primary} />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView style={styles.modalContent}>
+            {selectedComparison && (
+              <>
+                <View style={styles.allStoresHeader}>
+                  <Text style={styles.summaryText}>
+                    Showing {selectedComparison.prices.length} stores
+                  </Text>
+                  <View style={styles.allStoresSortTabs}>
+                    <TouchableOpacity
+                      style={[styles.sortTab, allSort === 'price' && styles.sortTabActive]}
+                      onPress={() => setAllSort('price')}
+                      testID="sort-all-price"
+                    >
+                      <Text style={[styles.sortTabText, allSort === 'price' && styles.sortTabTextActive]}>Lowest Price</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      style={[styles.sortTab, allSort === 'distance' && styles.sortTabActive]}
+                      onPress={() => setAllSort('distance')}
+                      testID="sort-all-distance"
+                    >
+                      <Text style={[styles.sortTabText, allSort === 'distance' && styles.sortTabTextActive]}>Nearest</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <View style={styles.allStoresList}>
+                  {(() => {
+                    const maxD = filters.maxDistance ?? Number.MAX_SAFE_INTEGER;
+                    const withDistance = selectedComparison.prices.map(p => p);
+                    const sorted = withDistance.sort((a,b) => {
+                      if (allSort === 'price') {
+                        return (a.salePrice ?? a.price) - (b.salePrice ?? b.price);
+                      }
+                      return (a.store.distance ?? Number.MAX_SAFE_INTEGER) - (b.store.distance ?? Number.MAX_SAFE_INTEGER);
+                    });
+                    return sorted.map((p) => {
+                      const price = p.salePrice ?? p.price;
+                      return (
+                        <View key={p.id} style={styles.allStoreRow} testID={`all-store-${p.id}`}>
+                          <View style={styles.allStoreLeft}>
+                            <Text style={styles.priceStoreName}>{p.store.name}</Text>
+                            <View style={styles.storeLocation}>
+                              <MapPin size={12} color={colors.text.secondary} />
+                              <Text style={styles.priceStoreDistance}>{p.store.distance?.toFixed(1)} mi</Text>
+                            </View>
+                          </View>
+                          <View style={styles.allStoreRight}>
+                            <Text style={styles.priceAmount}>{formatPrice(price)}</Text>
+                            {p.salePrice && (
+                              <Text style={styles.priceOriginal}>{formatPrice(p.price)}</Text>
+                            )}
+                          </View>
+                        </View>
+                      );
+                    });
+                  })()}
+                </View>
+              </>
+            )}
+          </ScrollView>
+        </View>
+      </Modal>
 
       {/* Location Picker Modal */}
       <Modal
@@ -1333,5 +1424,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  allStoresHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  allStoresSortTabs: {
+    flexDirection: 'row',
+    backgroundColor: colors.background.secondary,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  sortTab: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  sortTabActive: {
+    backgroundColor: colors.background.tertiary,
+  },
+  sortTabText: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    fontWeight: '600',
+  },
+  sortTabTextActive: {
+    color: colors.text.primary,
+  },
+  allStoresList: {
+    marginTop: 8,
+    gap: 8,
+  },
+  allStoreRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  allStoreLeft: {
+    flex: 1,
+  },
+  allStoreRight: {
+    alignItems: 'flex-end',
   },
 });
