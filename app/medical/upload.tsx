@@ -163,7 +163,7 @@ export default function UploadBloodworkScreen() {
       </View>
 
       <View style={styles.uploadSection}>
-        <Text style={styles.sectionTitle}>Upload Images</Text>
+        <Text style={styles.sectionTitle}>Attachments:</Text>
         <Text style={styles.sectionSubtitle}>
           Upload clear images of your lab results
         </Text>
