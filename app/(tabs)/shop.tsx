@@ -1,131 +1,77 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
   TouchableOpacity,
   Image,
   TextInput,
   FlatList,
   Dimensions,
+  Linking,
+  ActivityIndicator,
 } from 'react-native';
-import { Stack, router } from 'expo-router';
-import { Search, Filter, ShoppingCart, Star, Heart, Camera } from 'lucide-react-native';
+import { Stack } from 'expo-router';
+import { Search, ShoppingCart, ExternalLink } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
-import { useShopStore } from '@/store/shopStore';
-import { Product, ProductCategory } from '@/types/product';
-import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { ChipGroup } from '@/components/ui/ChipGroup';
+import { trpc } from '@/lib/trpc';
 
 const { width } = Dimensions.get('window');
-const PRODUCT_WIDTH = (width - 48) / 2; // 2 columns with padding
+const PRODUCT_WIDTH = (width - 48) / 2;
 
-const categories: { id: ProductCategory | 'all'; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'clothing', label: 'Clothing' },
-  { id: 'ebooks', label: 'E-books' },
-  { id: 'bags', label: 'Bags' },
-  { id: 'accessories', label: 'Accessories' },
-];
-
-const sortOptions = [
-  { id: 'newest', label: 'Newest' },
-  { id: 'name', label: 'Name' },
-  { id: 'price-low', label: 'Price: Low to High' },
-  { id: 'price-high', label: 'Price: High to Low' },
-  { id: 'rating', label: 'Rating' },
-];
+type ShopProduct = {
+  id: string;
+  title: string;
+  url: string;
+  image?: string;
+  price?: number;
+};
 
 export default function ShopScreen() {
-  const {
-    filteredProducts,
-    selectedCategory,
-    searchQuery,
-    sortBy,
-    cartItems,
-    setCategory,
-    setSearchQuery,
-    setSortBy,
-    filterProducts,
-    addToCart,
-  } = useShopStore();
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const { data, isLoading, error, refetch } = trpc.shop.products.useQuery({});
 
-  const [showFilters, setShowFilters] = useState(false);
-  const [wishlist, setWishlist] = useState<string[]>([]);
+  const products: ShopProduct[] = useMemo(() => {
+    const list = (data ?? []) as ShopProduct[];
+    if (!searchQuery) return list;
+    const q = searchQuery.toLowerCase();
+    return list.filter((p) => p.title.toLowerCase().includes(q));
+  }, [data, searchQuery]);
 
-  useEffect(() => {
-    filterProducts();
-  }, []);
-
-  const handleAddToCart = (product: Product) => {
-    addToCart(product);
-    // Show success feedback here if needed
-  };
-
-  const toggleWishlist = (productId: string) => {
-    setWishlist(prev => 
-      prev.includes(productId) 
-        ? prev.filter(id => id !== productId)
-        : [...prev, productId]
-    );
-  };
-
-  const renderProduct = ({ item: product }: { item: Product }) => (
-    <TouchableOpacity
-      style={styles.productCard}
-      onPress={() => router.push(`/shop/product/${product.id}`)}
-    >
+  const renderProduct = ({ item }: { item: ShopProduct }) => (
+    <View style={styles.productCard}>
       <View style={styles.productImageContainer}>
-        <Image source={{ uri: product.images[0] }} style={styles.productImage} />
-        <TouchableOpacity
-          style={styles.wishlistButton}
-          onPress={() => toggleWishlist(product.id)}
-        >
-          <Heart
-            size={20}
-            color={wishlist.includes(product.id) ? colors.accent.primary : colors.text.secondary}
-            fill={wishlist.includes(product.id) ? colors.accent.primary : 'transparent'}
-          />
-        </TouchableOpacity>
-        {product.originalPrice && (
-          <Badge
-            label={`${Math.round((1 - product.price / product.originalPrice) * 100)}% OFF`}
-            variant="error"
-            style={styles.discountBadge}
-          />
+        {item.image ? (
+          <Image source={{ uri: item.image }} style={styles.productImage} />
+        ) : (
+          <View style={[styles.productImage, styles.imagePlaceholder]}>
+            <Text style={styles.imagePlaceholderText}>No Image</Text>
+          </View>
         )}
       </View>
-      
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
-          {product.name}
+          {item.title}
         </Text>
-        
-        <View style={styles.ratingContainer}>
-          <Star size={14} color={colors.status.warning} fill={colors.status.warning} />
-          <Text style={styles.rating}>{product.rating}</Text>
-          <Text style={styles.reviewCount}>({product.reviewCount})</Text>
-        </View>
-        
         <View style={styles.priceContainer}>
-          <Text style={styles.price}>${product.price}</Text>
-          {product.originalPrice && (
-            <Text style={styles.originalPrice}>${product.originalPrice}</Text>
+          {typeof item.price === 'number' ? (
+            <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+          ) : (
+            <Text style={styles.priceUnavailable}>Price on site</Text>
           )}
         </View>
-        
         <Button
-          title="Add to Cart"
-          onPress={() => handleAddToCart(product)}
-          style={styles.addToCartButton}
+          title="View on Site"
+          onPress={() => Linking.openURL(item.url)}
+          style={styles.viewButton}
           variant="outline"
+          icon={<ExternalLink size={16} color={colors.accent.primary} />}
         />
       </View>
-    </TouchableOpacity>
+    </View>
   );
 
   return (
@@ -133,39 +79,14 @@ export default function ShopScreen() {
       <Stack.Screen
         options={{
           title: 'Ripped City Store',
-          headerRight: () => (
-            <View style={styles.headerButtons}>
-              <TouchableOpacity
-                onPress={() => router.push('/shop/scan')}
-                style={styles.scanButton}
-              >
-                <Camera size={20} color={colors.accent.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => router.push('/shop/cart')}
-                style={styles.cartButton}
-              >
-                <ShoppingCart size={24} color={colors.text.primary} />
-                {cartItems.length > 0 && (
-                  <Badge
-                    label={cartItems.length.toString()}
-                    variant="error"
-                    style={styles.cartBadge}
-                  />
-                )}
-              </TouchableOpacity>
-            </View>
-          ),
         }}
       />
-      
-      {/* Header */}
+
       <View style={styles.header}>
         <Text style={styles.brandTitle}>Ripped City Inc.</Text>
-        <Text style={styles.brandSubtitle}>Est. 2019 • Premium Fitness Gear</Text>
+        <Text style={styles.brandSubtitle}>Premium Gear • Direct from rippedcityinc.com</Text>
       </View>
-      
-      {/* Search and Filter */}
+
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <Search size={20} color={colors.text.secondary} />
@@ -177,54 +98,43 @@ export default function ShopScreen() {
             onChangeText={setSearchQuery}
           />
         </View>
-        <TouchableOpacity
-          style={styles.filterButton}
-          onPress={() => setShowFilters(!showFilters)}
-        >
-          <Filter size={20} color={colors.text.primary} />
-        </TouchableOpacity>
       </View>
-      
-      {/* Filters */}
-      {showFilters && (
-        <View style={styles.filtersContainer}>
-          <Text style={styles.filterTitle}>Category</Text>
-          <ChipGroup
-            options={categories}
-            selectedIds={[selectedCategory]}
-            onChange={(ids: string[]) => setCategory(ids[0] as ProductCategory | 'all')}
-            multiSelect={false}
-            style={styles.categoryChips}
-          />
-          
-          <Text style={styles.filterTitle}>Sort By</Text>
-          <ChipGroup
-            options={sortOptions}
-            selectedIds={[sortBy]}
-            onChange={(ids: string[]) => setSortBy(ids[0] as 'name' | 'price-low' | 'price-high' | 'rating' | 'newest')}
-            multiSelect={false}
-            style={styles.sortChips}
-          />
+
+      {isLoading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.accent.primary} />
+          <Text style={styles.loadingText}>Loading products…</Text>
         </View>
       )}
-      
-      {/* Results Count */}
-      <View style={styles.resultsContainer}>
-        <Text style={styles.resultsText}>
-          {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
-        </Text>
-      </View>
-      
-      {/* Products Grid */}
-      <FlatList
-        data={filteredProducts}
-        renderItem={renderProduct}
-        keyExtractor={(item) => item.id}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.productsContainer}
-        showsVerticalScrollIndicator={false}
-      />
+
+      {error && !isLoading && (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Could not load products. Pull to retry.</Text>
+          <Button title="Retry" onPress={() => refetch()} />
+        </View>
+      )}
+
+      {!isLoading && !error && (
+        <>
+          <View style={styles.resultsContainer}>
+            <Text style={styles.resultsText}>
+              {products.length} product{products.length !== 1 ? 's' : ''} found
+            </Text>
+          </View>
+
+          <FlatList
+            data={products}
+            renderItem={renderProduct}
+            keyExtractor={(item) => item.id}
+            numColumns={2}
+            columnWrapperStyle={styles.row}
+            contentContainerStyle={styles.productsContainer}
+            showsVerticalScrollIndicator={false}
+            onRefresh={refetch}
+            refreshing={isLoading}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -277,24 +187,21 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  filtersContainer: {
+  loadingContainer: {
+    paddingVertical: 24,
+    alignItems: 'center',
+    gap: 12,
+  },
+  loadingText: {
+    color: colors.text.secondary,
+  },
+  errorContainer: {
     padding: 16,
-    backgroundColor: colors.background.secondary,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
+    alignItems: 'center',
+    gap: 12,
   },
-  filterTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 12,
-    marginTop: 8,
-  },
-  categoryChips: {
-    marginBottom: 16,
-  },
-  sortChips: {
-    marginBottom: 8,
+  errorText: {
+    color: colors.text.secondary,
   },
   resultsContainer: {
     paddingHorizontal: 16,
@@ -324,6 +231,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: 180,
     resizeMode: 'cover',
+  },
+  imagePlaceholder: {
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  imagePlaceholderText: {
+    color: colors.text.tertiary,
+    fontSize: 12,
   },
   wishlistButton: {
     position: 'absolute',
@@ -374,12 +290,19 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.accent.primary,
   },
+  priceUnavailable: {
+    fontSize: 14,
+    color: colors.text.secondary,
+  },
   originalPrice: {
     fontSize: 14,
     color: colors.text.secondary,
     textDecorationLine: 'line-through',
   },
   addToCartButton: {
+    marginTop: 4,
+  },
+  viewButton: {
     marginTop: 4,
   },
   headerButtons: {

@@ -15,6 +15,7 @@ import coachingListRoute from "./routes/coaching/list/route";
 import coachingSessionsRoute from "./routes/coaching/sessions/route";
 import coachingMessagesRoute from "./routes/coaching/messages/route";
 import checkApiStatusRoute from "./routes/system/api-status/route";
+import shopProductsRoute from "./routes/shop/products/route";
 
 export const appRouter = createTRPCRouter({
   example: createTRPCRouter({
@@ -53,6 +54,9 @@ export const appRouter = createTRPCRouter({
   }),
   system: createTRPCRouter({
     apiStatus: checkApiStatusRoute,
+  }),
+  shop: createTRPCRouter({
+    products: shopProductsRoute,
   }),
 });
 
