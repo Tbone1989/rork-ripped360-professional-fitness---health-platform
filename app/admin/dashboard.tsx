@@ -26,6 +26,7 @@ import {
   LogOut,
   Camera,
   User,
+  TestTube,
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -164,6 +165,9 @@ export default function AdminDashboardScreen() {
         break;
       case 'settings':
         router.push('/admin/settings');
+        break;
+      case 'testing':
+        router.push('/admin/testing');
         break;
       default:
         break;
@@ -375,6 +379,14 @@ export default function AdminDashboardScreen() {
           >
             <Settings size={24} color={colors.accent.primary} />
             <Text style={styles.actionText}>Settings</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => handleQuickAction('testing')}
+            activeOpacity={0.7}
+          >
+            <TestTube size={24} color={colors.status.warning} />
+            <Text style={styles.actionText}>Testing</Text>
           </TouchableOpacity>
         </View>
       </View>

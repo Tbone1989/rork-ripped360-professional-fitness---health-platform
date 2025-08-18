@@ -1,13 +1,12 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Home, Dumbbell, UtensilsCrossed, Users, Activity, User, TestTube } from "lucide-react-native";
+import { Home, Dumbbell, UtensilsCrossed, Users, Activity, User } from "lucide-react-native";
 import { Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
-import { useUserStore } from "@/store/userStore";
+
 
 export default function TabLayout() {
-  const isAdmin = useUserStore((state) => state.isAdmin);
   
   return (
     <Tabs
@@ -89,17 +88,7 @@ export default function TabLayout() {
           ),
         }}
       />
-      {isAdmin && (
-        <Tabs.Screen
-          name="testing"
-          options={{
-            title: "Testing",
-            tabBarIcon: ({ color, focused }) => (
-              <TestTube size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-      )}
+
       <Tabs.Screen
         name="profile"
         options={{
