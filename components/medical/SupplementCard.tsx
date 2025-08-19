@@ -35,14 +35,22 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
 
   const isPrescriptionRequired = type === 'medicine' && (item as MedicineInfo).prescriptionRequired;
 
+  const displayBenefits: string[] =
+    type === 'supplement'
+      ? ((item as SupplementInfo).benefits ?? [])
+      : ((item as MedicineInfo).usedFor ?? []);
+
+  const imageUri = item.imageUrl ?? 'https://images.unsplash.com/photo-1586015555751-63bb77f4326b?q=80&w=600&auto=format&fit=crop';
+
   return (
     <TouchableOpacity
       style={styles.container}
       onPress={handlePress}
       activeOpacity={0.8}
+      testID="SupplementCard"
     >
       <Image
-        source={{ uri: item.imageUrl }}
+        source={{ uri: imageUri }}
         style={styles.image}
         contentFit="cover"
         transition={300}
@@ -74,14 +82,14 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
         </View>
         <View style={styles.footer}>
           <View style={styles.benefitsContainer}>
-            {item.benefits.slice(0, 1).map((benefit, index) => (
+            {displayBenefits.slice(0, 1).map((benefit, index) => (
               <Text key={index} style={styles.benefit} numberOfLines={1}>
                 • {benefit}
               </Text>
             ))}
-            {item.benefits.length > 1 && (
+            {displayBenefits.length > 1 && (
               <Text style={styles.moreBenefits}>
-                +{item.benefits.length - 1} more
+                +{displayBenefits.length - 1} more
               </Text>
             )}
           </View>
