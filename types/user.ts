@@ -9,6 +9,7 @@ export interface User {
   preferences: UserPreferences;
   stats: UserStats;
   subscription?: Subscription;
+  attachments?: Attachment[];
 }
 
 export interface UserPreferences {
@@ -40,6 +41,14 @@ export interface Subscription {
   endDate: string;
   autoRenew: boolean;
   paymentMethod?: string;
+}
+
+export interface Attachment {
+  id: string;
+  title: string;
+  url: string;
+  createdAt: string;
+  visibleToCoaches: boolean;
 }
 
 export interface UserGoal {

@@ -143,12 +143,14 @@ export const useUserStore = create<UserState>()(
       },
       
       updateUser: (userData) => {
+        console.log('[UserStore] updateUser', userData);
         set((state) => ({
           user: state.user ? { ...state.user, ...userData } : null,
         }));
       },
       
       updatePreferences: (preferences) => {
+        console.log('[UserStore] updatePreferences', preferences);
         set((state) => ({
           user: state.user
             ? {

@@ -244,10 +244,8 @@ export default function SettingsScreen() {
         },
         {
           icon: <Edit3 size={20} color={colors.text.secondary} />,
-          title: 'Data & Privacy',
-          onPress: () => {
-            Alert.alert('Data & Privacy', 'View and manage your data preferences.');
-          },
+          title: 'Attachments Visibility',
+          onPress: () => router.push('/profile/attachments'),
         },
       ],
     },

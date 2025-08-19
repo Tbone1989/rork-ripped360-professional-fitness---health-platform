@@ -15,11 +15,11 @@ import {
 
 import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 
 export default function PrivacyScreen() {
   const [privacySettings, setPrivacySettings] = useState({
     profileVisibility: true,
+    coachDirectoryListing: false,
     workoutSharing: false,
     progressSharing: true,
     medicalDataSharing: false,
@@ -30,6 +30,7 @@ export default function PrivacyScreen() {
   });
 
   const handleToggle = (key: keyof typeof privacySettings) => {
+    console.log('[Privacy] toggle', key);
     setPrivacySettings(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
@@ -41,7 +42,7 @@ export default function PrivacyScreen() {
     onToggle,
     isWarning = false
   }: {
-    icon: React.ReactNode;
+    icon: React.ReactElement;
     title: string;
     description: string;
     value: boolean;
@@ -74,7 +75,7 @@ export default function PrivacyScreen() {
     onPress,
     isDanger = false
   }: {
-    icon: React.ReactNode;
+    icon: React.ReactElement;
     title: string;
     description: string;
     onPress: () => void;
@@ -124,6 +125,14 @@ export default function PrivacyScreen() {
           description="Allow coaches to see your progress data"
           value={privacySettings.progressSharing}
           onToggle={() => handleToggle('progressSharing')}
+        />
+
+        <PrivacyItem
+          icon={<Users size={20} color={colors.accent.primary} />}
+          title="Coach Directory Listing"
+          description="Allow verified coaches to discover your profile. Personal contact stays hidden."
+          value={privacySettings.coachDirectoryListing}
+          onToggle={() => handleToggle('coachDirectoryListing')}
         />
       </Card>
 
