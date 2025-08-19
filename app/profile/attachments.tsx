@@ -58,9 +58,11 @@ export default function AttachmentsVisibilityScreen() {
           const id = typeof item.id === 'string' ? item.id.trim() : '';
           const url = typeof item.url === 'string' ? item.url.trim() : '';
           const created = typeof item.createdAt === 'string' ? item.createdAt.trim() : '';
-          const parts = [id, url, created, String(index)].filter((p) => p && p.length > 0);
-          const safe = parts.join('-').replace(/\s+/g, '-');
-          return `att-${safe}`;
+
+          if (id.length > 0) return `att-id-${id}`;
+          if (url.length > 0) return `att-url-${url.replace(/\W+/g, '-')}`;
+          if (created.length > 0) return `att-created-${created.replace(/\W+/g, '-')}`;
+          return `att-idx-${index}`;
         }}
         ListEmptyComponent={emptyState}
         contentContainerStyle={localAttachments.length === 0 ? styles.listEmptyContainer : undefined}
@@ -80,7 +82,7 @@ export default function AttachmentsVisibilityScreen() {
                 </View>
               </View>
               <Switch
-                testID={`visible-${(item.id && item.id.trim().length > 0) ? item.id : `idx-${index}`}`}
+                testID={`visible-${(typeof item.id === 'string' && item.id.trim().length > 0) ? item.id.trim() : `idx-${index}`}`}
                 value={!!item.visibleToCoaches}
                 onValueChange={() => toggleVisibility(index)}
                 trackColor={{ false: colors.border.medium, true: colors.accent.primary }}
