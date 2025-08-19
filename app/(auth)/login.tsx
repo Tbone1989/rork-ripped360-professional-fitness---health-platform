@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowRight } from 'lucide-react-native';
+import { ArrowRight, Apple, Microscope, ShieldQuestion } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
+import * as WebBrowser from 'expo-web-browser';
+import { makeRedirectUri } from 'expo-auth-session';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
@@ -43,6 +45,93 @@ export default function LoginScreen() {
     }
     router.push('/(auth)/signup');
   };
+
+  const redirectUri = useMemo(() => {
+    try {
+      const uri = makeRedirectUri();
+      return uri;
+    } catch (e) {
+      console.warn('Redirect URI generation failed', e);
+      return '';
+    }
+  }, []);
+
+  const withHaptics = useCallback(async (style: Haptics.ImpactFeedbackStyle = Haptics.ImpactFeedbackStyle.Medium) => {
+    if (Platform.OS !== 'web') {
+      try { await Haptics.impactAsync(style); } catch {}
+    }
+  }, []);
+
+  const ensureEnv = useCallback((key: string) => {
+    const val = process.env[key];
+    if (!val) {
+      const msg = `Missing ${key}. Please add it to your .env and restart.`;
+      setError(msg);
+      Alert.alert('Configuration needed', msg);
+    }
+    return val ?? '';
+  }, []);
+
+  const handleOAuth = useCallback(async (provider: 'google' | 'apple' | 'microsoft') => {
+    await withHaptics(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      setError('');
+      const clientIdKey = {
+        google: 'EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID',
+        apple: 'EXPO_PUBLIC_APPLE_OAUTH_CLIENT_ID',
+        microsoft: 'EXPO_PUBLIC_MICROSOFT_OAUTH_CLIENT_ID',
+      }[provider];
+      const clientId = ensureEnv(clientIdKey);
+      if (!clientId || !redirectUri) return;
+
+      const discovery = {
+        google: { authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth' },
+        apple: { authorizationEndpoint: 'https://appleid.apple.com/auth/authorize' },
+        microsoft: { authorizationEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize' },
+      }[provider];
+
+      const scope = {
+        google: 'openid profile email',
+        apple: 'name email',
+        microsoft: 'openid profile email offline_access',
+      }[provider];
+
+      const query = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: redirectUri,
+        response_type: 'token',
+        scope,
+        prompt: 'consent',
+      }).toString();
+
+      const authUrl = `${discovery.authorizationEndpoint}?${query}`;
+      console.log('[OAuth] Starting', provider, { authUrl, redirectUri });
+
+      WebBrowser.maybeCompleteAuthSession();
+      const res = await WebBrowser.openAuthSessionAsync(authUrl, redirectUri);
+      console.log('[OAuth] Result', res);
+
+      if (res.type === 'success' && typeof res.url === 'string') {
+        const parsed = new URL(res.url);
+        const hash = parsed.hash.startsWith('#') ? parsed.hash.substring(1) : parsed.hash;
+        const params = new URLSearchParams(hash || parsed.search);
+        const token = params.get('access_token');
+        if (token) {
+          await useUserStore.getState().login(`${provider}@oauth.local`, 'oauth', 'user');
+          router.replace('/(tabs)');
+          return;
+        }
+      }
+      if (res.type === 'cancel' || res.type === 'dismiss') {
+        setError('Sign-in was canceled');
+      } else {
+        setError('Sign-in failed. Please try again.');
+      }
+    } catch (e) {
+      console.error('[OAuth] Error', e);
+      setError('Unable to sign in right now. Please try again later.');
+    }
+  }, [ensureEnv, redirectUri, router, withHaptics]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -88,7 +177,7 @@ export default function LoginScreen() {
             secureTextEntry
           />
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+          {error ? <Text style={styles.errorText} testID="login-error">{error}</Text> : null}
 
           <Button
             title="Sign In"
@@ -97,7 +186,44 @@ export default function LoginScreen() {
             disabled={isLoading}
             style={styles.loginButton}
             icon={<ArrowRight size={20} color={colors.text.primary} />}
+            testID="email-signin"
           />
+
+          <View style={styles.dividerRow}>
+            <View style={styles.divider} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.divider} />
+          </View>
+
+          <View style={styles.socialRow}>
+            <Button
+              title="Sign in with Google"
+              onPress={() => handleOAuth('google')}
+              variant="secondary"
+              fullWidth
+              style={styles.socialButton}
+              icon={<ShieldQuestion size={18} color={colors.text.primary} />}
+              testID="google-signin"
+            />
+            <Button
+              title="Sign in with Apple"
+              onPress={() => handleOAuth('apple')}
+              variant="secondary"
+              fullWidth
+              style={styles.socialButton}
+              icon={<Apple size={18} color={colors.text.primary} />}
+              testID="apple-signin"
+            />
+            <Button
+              title="Sign in with Microsoft"
+              onPress={() => handleOAuth('microsoft')}
+              variant="secondary"
+              fullWidth
+              style={styles.socialButton}
+              icon={<Microscope size={18} color={colors.text.primary} />}
+              testID="microsoft-signin"
+            />
+          </View>
 
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -250,5 +376,28 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     textAlign: 'center',
+  },
+  dividerRow: {
+    marginTop: 16,
+    marginBottom: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: colors.border.light,
+  },
+  dividerText: {
+    color: colors.text.secondary,
+    fontSize: 12,
+  },
+  socialRow: {
+    gap: 10,
+    marginTop: 8,
+  },
+  socialButton: {
+    width: '100%',
   },
 });

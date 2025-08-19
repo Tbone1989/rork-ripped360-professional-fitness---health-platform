@@ -19,6 +19,7 @@
     "@trpc/react-query": "^11.4.3",
     "@trpc/server": "^11.4.3",
     "expo": "^53.0.4",
+    "expo-auth-session": "~6.2.1",
     "expo-blur": "~14.1.4",
     "expo-camera": "~16.1.10",
     "expo-constants": "~17.1.4",
