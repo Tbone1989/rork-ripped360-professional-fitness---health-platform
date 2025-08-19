@@ -1164,6 +1164,81 @@ export const peptidesMedicines: MedicineInfo[] = [
     prescriptionRequired: true,
     imageUrl: 'https://images.unsplash.com/photo-1535747790212-30c585ab4863?q=80&w=500',
   },
+  // Myostatin inhibitors (genderless use cases)
+  {
+    id: '36',
+    name: 'ACE-083',
+    genericName: 'ACE-083 (ActRIIB ligand trap)',
+    category: 'Myostatin Inhibitor',
+    description: 'Locally acting myostatin/activin pathway inhibitor designed for targeted muscle growth at the injection site. Clinical programs paused, but mechanism remains of interest for regional hypertrophy research.',
+    usedFor: [
+      'Localized muscle growth (investigational)',
+      'Sarcopenia and muscle disorders research',
+    ],
+    sideEffects: [
+      'Injection site pain and swelling',
+      'Potential disproportionate hypertrophy',
+    ],
+    dosage: 'Local intramuscular administration in trials; not commercially available',
+    interactions: [
+      'Potential overlap with other ActRIIB pathway agents',
+    ],
+    warnings: [
+      'Investigational; development discontinued',
+      'Medical supervision required in research settings',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1578496781380-937e56b1fd7e?q=80&w=500',
+  },
+  {
+    id: '37',
+    name: 'ACE-031',
+    genericName: 'sActRIIB-Fc (ACE-031)',
+    category: 'Myostatin Inhibitor',
+    description: 'Soluble activin receptor type IIB decoy (ligand trap) that binds myostatin and related ligands to reduce signaling, supporting muscle mass increases. Development curtailed; remains a key reference compound.',
+    usedFor: [
+      'Muscle mass support (research)',
+      'Neuromuscular disorder research',
+    ],
+    sideEffects: [
+      'Epistaxis and telangiectasias reported in studies',
+      'Possible vascular effects',
+    ],
+    dosage: 'Investigational dosing only',
+    interactions: [
+      'Pathway overlap with follistatin and anti-myostatin antibodies',
+    ],
+    warnings: [
+      'Not approved; research compound history',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1559757175-08d9df0ae85f?q=80&w=500',
+  },
+  {
+    id: '38',
+    name: 'Anti-Myostatin mAb',
+    genericName: 'Myostatin-neutralizing monoclonal antibodies (e.g., LY2495655, Stamulumab)',
+    category: 'Myostatin Inhibitor',
+    description: 'Class of antibodies that bind and neutralize myostatin to reduce its inhibitory effect on muscle growth. Mixed efficacy results; safety and indication targeting continue to evolve into 2025-2026.',
+    usedFor: [
+      'Sarcopenia research',
+      'Cachexia research',
+      'Muscle preservation strategies',
+    ],
+    sideEffects: [
+      'Injection site reactions',
+      'Potential metabolic and tendon-related effects',
+    ],
+    dosage: 'Varies by investigational product and trial design',
+    interactions: [
+      'Mechanistic overlap with ActRIIB ligand traps and follistatin',
+    ],
+    warnings: [
+      'Investigational; clinical outcomes vary by antibody',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1603398749947-9f3f0f7b2c88?q=80&w=500',
+  },
 ];
 
 export const drugInteractions: DrugInteraction[] = [
