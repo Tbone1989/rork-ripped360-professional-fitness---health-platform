@@ -12,8 +12,8 @@ export default function AttachmentsVisibilityScreen() {
   const { updateUser } = useUserStore();
   const [localAttachments, setLocalAttachments] = useState<Attachment[]>(user?.attachments ?? []);
 
-  const toggleVisibility = (id: string) => {
-    setLocalAttachments((prev) => prev.map((a) => (a.id === id ? { ...a, visibleToCoaches: !a.visibleToCoaches } : a)));
+  const toggleVisibility = (index: number) => {
+    setLocalAttachments((prev) => prev.map((a, i) => (i === index ? { ...a, visibleToCoaches: !a.visibleToCoaches } : a)));
   };
 
   const save = () => {
@@ -57,8 +57,10 @@ export default function AttachmentsVisibilityScreen() {
         keyExtractor={(item, index) => {
           const id = typeof item.id === 'string' ? item.id.trim() : '';
           const url = typeof item.url === 'string' ? item.url.trim() : '';
-          const base = id.length > 0 ? id : url.length > 0 ? url : `created-${item.createdAt}`;
-          return `att-${base}-${index}`;
+          const created = typeof item.createdAt === 'string' ? item.createdAt.trim() : '';
+          const parts = [id, url, created, String(index)].filter((p) => p && p.length > 0);
+          const safe = parts.join('-').replace(/\s+/g, '-');
+          return `att-${safe}`;
         }}
         ListEmptyComponent={emptyState}
         contentContainerStyle={localAttachments.length === 0 ? styles.listEmptyContainer : undefined}
@@ -80,7 +82,7 @@ export default function AttachmentsVisibilityScreen() {
               <Switch
                 testID={`visible-${(item.id && item.id.trim().length > 0) ? item.id : `idx-${index}`}`}
                 value={!!item.visibleToCoaches}
-                onValueChange={() => toggleVisibility(item.id)}
+                onValueChange={() => toggleVisibility(index)}
                 trackColor={{ false: colors.border.medium, true: colors.accent.primary }}
                 thumbColor={colors.background.card}
               />
