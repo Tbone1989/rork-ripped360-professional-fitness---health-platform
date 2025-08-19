@@ -73,6 +73,8 @@ export interface SupplementData {
 }
 
 // API Service Class
+import { trpcClient } from '@/lib/trpc';
+
 class ApiService {
   private async makeRequest<T>(
     endpoint: string,
@@ -141,19 +143,26 @@ class ApiService {
 
   async getFoodByBarcode(barcode: string): Promise<NutritionData | null> {
     try {
-      return await this.makeRequest<NutritionData>(
-        `/nutrition/barcode/${barcode}`,
-        { method: 'GET' },
-        API_KEYS.NUTRITION
-      );
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage === 'DEVELOPMENT_MODE' || isDevelopmentMode) {
-        console.log('Development mode: Using mock food data for barcode:', barcode);
-      } else {
-        console.error('Error getting food by barcode:', error);
+      console.log('Using tRPC nutrition.barcode for lookup', barcode);
+      const data = await trpcClient.nutrition.barcode.query({ barcode });
+      return data as NutritionData;
+    } catch (trpcError) {
+      console.warn('tRPC nutrition.barcode failed, falling back to HTTP', trpcError);
+      try {
+        return await this.makeRequest<NutritionData>(
+          `/nutrition/barcode/${barcode}`,
+          { method: 'GET' },
+          API_KEYS.NUTRITION
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        if (errorMessage === 'DEVELOPMENT_MODE' || isDevelopmentMode) {
+          console.log('Development mode: Using mock food data for barcode:', barcode);
+        } else {
+          console.error('Error getting food by barcode:', error);
+        }
+        return this.getMockFoodByBarcode(barcode);
       }
-      return this.getMockFoodByBarcode(barcode);
     }
   }
 
@@ -336,20 +345,9 @@ class ApiService {
     );
   }
 
-  private getMockFoodByBarcode(barcode: string): NutritionData {
-    return {
-      name: 'Organic Greek Yogurt',
-      brand: 'Chobani',
-      calories: 100,
-      protein: 18,
-      carbs: 6,
-      fat: 0,
-      fiber: 0,
-      sugar: 4,
-      sodium: 65,
-      servingSize: '170g',
-      barcode,
-    };
+  private getMockFoodByBarcode(barcode: string): NutritionData | null {
+    console.log('Mock barcode lookup fallback triggered for', barcode);
+    return null;
   }
 
   private getMockExercises(): WorkoutData[] {

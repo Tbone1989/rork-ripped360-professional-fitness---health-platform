@@ -7,7 +7,7 @@ import {
   StyleSheet,
   Dimensions
 } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { 
   TrendingUp, 
   Calendar, 
@@ -36,6 +36,7 @@ export default function ProgressTrackingScreen() {
     supplementReminders,
     progressPhotoReminders
   } = useContestStore();
+  const router = useRouter();
   
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month' | 'all'>('week');
 
@@ -138,7 +139,8 @@ export default function ProgressTrackingScreen() {
                   {period === 'all' ? 'All Time' : `Last ${period}`}
                 </Text>
               </TouchableOpacity>
-            ))}\n          </View>
+            ))}
+          </View>
         </View>
         
         <View style={styles.complianceContainer}>
@@ -240,7 +242,13 @@ export default function ProgressTrackingScreen() {
     <Card style={styles.protocolsCard}>
       <View style={styles.protocolsHeader}>
         <Text style={styles.protocolsTitle}>Active Protocols</Text>
-        <TouchableOpacity onPress={() => router.push('/contest/protocols')}>
+        <TouchableOpacity
+          onPress={() => {
+            console.log('Navigating to /contest/protocols from ProgressTrackingScreen');
+            router.push('/contest/protocols');
+          }}
+          testID="btn-view-protocols"
+        >
           <ChevronRight size={20} color={colors.accent.primary} />
         </TouchableOpacity>
       </View>
@@ -251,7 +259,15 @@ export default function ProgressTrackingScreen() {
           <Text style={styles.noProtocolsText}>No active protocols</Text>
           <TouchableOpacity 
             style={styles.createProtocolButton}
-            onPress={() => router.push('/contest/create-protocol')}
+            onPress={() => {
+              console.log('Create Protocol button pressed');
+              try {
+                router.push('/contest/create-protocol');
+              } catch (e) {
+                console.error('Navigation error to create-protocol', e);
+              }
+            }}
+            testID="btn-create-protocol"
           >
             <Text style={styles.createProtocolText}>Create Protocol</Text>
           </TouchableOpacity>
@@ -263,8 +279,8 @@ export default function ProgressTrackingScreen() {
               <View style={styles.protocolInfo}>
                 <Text style={styles.protocolName}>{protocol.name}</Text>
                 <Badge 
-                  text={protocol.type.replace('-', ' ')} 
-                  variant="secondary"
+                  label={protocol.type.replace('-', ' ')} 
+                  variant="info"
                   style={{ alignSelf: 'flex-start' }}
                 />
               </View>
