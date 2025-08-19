@@ -54,7 +54,7 @@ export default function AttachmentsVisibilityScreen() {
 
       <FlatList
         data={localAttachments}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item, index) => `${item.id ?? item.url ?? 'att'}-${index}`}
         ListEmptyComponent={emptyState}
         contentContainerStyle={localAttachments.length === 0 ? styles.listEmptyContainer : undefined}
         renderItem={({ item }) => (
