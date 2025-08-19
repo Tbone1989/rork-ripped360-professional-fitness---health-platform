@@ -29,7 +29,7 @@ export default function AttachmentsVisibilityScreen() {
   const emptyState = useMemo(() => (
     <View style={styles.empty} testID="attachments-empty">
       <Text style={styles.emptyTitle}>No attachments yet</Text>
-      <Text style={styles.emptySubtitle}>Upload medical PDFs or links in Medical > Upload, then manage which ones coaches can see here.</Text>
+      <Text style={styles.emptySubtitle}>Upload medical PDFs or links in Medical {'>'} Upload, then manage which ones coaches can see here.</Text>
     </View>
   ), []);
 
