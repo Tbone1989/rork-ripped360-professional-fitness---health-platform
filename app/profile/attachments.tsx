@@ -54,10 +54,15 @@ export default function AttachmentsVisibilityScreen() {
 
       <FlatList
         data={localAttachments}
-        keyExtractor={(item, index) => `${item.id ?? item.url ?? 'att'}-${index}`}
+        keyExtractor={(item, index) => {
+          const id = typeof item.id === 'string' ? item.id.trim() : '';
+          const url = typeof item.url === 'string' ? item.url.trim() : '';
+          const base = id.length > 0 ? id : url.length > 0 ? url : `created-${item.createdAt}`;
+          return `att-${base}-${index}`;
+        }}
         ListEmptyComponent={emptyState}
         contentContainerStyle={localAttachments.length === 0 ? styles.listEmptyContainer : undefined}
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <Card style={styles.itemCard}>
             <View style={styles.itemRow}>
               <View style={styles.left}>
@@ -73,7 +78,7 @@ export default function AttachmentsVisibilityScreen() {
                 </View>
               </View>
               <Switch
-                testID={`visible-${item.id}`}
+                testID={`visible-${(item.id && item.id.trim().length > 0) ? item.id : `idx-${index}`}`}
                 value={!!item.visibleToCoaches}
                 onValueChange={() => toggleVisibility(item.id)}
                 trackColor={{ false: colors.border.medium, true: colors.accent.primary }}
