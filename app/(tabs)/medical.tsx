@@ -108,7 +108,8 @@ export default function MedicalScreen() {
                 <SupplementCard 
                   key={medicine.id} 
                   item={medicine} 
-                  type="medicine" 
+                  type="medicine"
+                  initialExpanded={true}
                 />
               ))}
             </View>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { useRouter } from 'expo-router';
@@ -12,14 +12,17 @@ interface SupplementCardProps {
   item: SupplementInfo | MedicineInfo;
   type: 'supplement' | 'medicine';
   onPress?: () => void;
+  initialExpanded?: boolean;
 }
 
 export const SupplementCard: React.FC<SupplementCardProps> = ({
   item,
   type,
   onPress,
+  initialExpanded,
 }) => {
   const router = useRouter();
+  const [expanded, setExpanded] = useState<boolean>(initialExpanded ?? false);
 
   const handlePress = () => {
     if (onPress) {
@@ -41,6 +44,11 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
       : ((item as MedicineInfo).usedFor ?? []);
 
   const imageUri = item.imageUrl ?? 'https://images.unsplash.com/photo-1586015555751-63bb77f4326b?q=80&w=600&auto=format&fit=crop';
+
+  const toggleExpanded = () => {
+    console.log('[SupplementCard] toggleExpanded', { id: item.id, name: item.name, expandedTo: !expanded });
+    setExpanded(prev => !prev);
+  };
 
   return (
     <TouchableOpacity
@@ -82,15 +90,22 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
         </View>
         <View style={styles.footer}>
           <View style={styles.benefitsContainer}>
-            {displayBenefits.slice(0, 1).map((benefit, index) => (
-              <Text key={index} style={styles.benefit} numberOfLines={1}>
+            {(expanded ? displayBenefits : displayBenefits.slice(0, 1)).map((benefit, index) => (
+              <Text key={index} style={styles.benefit} numberOfLines={expanded ? 2 : 1}>
                 • {benefit}
               </Text>
             ))}
             {displayBenefits.length > 1 && (
-              <Text style={styles.moreBenefits}>
-                +{displayBenefits.length - 1} more
-              </Text>
+              <TouchableOpacity
+                onPress={toggleExpanded}
+                activeOpacity={0.7}
+                style={styles.expandButton}
+                testID="SupplementCardExpandToggle"
+              >
+                <Text style={styles.moreBenefits}>
+                  {expanded ? 'Show less' : `+${displayBenefits.length - 1} more`}
+                </Text>
+              </TouchableOpacity>
             )}
           </View>
           <ChevronRight size={16} color={colors.text.secondary} />
@@ -160,5 +175,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.accent.primary,
     fontWeight: '500',
+  },
+  expandButton: {
+    marginTop: 4,
   },
 });
