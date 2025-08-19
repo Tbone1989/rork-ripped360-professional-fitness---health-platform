@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import { Stack, useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { Star, Flame, Calendar, ChefHat } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -18,6 +18,7 @@ interface PlanDetails {
 }
 
 export default function MealPlanDetailsScreen() {
+  const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
   const id = typeof params.id === 'string' ? params.id : Array.isArray(params.id) ? params.id[0] : undefined;
 
@@ -62,9 +63,9 @@ export default function MealPlanDetailsScreen() {
       </Card>
 
       <Card style={styles.ctaCard} testID="plan-cta-card">
-        <Button title="Start This Plan" onPress={() => { console.log('Start plan', plan.id); }} testID="start-plan-button" />
+        <Button title="Start This Plan" onPress={() => { console.log('Start plan', plan.id); router.push({ pathname: '/meals/plan', params: { planId: plan.id } }); }} testID="start-plan-button" />
         <View style={styles.ctaSpacer} />
-        <Button title="Preview Day 1" variant="outline" onPress={() => { console.log('Preview Day 1', plan.id); }} testID="preview-day-button" />
+        <Button title="Preview Day 1" variant="outline" onPress={() => { console.log('Preview Day 1', plan.id); router.push({ pathname: '/meals/plan', params: { planId: plan.id, preview: '1' } }); }} testID="preview-day-button" />
       </Card>
     </ScrollView>
   );
