@@ -1239,6 +1239,280 @@ export const peptidesMedicines: MedicineInfo[] = [
     prescriptionRequired: true,
     imageUrl: 'https://images.unsplash.com/photo-1603398749947-9f3f0f7b2c88?q=80&w=500',
   },
+  // --- Hormones (Men) ---
+  {
+    id: '39',
+    name: 'Testosterone Cypionate',
+    genericName: 'Testosterone Cypionate',
+    category: 'Hormone - Androgen (Men)',
+    description: 'Long-acting testosterone ester commonly used in TRT. Half-life ~7-8 days. Oil-based intramuscular or subcutaneous injection.',
+    usedFor: [
+      'Male hypogonadism (TRT)',
+      'Energy, libido, and mood support',
+      'Muscle mass and bone density maintenance',
+    ],
+    sideEffects: [
+      'Erythrocytosis (high hematocrit)',
+      'Acne and oily skin',
+      'Water retention',
+      'Mood changes',
+      'Potential fertility suppression',
+    ],
+    dosage: 'Typical 80-120 mg weekly (or 160-200 mg every 2 weeks). Split dosing reduces peaks/troughs.',
+    interactions: [
+      'May require aromatase inhibitor if estradiol rises (clinician-guided)',
+      'Interacts with anticoagulants (monitor INR)',
+    ],
+    warnings: [
+      'Monitor CBC, lipids, liver function, PSA (age-appropriate)',
+      'Screen cardiovascular risk',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=500',
+  },
+  {
+    id: '40',
+    name: 'Testosterone Enanthate',
+    genericName: 'Testosterone Enanthate',
+    category: 'Hormone - Androgen (Men)',
+    description: 'Medium-long ester with pharmacokinetics similar to cypionate. Half-life ~4-5 days; comparable weekly protocols.',
+    usedFor: [
+      'Male hypogonadism (TRT)',
+      'Body composition support',
+    ],
+    sideEffects: [
+      'Erythrocytosis',
+      'Gynecomastia (via aromatization)',
+      'Blood pressure elevation',
+    ],
+    dosage: '80-120 mg weekly (split 2x/week common)',
+    interactions: [
+      'Aromatizable to estradiol; consider monitoring',
+    ],
+    warnings: [
+      'Regular labs and clinician oversight required',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1612536379934-1e4f2d7b7d8a?q=80&w=500',
+  },
+  {
+    id: '41',
+    name: 'Testosterone Propionate',
+    genericName: 'Testosterone Propionate',
+    category: 'Hormone - Androgen (Men)',
+    description: 'Short ester with faster onset and shorter half-life (~2 days). Allows quick titration but requires more frequent injections.',
+    usedFor: [
+      'TRT titration or short cycles',
+    ],
+    sideEffects: [
+      'Local injection irritation',
+      'Similar androgenic and estrogenic effects as other esters',
+    ],
+    dosage: '25-50 mg every other day (clinician-driven)',
+    interactions: [
+      'Aromatization to estradiol',
+    ],
+    warnings: [
+      'Frequent dosing adherence required',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1559757175-08d9df0ae85f?q=80&w=500',
+  },
+  {
+    id: '42',
+    name: 'Testosterone Undecanoate',
+    genericName: 'Testosterone Undecanoate (injectable/oral)',
+    category: 'Hormone - Androgen (Men)',
+    description: 'Very long-acting ester (injectable) with extended dosing intervals; oral TU uses lymphatic absorption. Specialized protocols only.',
+    usedFor: [
+      'Male hypogonadism (long-interval therapy)',
+    ],
+    sideEffects: [
+      'Similar androgenic/estrogenic profile; injection-specific reactions',
+    ],
+    dosage: 'Injectable clinic protocols every 10-14 weeks; oral TU per label where available',
+    interactions: [
+      'Aromatization considerations; lipid impact monitoring',
+    ],
+    warnings: [
+      'Clinic-administered in many regions',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1578496781380-937e56b1fd7e?q=80&w=500',
+  },
+  // --- Hormones (Women) ---
+  {
+    id: '43',
+    name: 'Estradiol (Transdermal Patch)',
+    genericName: '17β-Estradiol (transdermal)',
+    category: 'Hormone - Estrogen (Women)',
+    description: 'First-line in many guidelines for vasomotor symptoms (hot flashes) with lower VTE risk vs some oral estrogens. Dosed 1-2x weekly.',
+    usedFor: [
+      'Hot flashes and night sweats',
+      'Sleep and mood support during menopause',
+      'Bone density maintenance',
+    ],
+    sideEffects: [
+      'Breast tenderness',
+      'Nausea or headache',
+      'Skin irritation at patch site',
+    ],
+    dosage: 'Common 0.025–0.1 mg/day patches, replaced every 3–7 days depending on product',
+    interactions: [
+      'Caution with certain anticoagulants and thyroid dosing',
+    ],
+    warnings: [
+      'Add progesterone if uterus intact to reduce endometrial hyperplasia risk',
+      'Assess breast cancer and VTE risk',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1601841162542-8341f9b31fbe?q=80&w=500',
+  },
+  {
+    id: '44',
+    name: 'Micronized Progesterone (Oral)',
+    genericName: 'Progesterone (micronized)',
+    category: 'Hormone - Progestogen (Women)',
+    description: 'Used with estrogen therapy in women with a uterus to protect endometrium; can improve sleep quality for some.',
+    usedFor: [
+      'Endometrial protection with estrogen therapy',
+      'Sleep and anxiety support',
+    ],
+    sideEffects: [
+      'Drowsiness',
+      'Dizziness',
+      'Breast tenderness',
+    ],
+    dosage: '100-200 mg at bedtime when used with transdermal or oral estrogen',
+    interactions: [
+      'Sedatives (additive effects); monitor with thyroid medications',
+    ],
+    warnings: [
+      'Use with caution in severe liver disease',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1579154204601-01588f351e67?q=80&w=500',
+  },
+  {
+    id: '45',
+    name: 'Estradiol (Oral/Transdermal Gel)',
+    genericName: 'Estradiol',
+    category: 'Hormone - Estrogen (Women)',
+    description: 'Oral and gel formulations available based on preference and risk profile; transdermal routes often favored for metabolic neutrality.',
+    usedFor: [
+      'Vasomotor symptoms',
+      'Genitourinary syndrome of menopause (with local therapy as needed)',
+    ],
+    sideEffects: [
+      'GI upset (oral)',
+      'Breast tenderness',
+      'Headache',
+    ],
+    dosage: 'Oral 0.5–2 mg/day; gel doses vary by brand (measured pumps)',
+    interactions: [
+      'Multiple hepatic metabolism interactions (oral route)',
+    ],
+    warnings: [
+      'Individualize dose and route; add progesterone if uterus intact',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1584017911766-d451b92e1b89?q=80&w=500',
+  },
+  {
+    id: '46',
+    name: 'Vaginal Estrogen (Local Therapy)',
+    genericName: 'Estradiol/Estriol (local)',
+    category: 'Hormone - Estrogen (Women)',
+    description: 'Low-dose local therapy (creams, tablets, rings) for genitourinary syndrome: dryness, pain with intercourse, recurrent UTIs.',
+    usedFor: [
+      'Vaginal dryness and discomfort',
+      'Recurrent UTIs prevention (postmenopausal)',
+    ],
+    sideEffects: [
+      'Local irritation or discharge',
+    ],
+    dosage: 'Per product insert; typically nightly for 2 weeks then maintenance 2-3x/week',
+    interactions: [
+      'Minimal systemic interactions at low doses',
+    ],
+    warnings: [
+      'Generally safe; still consider history of hormone-sensitive cancers with clinician',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?q=80&w=500',
+  },
+  {
+    id: '47',
+    name: 'DHEA (Prasterone)',
+    genericName: 'Dehydroepiandrosterone',
+    category: 'Hormone - Adrenal',
+    description: 'Adrenal precursor hormone; local vaginal form approved for dyspareunia; systemic use varies by region.',
+    usedFor: [
+      'Vaginal atrophy-related discomfort (local prasterone)',
+      'Energy/mood (systemic evidence mixed)',
+    ],
+    sideEffects: [
+      'Acne or hirsutism (androgenic effects)',
+      'Voice changes at high doses',
+    ],
+    dosage: 'Vaginal 6.5 mg nightly (product-specific); systemic dosing individualized',
+    interactions: [
+      'May affect hormone assays and interact with HRT',
+    ],
+    warnings: [
+      'Monitor for androgenic side effects; avoid in hormone-sensitive cancers',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1542736667-069246bdbc8d?q=80&w=500',
+  },
+  // --- Educational Overviews ---
+  {
+    id: '48',
+    name: 'Understanding Estrogen & Hot Flashes',
+    genericName: 'Educational Overview',
+    category: 'Education',
+    description: 'Explains why vasomotor symptoms occur during perimenopause/menopause and how therapies (transdermal estradiol + oral micronized progesterone when indicated) can help. Covers sleep, mood, and bone density impacts.',
+    usedFor: [
+      'Hot flashes and night sweats',
+      'Perimenopause symptom overview',
+      'Therapy options and safety considerations',
+    ],
+    sideEffects: [
+      'N/A (education)',
+    ],
+    dosage: 'N/A',
+    interactions: [
+      'N/A',
+    ],
+    warnings: [
+      'Educational content; not medical advice',
+    ],
+    prescriptionRequired: false,
+    imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?q=80&w=500',
+  },
+  {
+    id: '49',
+    name: 'Testosterone Esters: What’s the Difference?',
+    genericName: 'Educational Overview',
+    category: 'Education',
+    description: 'Breaks down cypionate vs enanthate vs propionate vs undecanoate: onset, half-life, dosing frequency, and lab monitoring. Emphasizes estradiol management and hematocrit safety.',
+    usedFor: [
+      'Choosing an appropriate TRT ester with a clinician',
+      'Setting expectations for dosing and labs',
+    ],
+    sideEffects: [
+      'N/A (education)',
+    ],
+    dosage: 'N/A',
+    interactions: [
+      'N/A',
+    ],
+    warnings: [
+      'Educational content; not medical advice',
+    ],
+    prescriptionRequired: false,
+    imageUrl: 'https://images.unsplash.com/photo-1544288070-fc77d6ea1dfd?q=80&w=500',
+  },
 ];
 
 export const drugInteractions: DrugInteraction[] = [
