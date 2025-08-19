@@ -774,6 +774,396 @@ export const peptidesMedicines: MedicineInfo[] = [
     prescriptionRequired: true,
     imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=500',
   },
+  // Muscle building / Myostatin pathway
+  {
+    id: '21',
+    name: 'Follistatin-344',
+    genericName: 'Follistatin-344',
+    category: 'Myostatin Inhibitor',
+    description: 'Experimental binding protein that inhibits myostatin, effectively removing the “myostatin brakes” on muscle growth. 2025-2026 pipelines include longer-acting variants.',
+    usedFor: [
+      'Muscle growth acceleration',
+      'Body recomposition',
+      'Strength enhancement',
+    ],
+    sideEffects: [
+      'Unknown long-term safety',
+      'Potential organomegaly',
+      'Injection site reactions',
+    ],
+    dosage: 'Experimental; protocols vary widely in research settings',
+    interactions: [
+      'Potential synergy with IGF-1 analogs',
+    ],
+    warnings: [
+      'Not FDA approved',
+      'Human data limited; use restricted to research',
+      'Monitor cardiac and hepatic markers if used clinically',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1559757175-08d9df0ae85f?q=80&w=500',
+  },
+  {
+    id: '22',
+    name: 'IGF-1 LR3',
+    genericName: 'Insulin-like Growth Factor-1 Long R3',
+    category: 'Growth Factor Analog',
+    description: 'Long-acting IGF-1 analog that supports muscle hypertrophy and satellite cell activation. Often stacked with GH secretagogues. 2025 protocols emphasize safer micro-dosing.',
+    usedFor: [
+      'Lean muscle accrual',
+      'Recovery enhancement',
+      'Injury rehab support',
+    ],
+    sideEffects: [
+      'Hypoglycemia risk',
+      'Water retention',
+      'Potential organ growth with abuse',
+    ],
+    dosage: '20-40mcg daily, cyclical use; medical supervision advised',
+    interactions: [
+      'Potentiated by GH-releasing peptides',
+      'Caution with insulin or glucose-lowering drugs',
+    ],
+    warnings: [
+      'Not FDA approved',
+      'Monitor fasting glucose, IGF-1, and thyroid panel',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1578496781380-937e56b1fd7e?q=80&w=500',
+  },
+  {
+    id: '23',
+    name: 'PEG-MGF',
+    genericName: 'PEGylated Mechano Growth Factor',
+    category: 'Growth Factor Analog',
+    description: 'Mechanical stress–responsive IGF-1 splice variant for localized muscle repair. PEGylation extends half-life; 2026 depot formulations under investigation.',
+    usedFor: [
+      'Localized muscle recovery',
+      'Hypertrophy support',
+      'Post-injury regeneration',
+    ],
+    sideEffects: [
+      'Localized swelling',
+      'Hypoglycemia potential',
+      'Joint discomfort',
+    ],
+    dosage: '100-200mcg post-training, cyclical',
+    interactions: [
+      'Stacks with GH secretagogues and IGF-1 analogs',
+    ],
+    warnings: [
+      'Research compound; medical monitoring recommended',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1603398749947-9f3f0f7b2c88?q=80&w=500',
+  },
+  // GH axis
+  {
+    id: '24',
+    name: 'CJC-1295 (no DAC)',
+    genericName: 'CJC-1295 without DAC',
+    category: 'GHRH Analog',
+    description: 'Provides natural GH pulses when timed around meals and sleep. Often paired with GHRPs like Ipamorelin. 2025 best-practice protocols focus on glucose neutrality.',
+    usedFor: [
+      'Natural GH pulse optimization',
+      'Fat loss support',
+      'Sleep and recovery quality',
+    ],
+    sideEffects: [
+      'Water retention',
+      'Headache',
+      'Injection site irritation',
+    ],
+    dosage: '100mcg 1-3x daily, commonly with Ipamorelin',
+    interactions: [
+      'Synergy with GHRPs',
+    ],
+    warnings: [
+      'Not FDA approved; monitor glucose and IGF-1',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1516826957135-700dedea698f?q=80&w=500',
+  },
+  // Cognitive / memory
+  {
+    id: '25',
+    name: 'Semax',
+    genericName: 'ACTH(4-7) Pro-Gly-Pro',
+    category: 'Nootropic Peptide',
+    description: 'Heptapeptide with neurotrophic and potentially procognitive effects. Used off-label for focus and neuroprotection.',
+    usedFor: [
+      'Memory and focus',
+      'Neuroprotection',
+      'Recovery from neurological stress',
+    ],
+    sideEffects: [
+      'Irritation (intranasal)',
+      'Headache',
+      'Anxiety in sensitive users',
+    ],
+    dosage: 'Intranasal 200-400mcg per dose, cycles of 10-14 days',
+    interactions: [
+      'Caution with stimulants and MAO-affecting agents',
+    ],
+    warnings: [
+      'Research peptide; human evidence mixed',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=500',
+  },
+  {
+    id: '26',
+    name: 'Selank',
+    genericName: 'Thr-Lys-Pro-Arg-Pro-Gly-Pro',
+    category: 'Anxiolytic Peptide',
+    description: 'Tuftsin analog with reported anxiolytic and cognition-stabilizing effects; sometimes paired with Semax.',
+    usedFor: [
+      'Anxiety reduction',
+      'Memory stabilization',
+      'Stress resilience',
+    ],
+    sideEffects: [
+      'Nasal irritation',
+      'Fatigue',
+    ],
+    dosage: 'Intranasal 200-400mcg per dose, cycles of 10-14 days',
+    interactions: [
+      'Additive sedation with anxiolytics',
+    ],
+    warnings: [
+      'Research peptide; limited large-scale trials',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1487014679447-9f8336841d58?q=80&w=500',
+  },
+  // Recovery / healing (additional)
+  {
+    id: '27',
+    name: 'GHK-Cu',
+    genericName: 'Copper Tripeptide-1',
+    category: 'Regenerative Peptide',
+    description: 'Copper-binding tripeptide associated with wound healing, skin repair, and hair support.',
+    usedFor: [
+      'Skin and connective tissue repair',
+      'Hair growth support',
+      'Anti-inflammatory effects',
+    ],
+    sideEffects: [
+      'Skin irritation (topical)',
+      'Nausea (systemic use)',
+    ],
+    dosage: 'Topical daily; injectable protocols vary and remain investigational',
+    interactions: [
+      'May interact with chelating agents',
+    ],
+    warnings: [
+      'Quality varies; verify source purity',
+    ],
+    prescriptionRequired: false,
+    imageUrl: 'https://images.unsplash.com/photo-1505577058444-a3dab90d4253?q=80&w=500',
+  },
+  // Testosterone / reproductive axis
+  {
+    id: '28',
+    name: 'Kisspeptin-10',
+    genericName: 'Metastin(45-54)',
+    category: 'Reproductive Peptide',
+    description: 'Stimulates GnRH release upstream, supporting LH/FSH and endogenous testosterone. 2025 male fertility trials expanding.',
+    usedFor: [
+      'Testosterone enhancement (endogenous)',
+      'Male fertility support',
+      'Cycle support and HPG axis activation',
+    ],
+    sideEffects: [
+      'Nausea',
+      'Headache',
+      'Flushing',
+    ],
+    dosage: '100-200mcg SC 2-3x weekly (investigational)',
+    interactions: [
+      'May interact with exogenous testosterone or SERMs',
+    ],
+    warnings: [
+      'Investigational; endocrine monitoring required',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1562243061-204550d8a2c2?q=80&w=500',
+  },
+  {
+    id: '29',
+    name: 'Gonadorelin',
+    genericName: 'GnRH',
+    category: 'Reproductive Peptide',
+    description: 'Gonadotropin-releasing hormone analog used diagnostically and for short-term HPG axis stimulation.',
+    usedFor: [
+      'Testosterone support (diagnostic/therapeutic)',
+      'Male and female hormone balance protocols',
+    ],
+    sideEffects: [
+      'Headache',
+      'Mood changes',
+      'Nausea',
+    ],
+    dosage: 'Varies widely by protocol; medical supervision only',
+    interactions: [
+      'Interacts with HRT regimens',
+    ],
+    warnings: [
+      'Endocrine specialist oversight recommended',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1612536379934-1e4f2d7b7d8a?q=80&w=500',
+  },
+  // Women’s hormone balance
+  {
+    id: '30',
+    name: 'Sermorelin',
+    genericName: 'GHRH(1-29)',
+    category: 'GHRH Analog',
+    description: 'Short-acting GHRH analog that supports nightly GH pulses; can aid body composition and sleep in both men and women.',
+    usedFor: [
+      'Hormone balance support',
+      'Recovery and sleep quality',
+      'Body fat reduction',
+    ],
+    sideEffects: [
+      'Flushing',
+      'Headache',
+    ],
+    dosage: '200-500mcg subcutaneous at bedtime',
+    interactions: [
+      'Synergy with GHRPs',
+    ],
+    warnings: [
+      'Monitor IGF-1 and glucose',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1505575967455-40e256f73376?q=80&w=500',
+  },
+  // GLP and satiety axis (additional / upcoming)
+  {
+    id: '31',
+    name: 'Amylin + GLP Combo (Cagrilintide + Semaglutide)',
+    genericName: 'Cagrilintide with Semaglutide',
+    category: 'Combination Peptide',
+    description: 'Next-gen satiety protocol combining amylin analog and GLP-1 RA. Multiple 2025-2026 outcome studies incoming.',
+    usedFor: [
+      'Appetite control',
+      'Weight management',
+      'Metabolic health',
+    ],
+    sideEffects: [
+      'Nausea',
+      'Vomiting',
+      'Hypoglycemia with insulin',
+    ],
+    dosage: 'Specialist-directed combination therapy',
+    interactions: [
+      'Affects gastric emptying and oral drug absorption',
+    ],
+    warnings: [
+      'Medical supervision mandatory',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1628157588553-5e6e0a9ea9ae?q=80&w=500',
+  },
+  // Thyroid / metabolic support
+  {
+    id: '32',
+    name: 'Thyrotropin-Releasing Hormone (TRH)',
+    genericName: 'Protirelin',
+    category: 'Hypothalamic Peptide',
+    description: 'Historically diagnostic, emerging micro-dose interest for mood and metabolism; 2026 controlled trials anticipated.',
+    usedFor: [
+      'Metabolic rate modulation',
+      'Mood and cognition (experimental)',
+    ],
+    sideEffects: [
+      'Nausea',
+      'Blood pressure changes',
+    ],
+    dosage: 'Diagnostic dosing established; therapeutic micro-dosing investigational',
+    interactions: [
+      'Interacts with thyroid medications',
+    ],
+    warnings: [
+      'Use only under specialist care',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1542736667-069246bdbc8d?q=80&w=500',
+  },
+  // Anti-catabolic / performance
+  {
+    id: '33',
+    name: 'AOD-9604',
+    genericName: 'GH Fragment 176-191',
+    category: 'GH Fragment',
+    description: 'GH-derived fragment explored for lipolysis without full GH effects.',
+    usedFor: [
+      'Fat loss support',
+      'Joint comfort (anecdotal)',
+    ],
+    sideEffects: [
+      'Injection site irritation',
+    ],
+    dosage: '250-500mcg daily (investigational)',
+    interactions: [
+      'May be paired with GH secretagogues',
+    ],
+    warnings: [
+      'Research status varies by region',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1544288070-fc77d6ea1dfd?q=80&w=500',
+  },
+  {
+    id: '34',
+    name: 'LL-37',
+    genericName: 'Cathelicidin Antimicrobial Peptide',
+    category: 'Immunomodulatory Peptide',
+    description: 'Host-defense peptide explored for immune modulation and chronic infection adjunct. 2025 dermatology studies ongoing.',
+    usedFor: [
+      'Immune support (adjunct)',
+      'Dermatologic conditions (investigational)',
+    ],
+    sideEffects: [
+      'Inflammation at injection site',
+      'Flu-like symptoms',
+    ],
+    dosage: 'Varies widely; investigational only',
+    interactions: [
+      'Potential interaction with immunosuppressants',
+    ],
+    warnings: [
+      'Not FDA approved; monitor inflammatory markers',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=500',
+  },
+  // Coming soon tracker
+  {
+    id: '35',
+    name: 'Next-Gen Myostatin Modulators (2025-2026)',
+    genericName: 'FST variants / Anti-myostatin mAbs (pipeline)',
+    category: 'Pipeline (2025-2026)',
+    description: 'Updated tracker for upcoming myostatin-targeting therapies and peptide variants expected across 2025-2026. Will auto-update as data emerges.',
+    usedFor: [
+      'Muscle growth',
+      'Sarcopenia research',
+    ],
+    sideEffects: [
+      'Unknown; safety data pending',
+    ],
+    dosage: 'Not established',
+    interactions: [
+      'Unknown',
+    ],
+    warnings: [
+      'Investigational; data to be updated as trials publish',
+    ],
+    prescriptionRequired: true,
+    imageUrl: 'https://images.unsplash.com/photo-1535747790212-30c585ab4863?q=80&w=500',
+  },
 ];
 
 export const drugInteractions: DrugInteraction[] = [
