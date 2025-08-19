@@ -1,22 +1,22 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Users, Plus, MessageSquare, Calendar, TrendingUp, Filter } from 'lucide-react-native';
+import { Search, Plus, MessageSquare, Calendar, TrendingUp } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
-import { Button } from '@/components/ui/Button';
 import { Avatar } from '@/components/ui/Avatar';
-import { Badge } from '@/components/ui/Badge';
+import { trpc } from '@/lib/trpc';
+import { useUserStore } from '@/store/userStore';
 
-interface Client {
+interface UIClient {
   id: string;
   name: string;
   email: string;
   profileImage: string;
   status: 'active' | 'inactive' | 'trial';
   joinDate: string;
-  lastSession: string;
+  lastSession?: string;
   totalSessions: number;
   plan: string;
   progress: number;
@@ -25,69 +25,38 @@ interface Client {
 
 export default function CoachClients() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const user = useUserStore((s) => s.user);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'active' | 'inactive' | 'trial'>('all');
 
-  const clients: Client[] = [
-    {
-      id: '1',
-      name: 'Sarah Johnson',
-      email: 'sarah.j@email.com',
-      profileImage: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?q=80&w=200',
-      status: 'active',
-      joinDate: '2024-01-15',
-      lastSession: '2024-01-20',
-      totalSessions: 24,
-      plan: 'Premium Training',
-      progress: 85,
-      nextSession: '2024-01-22 09:00',
-    },
-    {
-      id: '2',
-      name: 'Mike Rodriguez',
-      email: 'mike.r@email.com',
-      profileImage: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200',
-      status: 'active',
-      joinDate: '2023-11-08',
-      lastSession: '2024-01-19',
-      totalSessions: 45,
-      plan: 'Strength & Conditioning',
-      progress: 92,
-      nextSession: '2024-01-22 10:30',
-    },
-    {
-      id: '3',
-      name: 'Emily Chen',
-      email: 'emily.c@email.com',
-      profileImage: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=200',
-      status: 'trial',
-      joinDate: '2024-01-18',
-      lastSession: '2024-01-19',
-      totalSessions: 3,
-      plan: 'Trial Package',
-      progress: 30,
-      nextSession: '2024-01-22 14:00',
-    },
-    {
-      id: '4',
-      name: 'David Park',
-      email: 'david.p@email.com',
-      profileImage: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?q=80&w=200',
-      status: 'inactive',
-      joinDate: '2023-09-12',
-      lastSession: '2024-01-10',
-      totalSessions: 18,
-      plan: 'Basic Training',
-      progress: 60,
-    },
-  ];
+  const role = (user?.role ?? 'coach') as 'user' | 'coach' | 'medical' | 'admin';
+  const viewerId = user?.id ?? 'unknown';
 
-  const filteredClients = clients.filter(client => {
-    const matchesSearch = client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         client.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = selectedFilter === 'all' || client.status === selectedFilter;
-    return matchesSearch && matchesFilter;
-  });
+  const { data, isLoading, error, refetch } = trpc.coaching.clients.useQuery({
+    viewerId,
+    viewerRole: role,
+    status: selectedFilter,
+    search: searchQuery.length ? searchQuery : undefined,
+  }, { enabled: !!viewerId });
+
+  const clients: UIClient[] = useMemo(() => {
+    const raw = data?.clients ?? [];
+    return raw.map((c: any) => ({
+      id: c.id as string,
+      name: c.name as string,
+      email: c.email as string,
+      profileImage: (c.profileImageUrl as string) ?? '',
+      status: c.status as 'active' | 'inactive' | 'trial',
+      joinDate: c.joinDate as string,
+      lastSession: c.lastSession as string | undefined,
+      totalSessions: c.totalSessions as number,
+      plan: c.plan as string,
+      progress: c.progress as number,
+      nextSession: c.nextSession as string | undefined,
+    }));
+  }, [data?.clients]);
+
+  const filteredClients = clients; // server filters by status/search
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -111,21 +80,24 @@ export default function CoachClients() {
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>My Clients</Text>
-        <Text style={styles.subtitle}>{clients.length} total clients</Text>
+        <Text style={styles.subtitle}>{data?.total ?? 0} total clients</Text>
       </View>
 
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
           <Search size={20} color={colors.text.secondary} style={styles.searchIcon} />
           <TextInput
+            testID="search-clients"
             style={styles.searchInput}
             placeholder="Search clients..."
             value={searchQuery}
             onChangeText={setSearchQuery}
             placeholderTextColor={colors.text.secondary}
+            returnKeyType="search"
+            onSubmitEditing={() => refetch()}
           />
         </View>
-        <TouchableOpacity style={styles.addButton} onPress={() => router.push('/coach/add-client')}>
+        <TouchableOpacity style={styles.addButton} onPress={() => router.push('/coach/add-client')} testID="add-client">
           <Plus size={20} color={colors.text.primary} />
         </TouchableOpacity>
       </View>
@@ -139,6 +111,7 @@ export default function CoachClients() {
               selectedFilter === filter && styles.filterButtonActive
             ]}
             onPress={() => setSelectedFilter(filter)}
+            testID={`filter-${filter}`}
           >
             <Text style={[
               styles.filterText,
@@ -150,101 +123,115 @@ export default function CoachClients() {
         ))}
       </View>
 
-      <ScrollView style={styles.clientsList} showsVerticalScrollIndicator={false}>
-        {filteredClients.map((client) => (
-          <TouchableOpacity
-            key={client.id}
-            style={styles.clientCard}
-            onPress={() => router.push(`/coach/client/${client.id}`)}
-          >
-            <Card style={styles.card}>
-              <View style={styles.clientHeader}>
-                <View style={styles.clientInfo}>
-                  <Avatar
-                    source={client.profileImage}
-                    size="large"
-                    style={styles.avatar}
-                  />
-                  <View style={styles.clientDetails}>
-                    <Text style={styles.clientName}>{client.name}</Text>
-                    <Text style={styles.clientEmail}>{client.email}</Text>
-                    <Text style={styles.clientPlan}>{client.plan}</Text>
+      {isLoading ? (
+        <View style={styles.loading}>
+          <ActivityIndicator color={colors.accent.primary} />
+        </View>
+      ) : error ? (
+        <View style={styles.errorWrap}>
+          <Text style={styles.errorText}>Could not load clients.</Text>
+          <TouchableOpacity onPress={() => refetch()} style={styles.retryBtn} testID="retry-load-clients">
+            <Text style={styles.retryText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <ScrollView style={styles.clientsList} showsVerticalScrollIndicator={false} testID="clients-list">
+          {filteredClients.map((client) => (
+            <TouchableOpacity
+              key={client.id}
+              style={styles.clientCard}
+              onPress={() => router.push(`/coach/client/${client.id}`)}
+              testID={`client-${client.id}`}
+            >
+              <Card style={styles.card}>
+                <View style={styles.clientHeader}>
+                  <View style={styles.clientInfo}>
+                    <Avatar
+                      source={client.profileImage}
+                      size="large"
+                      style={styles.avatar}
+                    />
+                    <View style={styles.clientDetails}>
+                      <Text style={styles.clientName}>{client.name}</Text>
+                      <Text style={styles.clientEmail}>{client.email}</Text>
+                      <Text style={styles.clientPlan}>{client.plan}</Text>
+                    </View>
+                  </View>
+                  <View style={styles.clientStatus}>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor(client.status) }]}>
+                      <Text style={[styles.statusText, { color: colors.text.primary }]}>
+                        {getStatusText(client.status)}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-                <View style={styles.clientStatus}>
-                  <View style={[styles.statusBadge, { backgroundColor: getStatusColor(client.status) }]}>
-                    <Text style={[styles.statusText, { color: colors.text.primary }]}>
-                      {getStatusText(client.status)}
+
+                <View style={styles.clientStats}>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{client.totalSessions}</Text>
+                    <Text style={styles.statLabel}>Sessions</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>{client.progress}%</Text>
+                    <Text style={styles.statLabel}>Progress</Text>
+                  </View>
+                  <View style={styles.statItem}>
+                    <Text style={styles.statValue}>
+                      {new Date(client.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </Text>
+                    <Text style={styles.statLabel}>Joined</Text>
+                  </View>
+                </View>
+
+                {client.nextSession && (
+                  <View style={styles.nextSession}>
+                    <Calendar size={16} color={colors.accent.primary} />
+                    <Text style={styles.nextSessionText}>
+                      Next: {new Date(client.nextSession).toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit'
+                      })}
                     </Text>
                   </View>
-                </View>
-              </View>
+                )}
 
-              <View style={styles.clientStats}>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{client.totalSessions}</Text>
-                  <Text style={styles.statLabel}>Sessions</Text>
+                <View style={styles.clientActions}>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => router.push(`/coach/messages/${client.id}`)}
+                  >
+                    <MessageSquare size={18} color={colors.accent.primary} />
+                    <Text style={styles.actionText}>Message</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => router.push(`/coach/schedule/${client.id}`)}
+                  >
+                    <Calendar size={18} color={colors.accent.primary} />
+                    <Text style={styles.actionText}>Schedule</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity 
+                    style={styles.actionButton}
+                    onPress={() => router.push(`/coach/progress/${client.id}`)}
+                  >
+                    <TrendingUp size={18} color={colors.accent.primary} />
+                    <Text style={styles.actionText}>Progress</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{client.progress}%</Text>
-                  <Text style={styles.statLabel}>Progress</Text>
-                </View>
-                <View style={styles.statItem}>
-                  <Text style={styles.statValue}>
-                    {new Date(client.joinDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                  </Text>
-                  <Text style={styles.statLabel}>Joined</Text>
-                </View>
-              </View>
-
-              {client.nextSession && (
-                <View style={styles.nextSession}>
-                  <Calendar size={16} color={colors.accent.primary} />
-                  <Text style={styles.nextSessionText}>
-                    Next: {new Date(client.nextSession).toLocaleDateString('en-US', { 
-                      month: 'short', 
-                      day: 'numeric',
-                      hour: 'numeric',
-                      minute: '2-digit'
-                    })}
-                  </Text>
-                </View>
-              )}
-
-              <View style={styles.clientActions}>
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => router.push(`/coach/messages/${client.id}`)}
-                >
-                  <MessageSquare size={18} color={colors.accent.primary} />
-                  <Text style={styles.actionText}>Message</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => router.push(`/coach/schedule/${client.id}`)}
-                >
-                  <Calendar size={18} color={colors.accent.primary} />
-                  <Text style={styles.actionText}>Schedule</Text>
-                </TouchableOpacity>
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => router.push(`/coach/progress/${client.id}`)}
-                >
-                  <TrendingUp size={18} color={colors.accent.primary} />
-                  <Text style={styles.actionText}>Progress</Text>
-                </TouchableOpacity>
-              </View>
-            </Card>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+              </Card>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: 1 as const,
     backgroundColor: colors.background.primary,
   },
   header: {
@@ -268,7 +255,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   searchInputContainer: {
-    flex: 1,
+    flex: 1 as const,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.background.secondary,
@@ -281,7 +268,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   searchInput: {
-    flex: 1,
+    flex: 1 as const,
     fontSize: 16,
     color: colors.text.primary,
   },
@@ -319,8 +306,13 @@ const styles = StyleSheet.create({
   filterTextActive: {
     color: colors.text.primary,
   },
+  loading: { flex: 1 as const, justifyContent: 'center', alignItems: 'center' },
+  errorWrap: { paddingHorizontal: 20, alignItems: 'center' },
+  errorText: { color: colors.text.secondary, marginBottom: 8 },
+  retryBtn: { backgroundColor: colors.accent.primary, paddingHorizontal: 14, paddingVertical: 10, borderRadius: 8 },
+  retryText: { color: colors.text.primary, fontWeight: '700' },
   clientsList: {
-    flex: 1,
+    flex: 1 as const,
     paddingHorizontal: 20,
   },
   clientCard: {
@@ -337,13 +329,13 @@ const styles = StyleSheet.create({
   },
   clientInfo: {
     flexDirection: 'row',
-    flex: 1,
+    flex: 1 as const,
   },
   avatar: {
     marginRight: 12,
   },
   clientDetails: {
-    flex: 1,
+    flex: 1 as const,
   },
   clientName: {
     fontSize: 18,

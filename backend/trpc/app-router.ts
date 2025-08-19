@@ -14,6 +14,7 @@ import healthIssuesRoute from "./routes/health/issues/route";
 import coachingListRoute from "./routes/coaching/list/route";
 import coachingSessionsRoute from "./routes/coaching/sessions/route";
 import coachingMessagesRoute from "./routes/coaching/messages/route";
+import coachingClientsRoute from "./routes/coaching/clients/route";
 import checkApiStatusRoute from "./routes/system/api-status/route";
 import shopProductsRoute from "./routes/shop/products/route";
 
@@ -42,6 +43,7 @@ export const appRouter = createTRPCRouter({
   }),
   coaching: createTRPCRouter({
     list: coachingListRoute,
+    clients: coachingClientsRoute,
     sessions: createTRPCRouter({
       list: coachingSessionsRoute.listSessionsRoute,
       book: coachingSessionsRoute.bookSessionRoute,
