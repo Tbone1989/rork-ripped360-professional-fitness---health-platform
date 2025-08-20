@@ -37,14 +37,15 @@ export const useUserStore = create<UserState>()(
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Mock user data
+          const nowIso = new Date().toISOString();
           const userData: User = {
             id: '1',
             email,
             name: 'John Doe',
             profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=500',
             role: role,
-            createdAt: new Date().toISOString(),
-            lastActive: new Date().toISOString(),
+            createdAt: nowIso,
+            lastActive: nowIso,
             preferences: {
               darkMode: true,
               notifications: {
@@ -61,7 +62,7 @@ export const useUserStore = create<UserState>()(
               totalWorkoutTime: 4320,
               streakDays: 12,
               longestStreak: 30,
-              lastWorkout: new Date().toISOString(),
+              lastWorkout: nowIso,
               favoriteWorkouts: [],
               favoriteExercises: [],
             },
@@ -72,6 +73,29 @@ export const useUserStore = create<UserState>()(
               endDate: '2024-01-01',
               autoRenew: true,
             },
+            attachments: [
+              {
+                id: 'att-1',
+                title: 'Blood Panel - Comprehensive',
+                url: 'https://www.hhs.texas.gov/sites/default/files/documents/laws-regulations/forms/hhs-1100.pdf',
+                createdAt: nowIso,
+                visibleToCoaches: false,
+              },
+              {
+                id: 'att-2',
+                title: 'MRI Report - Left Knee',
+                url: 'https://www.massgeneral.org/assets/mgh/pdf/imaging/radiology-report-example.pdf',
+                createdAt: nowIso,
+                visibleToCoaches: true,
+              },
+              {
+                id: 'att-3',
+                title: 'Supplement Protocol',
+                url: 'https://files.nccih.nih.gov/s3fs-public/media_files/Herbal_Supplements_At_A_Glance.pdf',
+                createdAt: nowIso,
+                visibleToCoaches: true,
+              },
+            ],
           };
           
           set({ user: userData, isAuthenticated: true, isLoading: false });
@@ -90,14 +114,15 @@ export const useUserStore = create<UserState>()(
           if (email === 'admin@ripped360.com' && password === 'RippedAdmin2024!') {
             await new Promise(resolve => setTimeout(resolve, 1000));
             
+            const nowIsoAdmin = new Date().toISOString();
             const adminData: User = {
               id: 'admin-1',
               email,
               name: 'System Administrator',
               profileImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=500',
               role: 'admin',
-              createdAt: new Date().toISOString(),
-              lastActive: new Date().toISOString(),
+              createdAt: nowIsoAdmin,
+              lastActive: nowIsoAdmin,
               preferences: {
                 darkMode: true,
                 notifications: {
@@ -114,7 +139,7 @@ export const useUserStore = create<UserState>()(
                 totalWorkoutTime: 0,
                 streakDays: 0,
                 longestStreak: 0,
-                lastWorkout: new Date().toISOString(),
+                lastWorkout: nowIsoAdmin,
                 favoriteWorkouts: [],
                 favoriteExercises: [],
               },
@@ -125,6 +150,15 @@ export const useUserStore = create<UserState>()(
                 endDate: '2030-01-01',
                 autoRenew: true,
               },
+              attachments: [
+                {
+                  id: 'att-admin-1',
+                  title: 'Policy: PHI Handling',
+                  url: 'https://www.hhs.gov/sites/default/files/ocr/privacy/hipaa/understanding/summary/privacysummary.pdf',
+                  createdAt: nowIsoAdmin,
+                  visibleToCoaches: false,
+                },
+              ],
             };
             
             set({ user: adminData, isAuthenticated: true, isAdmin: true, isLoading: false });
