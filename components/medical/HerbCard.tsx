@@ -20,7 +20,7 @@ export const HerbCard: React.FC<HerbCardProps> = ({ herb }) => {
   )}`;
 
   const handlePress = () => {
-    router.push({ pathname: `/supplements/herb/${herb.id}` });
+    router.push({ pathname: '/supplements/herb/[id]', params: { id: herb.id } });
   };
 
   return (
