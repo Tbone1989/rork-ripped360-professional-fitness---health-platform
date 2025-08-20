@@ -9,7 +9,7 @@ interface UserState {
   isAuthenticated: boolean;
   hasHydrated: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string, role?: 'user' | 'coach') => Promise<void>;
+  login: (email: string, password: string, role?: 'user' | 'coach' | 'medical') => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
@@ -29,7 +29,7 @@ export const useUserStore = create<UserState>()(
       hasHydrated: false,
       isAdmin: false,
       
-      login: async (email, password, role = 'user') => {
+      login: async (email, password, role: 'user' | 'coach' | 'medical' = 'user') => {
         set({ isLoading: true });
         
         try {

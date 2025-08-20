@@ -31,7 +31,7 @@ export default function DoctorLoginScreen() {
 
     try {
       setError('');
-      await login(email, password, 'doctor');
+      await login(email, password, 'medical');
       router.replace('/medical');
     } catch (err) {
       setError('Invalid doctor credentials');
