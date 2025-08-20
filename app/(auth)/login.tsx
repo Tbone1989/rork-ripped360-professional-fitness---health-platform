@@ -244,13 +244,7 @@ export default function LoginScreen() {
             <Text style={styles.coachLoginText}>Coach Login</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.attachmentsButton}
-            onPress={() => router.push('/profile/attachments')}
-            testID="attachments-link"
-          >
-            <Text style={styles.attachmentsText}>Attachments</Text>
-          </TouchableOpacity>
+
         </View>
         </ScrollView>
       </KeyboardAvoidingView>

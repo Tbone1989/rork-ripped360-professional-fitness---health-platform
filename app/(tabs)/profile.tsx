@@ -22,7 +22,7 @@ import {
   Users,
   BookOpen,
   Pill,
-
+  Paperclip,
   AlertTriangle,
   Camera,
   TestTube,
@@ -150,43 +150,57 @@ export default function ProfileScreen() {
       icon: <User size={20} color={colors.text.secondary} />,
       title: 'Account Settings',
       onPress: () => router.push('/profile/account'),
+      testID: 'menu-account-settings',
+    },
+    {
+      icon: <Paperclip size={20} color={colors.text.secondary} />,
+      title: 'Attachments',
+      onPress: () => router.push('/profile/attachments'),
+      testID: 'menu-attachments',
     },
     {
       icon: <Trophy size={20} color={colors.status.warning} />,
       title: 'Contest Prep',
       onPress: () => router.push('/(tabs)/contest'),
+      testID: 'menu-contest-prep',
     },
     {
       icon: <ShoppingBag size={20} color={colors.accent.primary} />,
       title: 'Ripped City Store',
       onPress: () => router.push('/(tabs)/shop'),
+      testID: 'menu-store',
     },
     {
       icon: <Bell size={20} color={colors.text.secondary} />,
       title: 'Notifications',
       onPress: () => router.push('/profile/notifications'),
+      testID: 'menu-notifications',
     },
     {
       icon: <CreditCard size={20} color={colors.text.secondary} />,
       title: 'Subscription',
       onPress: () => router.push('/profile/subscription'),
       badge: user?.subscription?.plan === 'premium' ? 'Premium' : undefined,
+      testID: 'menu-subscription',
     },
     {
       icon: <HelpCircle size={20} color={colors.text.secondary} />,
       title: 'Help & Support',
       onPress: () => router.push('/profile/support'),
+      testID: 'menu-support',
     },
     {
       icon: <Shield size={20} color={colors.text.secondary} />,
       title: 'Privacy & Security',
       onPress: () => router.push('/profile/privacy'),
+      testID: 'menu-privacy',
     },
     {
       icon: <TestTube size={20} color={colors.status.info} />,
       title: 'API Test Suite',
       onPress: () => router.push('/test-apis'),
       isSpecial: true,
+      testID: 'menu-api-tests',
     },
 
   ];
@@ -402,6 +416,7 @@ export default function ProfileScreen() {
             key={index}
             style={styles.menuItem}
             onPress={item.onPress}
+            testID={item.testID ?? `menu-item-${index}`}
           >
             <View style={styles.menuItemLeft}>
               {item.icon}
