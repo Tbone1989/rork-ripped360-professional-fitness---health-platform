@@ -22,7 +22,7 @@ import {
   Users,
   BookOpen,
   Pill,
-  UserCog,
+
   AlertTriangle,
   Camera,
   TestTube,
@@ -58,9 +58,7 @@ export default function ProfileScreen() {
     router.replace('/login');
   };
 
-  const handleAdminAccess = () => {
-    router.push('/admin/login');
-  };
+
 
   const handleChangePhoto = () => {
     const options = [
@@ -190,12 +188,7 @@ export default function ProfileScreen() {
       onPress: () => router.push('/test-apis'),
       isSpecial: true,
     },
-    {
-      icon: <UserCog size={20} color={colors.accent.primary} />,
-      title: 'Admin Access',
-      onPress: handleAdminAccess,
-      isSpecial: true,
-    },
+
   ];
 
   return (
