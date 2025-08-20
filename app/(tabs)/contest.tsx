@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -29,13 +29,14 @@ import { useUserStore } from '@/store/userStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { TabBar } from '@/components/ui/TabBar';
 
 const { width } = Dimensions.get('window');
 
 export default function ContestScreen() {
   const { user } = useUserStore();
   const { contestPreps, currentPrep, setCurrentPrep } = useContestStore();
-  const [selectedTab, setSelectedTab] = useState<'overview' | 'peak-week' | 'posing' | 'nutrition'>('overview');
+  const [selectedTab, setSelectedTab] = useState<'overview' | 'peak-week' | 'posing'>('overview');
 
   const isCoach = user?.role === 'coach';
   const userPreps = contestPreps.filter(prep => 
@@ -55,7 +56,7 @@ export default function ContestScreen() {
       case 'planning': return colors.accent.secondary;
       case 'prep': return colors.accent.primary;
       case 'peak-week': return '#FF6B35';
-      case 'post-contest': return colors.success;
+      case 'post-contest': return colors.status.success;
       default: return colors.text.tertiary;
     }
   };
@@ -67,6 +68,28 @@ export default function ContestScreen() {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+
+  const handleTabChange = useCallback((key: string) => {
+    console.log('[ContestScreen] Tab change', key);
+    if (key === 'overview') {
+      setSelectedTab('overview');
+      return;
+    }
+    if (key === 'peak-week') {
+      router.push('/contest/peak-week');
+      return;
+    }
+    if (key === 'posing') {
+      router.push('/contest/posing');
+      return;
+    }
+  }, []);
+
+  const contestTabs = useMemo(() => [
+    { key: 'overview', label: 'Overview', icon: <Trophy size={16} color={colors.text.secondary} /> },
+    { key: 'peak-week', label: 'Peak Week', icon: <Calendar size={16} color={colors.text.secondary} /> },
+    { key: 'posing', label: 'Posing', icon: <Target size={16} color={colors.text.secondary} /> },
+  ], []);
 
   const renderOverview = () => (
     <View style={styles.tabContent}>
@@ -84,8 +107,8 @@ export default function ContestScreen() {
                     {new Date(currentPrep.contestDate).toLocaleDateString()}
                   </Text>
                   <Badge 
-                    text={currentPrep.category.replace('-', ' ')} 
-                    variant="secondary"
+                    label={currentPrep.category.replace('-', ' ')} 
+                    variant="default"
                     style={styles.categoryBadge}
                   />
                 </View>
@@ -158,7 +181,7 @@ export default function ContestScreen() {
             <View style={styles.phaseHeader}>
               <Text style={styles.phaseTitle}>Current Phase</Text>
               <Badge 
-                text={currentPrep.status} 
+                label={currentPrep.status} 
                 variant="primary"
                 style={{ backgroundColor: getStatusColor(currentPrep.status) }}
               />
@@ -234,7 +257,7 @@ export default function ContestScreen() {
         }} 
       />
       
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} testID="contest-scroll">
         {userPreps.length > 0 && (
           <View style={styles.prepSelector}>
             <Text style={styles.selectorTitle}>
@@ -255,8 +278,8 @@ export default function ContestScreen() {
                     {getDaysUntilContest(prep.contestDate)} days
                   </Text>
                   <Badge 
-                    text={prep.status} 
-                    variant="secondary"
+                    label={prep.status} 
+                    variant="default"
                     style={{ backgroundColor: getStatusColor(prep.status) }}
                   />
                 </TouchableOpacity>
@@ -264,6 +287,15 @@ export default function ContestScreen() {
             </ScrollView>
           </View>
         )}
+
+        <View style={styles.topTabs}>
+          <TabBar
+            tabs={contestTabs}
+            activeTab={selectedTab}
+            onTabChange={handleTabChange}
+            style={styles.tabBar}
+          />
+        </View>
 
         {renderOverview()}
       </ScrollView>
@@ -315,6 +347,13 @@ const styles = StyleSheet.create({
   },
   tabContent: {
     padding: 20,
+  },
+  topTabs: {
+    paddingHorizontal: 20,
+    marginBottom: 8,
+  },
+  tabBar: {
+    borderRadius: 12,
   },
   contestCard: {
     marginBottom: 20,

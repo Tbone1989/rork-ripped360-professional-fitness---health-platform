@@ -56,9 +56,9 @@ export default function PeakWeekScreen() {
   const contestDate = new Date(currentPrep.contestDate);
   
   // Generate 7 days leading up to contest
-  const generatePeakWeekDays = () => {
-    const days = [];
-    for (let i = 7; i >= 1; i--) {
+  const generatePeakWeekDays = (): PeakWeekDay[] => {
+    const days: PeakWeekDay[] = [];
+    for (let i = 7 as number; i >= 1; i--) {
       const date = new Date(contestDate);
       date.setDate(date.getDate() - i);
       
@@ -67,10 +67,10 @@ export default function PeakWeekScreen() {
         day: i,
         date: date.toISOString(),
         photos: [],
-        energy: 3,
-        fullness: 3,
-        vascularity: 3,
-        conditioning: 3,
+        energy: 3 as 1 | 2 | 3 | 4 | 5,
+        fullness: 3 as 1 | 2 | 3 | 4 | 5,
+        vascularity: 3 as 1 | 2 | 3 | 4 | 5,
+        conditioning: 3 as 1 | 2 | 3 | 4 | 5,
         notes: '',
         completed: false
       });
@@ -113,7 +113,7 @@ export default function PeakWeekScreen() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return colors.success;
+      case 'completed': return colors.status.success;
       case 'current': return colors.accent.primary;
       case 'upcoming': return colors.text.tertiary;
       default: return colors.text.tertiary;
@@ -139,7 +139,7 @@ export default function PeakWeekScreen() {
           </View>
           <View style={styles.dayStatus}>
             {day.completed ? (
-              <CheckCircle size={20} color={colors.success} />
+              <CheckCircle size={20} color={colors.status.success} />
             ) : (
               <Circle size={20} color={colors.text.tertiary} />
             )}
@@ -189,7 +189,7 @@ export default function PeakWeekScreen() {
           </Text>
           <Button
             title="Create Protocol"
-            onPress={() => router.push('/contest/protocol-setup')}
+            onPress={() => router.push('/contest/create-protocol')}
             style={styles.createProtocolButton}
           />
         </Card>
@@ -224,7 +224,7 @@ export default function PeakWeekScreen() {
         
         <TouchableOpacity
           style={styles.editProtocolButton}
-          onPress={() => router.push('/contest/protocol-setup')}
+          onPress={() => router.push('/contest/create-protocol')}
         >
           <Text style={styles.editProtocolText}>Edit Protocol</Text>
         </TouchableOpacity>
@@ -238,7 +238,7 @@ export default function PeakWeekScreen() {
         options={{ 
           title: 'Peak Week Protocol',
           headerRight: () => (
-            <TouchableOpacity onPress={() => router.push('/contest/protocol-setup')}>
+            <TouchableOpacity onPress={() => router.push('/contest/create-protocol')}>
               <Plus size={24} color={colors.accent.primary} />
             </TouchableOpacity>
           )
@@ -264,7 +264,7 @@ export default function PeakWeekScreen() {
 
         <Card style={styles.tipsCard}>
           <View style={styles.tipsHeader}>
-            <AlertTriangle size={20} color={colors.warning} />
+            <AlertTriangle size={20} color={colors.status.warning} />
             <Text style={styles.tipsTitle}>Peak Week Tips</Text>
           </View>
           <Text style={styles.tipText}>
