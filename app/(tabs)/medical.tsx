@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, PlusCircle, FileText, Pill, Camera, Brain } from 'lucide-react-native';
+import { Search, Filter, PlusCircle, FileText, Pill, Camera, Brain, Leaf } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -67,12 +67,23 @@ export default function MedicalScreen() {
                   icon={<PlusCircle size={18} color={colors.text.primary} />}
                   onPress={() => router.push('/medical/upload')}
                   style={[styles.actionButton, styles.actionButtonHalf]}
+                  testID="btn-upload-results"
                 />
                 <Button
                   title="AI Analysis"
                   icon={<Brain size={18} color={colors.text.primary} />}
                   onPress={() => router.push('/medical/ai-analysis')}
                   style={[styles.actionButton, styles.actionButtonHalf, styles.aiButton]}
+                  testID="btn-ai-analysis"
+                />
+              </View>
+              <View style={styles.actionButtonsSecondary}>
+                <Button
+                  title="Holistic Care"
+                  icon={<Leaf size={18} color={colors.text.primary} />}
+                  onPress={() => router.push('/medical/holistic')}
+                  style={[styles.actionButton]}
+                  testID="btn-holistic-care"
                 />
               </View>
             </View>
@@ -199,6 +210,11 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   actionButtons: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  actionButtonsSecondary: {
+    marginTop: 10,
     flexDirection: 'row',
     gap: 10,
   },
