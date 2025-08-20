@@ -16,6 +16,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { peptidesMedicines } from '@/mocks/supplements';
+import { getImageForMedicine } from '@/utils/medicalImages';
 
 export default function MedicineDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -32,6 +33,8 @@ export default function MedicineDetailScreen() {
     );
   }
 
+  const imageUri = medicine.imageUrl ?? getImageForMedicine(medicine);
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -43,7 +46,7 @@ export default function MedicineDetailScreen() {
         </TouchableOpacity>
         
         <Image
-          source={{ uri: medicine.imageUrl }}
+          source={{ uri: imageUri }}
           style={styles.image}
           contentFit="cover"
         />

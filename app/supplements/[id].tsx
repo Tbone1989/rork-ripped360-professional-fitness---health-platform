@@ -17,6 +17,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { popularSupplements } from '@/mocks/supplements';
+import { getImageForSupplement } from '@/utils/medicalImages';
 
 export default function SupplementDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -37,6 +38,8 @@ export default function SupplementDetailScreen() {
     Linking.openURL(url);
   };
 
+  const imageUri = supplement.imageUrl ?? getImageForSupplement(supplement);
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -48,7 +51,7 @@ export default function SupplementDetailScreen() {
         </TouchableOpacity>
         
         <Image
-          source={{ uri: supplement.imageUrl }}
+          source={{ uri: imageUri }}
           style={styles.image}
           contentFit="cover"
         />

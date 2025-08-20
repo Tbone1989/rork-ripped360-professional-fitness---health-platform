@@ -43,7 +43,36 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
       ? ((item as SupplementInfo).benefits ?? [])
       : ((item as MedicineInfo).usedFor ?? []);
 
-  const imageUri = item.imageUrl ?? 'https://images.unsplash.com/photo-1586015555751-63bb77f4326b?q=80&w=600&auto=format&fit=crop';
+  const getImageForCategory = (): string => {
+    const name = (item.name ?? '').toLowerCase();
+    const category = (item.category ?? '').toLowerCase();
+
+    if (type === 'medicine') {
+      if (category.includes('glp') || category.includes('gip') || category.includes('peptide') || name.includes('cjc') || name.includes('ipamorelin') || name.includes('bpc') || name.includes('tb-500')) {
+        return 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=800&auto=format&fit=crop';
+      }
+      if (category.includes('hormone') || name.includes('testosterone') || name.includes('estradiol') || name.includes('progesterone')) {
+        return 'https://images.unsplash.com/photo-1578496781380-937e56b1fd7e?q=80&w=800&auto=format&fit=crop';
+      }
+      return 'https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=800&auto=format&fit=crop';
+    }
+
+    if (category.includes('protein') || name.includes('whey')) {
+      return 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?q=80&w=800&auto=format&fit=crop';
+    }
+    if (name.includes('creatine') || category.includes('performance')) {
+      return 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=800&auto=format&fit=crop';
+    }
+    if (name.includes('fish oil') || name.includes('omega')) {
+      return 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop';
+    }
+    if (category.includes('vitamin') || name.includes('vitamin d')) {
+      return 'https://images.unsplash.com/photo-1579154204601-01588f351e67?q=80&w=800&auto=format&fit=crop';
+    }
+    return 'https://images.unsplash.com/photo-1586942593569-4048b285197e?q=80&w=800&auto=format&fit=crop';
+  };
+
+  const imageUri = item.imageUrl ?? getImageForCategory();
 
   const toggleExpanded = () => {
     console.log('[SupplementCard] toggleExpanded', { id: item.id, name: item.name, expandedTo: !expanded });
