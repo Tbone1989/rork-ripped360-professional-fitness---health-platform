@@ -111,6 +111,27 @@ function RootLayoutNav() {
           presentation: "card",
         }} 
       />
+      <Stack.Screen 
+        name="contest/posing" 
+        options={{ 
+          title: "Posing Practice",
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="contest/peak-week" 
+        options={{ 
+          title: "Peak Week Protocol",
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="contest/create-protocol" 
+        options={{ 
+          title: "Create Protocol",
+          presentation: "modal",
+        }} 
+      />
     </Stack>
   );
 }
@@ -119,6 +140,8 @@ export default function RootLayout() {
   useEffect(() => {
     SplashScreen.hideAsync();
   }, []);
+
+  console.log('[RootLayout] Mounted');
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
