@@ -173,7 +173,7 @@ export default function CreateTimerScreen() {
                   </View>
                 </View>
                 <TouchableOpacity onPress={() => removePose(p.id)} accessibilityLabel={`Remove pose ${idx + 1}`} style={styles.removeBtn} testID={`remove-pose-${idx}`}>
-                  <Trash2 size={18} color={colors.danger ?? '#ff3b30'} />
+                  <Trash2 size={18} color={colors.status.error} />
                 </TouchableOpacity>
               </View>
             ))}
