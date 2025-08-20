@@ -9,8 +9,9 @@ import { Button } from '@/components/ui/Button';
 import { TabBar } from '@/components/ui/TabBar';
 import { BloodworkCard } from '@/components/medical/BloodworkCard';
 import { SupplementCard } from '@/components/medical/SupplementCard';
+import { HerbCard } from '@/components/medical/HerbCard';
 import { recentBloodworkResults } from '@/mocks/bloodwork';
-import { popularSupplements, peptidesMedicines } from '@/mocks/supplements';
+import { popularSupplements, peptidesMedicines, herbalInteractions } from '@/mocks/supplements';
 
 const tabs = [
   { key: 'bloodwork', label: 'Bloodwork' },
@@ -95,6 +96,12 @@ export default function MedicalScreen() {
                   item={supplement} 
                   type="supplement" 
                 />
+              ))}
+            </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Herbal Medicine</Text>
+              {herbalInteractions.map((herb) => (
+                <HerbCard key={herb.id} herb={herb} />
               ))}
             </View>
           </>
