@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -22,7 +22,8 @@ export default function MedicineDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   
-  const medicine = peptidesMedicines.find(m => m.id === id);
+  const idParam = Array.isArray(id) ? id?.[0] : id;
+  const medicine = useMemo(() => peptidesMedicines.find(m => m.id === (idParam ?? '')), [idParam]);
   
   if (!medicine) {
     return (
@@ -33,22 +34,55 @@ export default function MedicineDetailScreen() {
     );
   }
 
-  const imageUri = medicine.imageUrl ?? getImageForMedicine(medicine);
+  const [currentUri, setCurrentUri] = useState<string>('https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=900&auto=format&fit=crop');
+
+  useEffect(() => {
+    try {
+      if (medicine) {
+        const next = medicine.imageUrl ?? getImageForMedicine(medicine);
+        console.log('[MedicineDetail] init image', { id: medicine.id, next });
+        setCurrentUri(next);
+      } else {
+        setCurrentUri('https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=900&auto=format&fit=crop');
+      }
+    } catch (err) {
+      console.log('[MedicineDetail] init image error', err);
+      setCurrentUri('https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=900&auto=format&fit=crop');
+    }
+  }, [medicine]);
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} testID="medicineDetailScroll">
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => router.back()}
+          testID="backButton"
         >
           <ArrowLeft size={24} color={colors.text.primary} />
         </TouchableOpacity>
         
         <Image
-          source={{ uri: imageUri }}
+          source={{ uri: currentUri }}
           style={styles.image}
           contentFit="cover"
+          testID="medicineImage"
+          onError={(err) => {
+            console.log('[MedicineDetail] image error -> fallback', { currentUri, err });
+            try {
+              if (medicine) {
+                const fallback = getImageForMedicine(medicine);
+                if (currentUri !== fallback) {
+                  setCurrentUri(fallback);
+                  return;
+                }
+              }
+              setCurrentUri('https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=900&auto=format&fit=crop');
+            } catch (e) {
+              console.log('[MedicineDetail] fallback failed, using final fallback', e);
+              setCurrentUri('https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=900&auto=format&fit=crop');
+            }
+          }}
         />
         
         <View style={styles.headerInfo}>
@@ -71,7 +105,7 @@ export default function MedicineDetailScreen() {
         </View>
       </View>
       
-      <View style={styles.content}>
+      <View style={styles.content} testID="medicineContent">
         <Card style={styles.descriptionCard}>
           <Text style={styles.sectionTitle}>Description</Text>
           <Text style={styles.description}>{medicine.description}</Text>
