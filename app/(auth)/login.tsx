@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowRight, Apple, Microscope, ShieldQuestion } from 'lucide-react-native';
+import { ArrowRight, Apple, Microscope, ShieldQuestion, Stethoscope, ShieldCheck } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
@@ -237,14 +237,35 @@ export default function LoginScreen() {
               <Text style={styles.signUpText}>Sign Up</Text>
             </TouchableOpacity>
           </View>
-          <TouchableOpacity 
-            style={styles.coachLoginButton}
-            onPress={() => router.push('/(auth)/coach-login')}
-          >
-            <Text style={styles.coachLoginText}>Coach Login</Text>
-          </TouchableOpacity>
 
+          <View style={styles.roleButtonsRow}>
+            <TouchableOpacity
+              style={styles.roleButton}
+              onPress={() => router.push('/(auth)/coach-login')}
+              testID="coach-login-link"
+            >
+              <Microscope size={16} color={colors.text.secondary} />
+              <Text style={styles.roleButtonText}>Coach</Text>
+            </TouchableOpacity>
 
+            <TouchableOpacity
+              style={styles.roleButton}
+              onPress={() => router.push('/(auth)/doctor-login')}
+              testID="doctor-login-link"
+            >
+              <Stethoscope size={16} color={colors.text.secondary} />
+              <Text style={styles.roleButtonText}>Doctor</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.roleButton}
+              onPress={() => router.push('/(auth)/admin-login')}
+              testID="admin-login-link"
+            >
+              <ShieldCheck size={16} color={colors.text.secondary} />
+              <Text style={styles.roleButtonText}>Admin</Text>
+            </TouchableOpacity>
+          </View>
         </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -365,18 +386,28 @@ const styles = StyleSheet.create({
     color: colors.accent.primary,
     fontWeight: '600',
   },
-  coachLoginButton: {
+  roleButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    width: '100%',
+    justifyContent: 'space-between',
+  },
+  roleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     paddingVertical: 12,
-    paddingHorizontal: 24,
     backgroundColor: colors.background.secondary,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border.light,
   },
-  coachLoginText: {
+  roleButtonText: {
     color: colors.text.secondary,
     fontSize: 14,
     fontWeight: '600',
+    marginLeft: 6,
     textAlign: 'center',
   },
   dividerRow: {
