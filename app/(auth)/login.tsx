@@ -244,13 +244,6 @@ export default function LoginScreen() {
             <Text style={styles.coachLoginText}>Coach Login</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.attachmentsButton}
-            onPress={() => router.push('/profile/attachments')}
-            testID="login-attachments"
-          >
-            <Text style={styles.attachmentsText}>Attachments</Text>
-          </TouchableOpacity>
 
         </View>
         </ScrollView>
@@ -381,21 +374,6 @@ const styles = StyleSheet.create({
     borderColor: colors.border.light,
   },
   coachLoginText: {
-    color: colors.text.secondary,
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  attachmentsButton: {
-    marginTop: 12,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    backgroundColor: colors.background.secondary,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-  },
-  attachmentsText: {
     color: colors.text.secondary,
     fontSize: 14,
     fontWeight: '600',
