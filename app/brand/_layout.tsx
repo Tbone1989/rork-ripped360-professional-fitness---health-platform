@@ -12,7 +12,6 @@ export default function BrandLayout() {
         headerTitleStyle: {
           fontWeight: '600',
         },
-        headerBackTitleVisible: false,
       }}
     >
       <Stack.Screen
@@ -43,6 +42,12 @@ export default function BrandLayout() {
         name="affiliate"
         options={{
           title: 'Affiliate Program',
+        }}
+      />
+      <Stack.Screen
+        name="faq"
+        options={{
+          title: 'FAQs',
         }}
       />
     </Stack>
