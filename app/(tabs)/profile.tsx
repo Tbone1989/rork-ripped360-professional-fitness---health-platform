@@ -145,6 +145,7 @@ export default function ProfileScreen() {
     }
   };
 
+  const showAttachments = user?.role === 'user';
   const menuItems = [
     {
       icon: <User size={20} color={colors.text.secondary} />,
@@ -152,12 +153,12 @@ export default function ProfileScreen() {
       onPress: () => router.push('/profile/account'),
       testID: 'menu-account-settings',
     },
-    {
+    ...(showAttachments ? [{
       icon: <Paperclip size={20} color={colors.text.secondary} />,
       title: 'Attachments',
       onPress: () => router.push('/profile/attachments'),
       testID: 'menu-attachments',
-    },
+    }] as const : []),
     {
       icon: <Trophy size={20} color={colors.status.warning} />,
       title: 'Contest Prep',

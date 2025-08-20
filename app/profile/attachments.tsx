@@ -5,19 +5,28 @@ import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { useUserStore } from '@/store/userStore';
 import { Attachment } from '@/types/user';
-import { FileText, Link as LinkIcon, ShieldCheck } from 'lucide-react-native';
+import { FileText, Link as LinkIcon, ShieldAlert, ShieldCheck } from 'lucide-react-native';
 
 export default function AttachmentsVisibilityScreen() {
   const user = useUserStore((s) => s.user);
   const { updateUser } = useUserStore();
   const [localAttachments, setLocalAttachments] = useState<Attachment[]>(user?.attachments ?? []);
+  const isClient = user?.role === 'user';
 
   const toggleVisibility = (index: number) => {
+    if (!isClient) {
+      Alert.alert('Not available', 'Only clients can modify attachment visibility.');
+      return;
+    }
     setLocalAttachments((prev) => prev.map((a, i) => (i === index ? { ...a, visibleToCoaches: !a.visibleToCoaches } : a)));
   };
 
   const save = () => {
     try {
+      if (!isClient) {
+        Alert.alert('Not available', 'Only clients can save attachment visibility.');
+        return;
+      }
       updateUser({ attachments: localAttachments });
       Alert.alert('Saved', 'Attachment visibility updated.');
     } catch (e) {
@@ -50,6 +59,12 @@ export default function AttachmentsVisibilityScreen() {
           <ShieldCheck size={18} color={colors.accent.primary} />
           <Text style={styles.infoText}>Only items toggled on are visible to verified coaches. Your email and phone stay hidden.</Text>
         </View>
+        {!isClient && (
+          <View style={styles.warnRow}>
+            <ShieldAlert size={18} color={colors.status.warning} />
+            <Text style={styles.warnText}>This area is for clients. Please use your portal to view client files.</Text>
+          </View>
+        )}
       </Card>
 
       <FlatList
@@ -87,13 +102,14 @@ export default function AttachmentsVisibilityScreen() {
                 onValueChange={() => toggleVisibility(index)}
                 trackColor={{ false: colors.border.medium, true: colors.accent.primary }}
                 thumbColor={colors.background.card}
+                disabled={!isClient}
               />
             </View>
           </Card>
         )}
       />
 
-      <TouchableOpacity style={styles.saveBtn} onPress={save} testID="save-attachments">
+      <TouchableOpacity style={[styles.saveBtn, !isClient && styles.saveBtnDisabled]} onPress={save} disabled={!isClient} testID="save-attachments">
         <Text style={styles.saveText}>Save</Text>
       </TouchableOpacity>
     </View>
@@ -105,6 +121,8 @@ const styles = StyleSheet.create({
   infoCard: { margin: 16, padding: 12 },
   infoRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   infoText: { color: colors.text.secondary, fontSize: 13, flex: 1 },
+  warnRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 8 },
+  warnText: { color: colors.status.warning, fontSize: 12, flex: 1 },
   listEmptyContainer: { flexGrow: 1, justifyContent: 'center' },
   empty: { alignItems: 'center', padding: 24 },
   emptyTitle: { color: colors.text.primary, fontSize: 16, fontWeight: '600', marginBottom: 6 },
@@ -118,5 +136,6 @@ const styles = StyleSheet.create({
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   link: { color: colors.accent.primary, fontSize: 12, flexShrink: 1 },
   saveBtn: { margin: 16, backgroundColor: colors.accent.primary, borderRadius: 10, alignItems: 'center', paddingVertical: 14 },
+  saveBtnDisabled: { opacity: 0.6 },
   saveText: { color: colors.text.primary, fontWeight: '700', fontSize: 16 },
 });
