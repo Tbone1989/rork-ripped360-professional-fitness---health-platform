@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View, TouchableOpacity, Animated, Easing, Platform, Text, PanResponder, GestureResponderEvent, PanResponderGestureState } from 'react-native';
+import { StyleSheet, View, TouchableOpacity, Animated, Easing, Platform, Text, PanResponder, GestureResponderEvent, PanResponderGestureState, Pressable } from 'react-native';
 import { colors } from '@/constants/colors';
 import { Plus, Dumbbell, Utensils, ScanLine, Activity, MessageCircle } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -117,10 +117,9 @@ export const ShortcutButton: React.FC<{ testID?: string }> = ({ testID }) => {
 
   return (
     <View pointerEvents="box-none" style={StyleSheet.absoluteFill}>
-      <TouchableOpacity
-        activeOpacity={1}
+      <Pressable
         onPress={handleBackdrop}
-        style={[styles.backdrop, { opacity: open ? 1 : 0 }]} 
+        style={[styles.backdrop, { opacity: open ? 1 : 0 }]}
         pointerEvents={open ? 'auto' : 'none'}
         testID="shortcut-backdrop"
         accessibilityRole="button"
