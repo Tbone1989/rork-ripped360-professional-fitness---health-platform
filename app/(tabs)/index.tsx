@@ -2,7 +2,6 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign } from 'lucide-react-native';
-import { ShortcutButton } from '@/components/ui/ShortcutButton';
 
 import { colors } from '@/constants/colors';
 import { brandAssets } from '@/constants/brand';
@@ -298,7 +297,6 @@ export default function HomeScreen() {
           </Card>
         </View>
       </ScrollView>
-      <ShortcutButton testID="global-shortcut" />
     </View>
   );
 }
