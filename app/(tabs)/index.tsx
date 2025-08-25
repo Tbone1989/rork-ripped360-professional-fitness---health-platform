@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign } from 'lucide-react-native';
 
@@ -18,11 +18,35 @@ import { featuredWorkoutPlans } from '@/mocks/workouts';
 import { workoutCategories } from '@/mocks/workouts';
 import { featuredCoaches } from '@/mocks/coaches';
 import { featuredProducts } from '@/mocks/products';
+import { trpc } from '@/lib/trpc';
 
 export default function HomeScreen() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
   const { cartItems } = useShopStore();
+  const { data: shopData } = trpc.shop.products.useQuery({});
+  type FeaturedItem = { id: string; name: string; image: string; price?: number; rating?: number; isExternal: boolean; url?: string };
+  const featuredList: FeaturedItem[] = React.useMemo(() => {
+    const api = Array.isArray(shopData) ? (shopData as any[]).slice(0, 3) : [];
+    if (api.length > 0) {
+      return api.map((p: any) => ({
+        id: String(p.id ?? p.title ?? Math.random()),
+        name: String(p.title ?? 'Product'),
+        image: String(p.image ?? 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=500'),
+        price: typeof p.price === 'number' ? p.price : undefined,
+        isExternal: true,
+        url: typeof p.url === 'string' ? p.url : undefined,
+      }));
+    }
+    return featuredProducts.slice(0, 3).map((p) => ({
+      id: p.id,
+      name: p.name,
+      image: p.images[0],
+      price: p.price,
+      rating: p.rating,
+      isExternal: false,
+    }));
+  }, [shopData]);
 
   return (
     <View style={styles.container}>
@@ -76,41 +100,77 @@ export default function HomeScreen() {
         </View>
 
       <View style={styles.quickActions}>
-        <Card style={styles.quickActionCard}>
-          <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 0, 0, 0.12)' }]}>
-              <Dumbbell size={20} color={colors.accent.primary} />
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => router.push('/workouts')}
+          style={styles.quickActionCard}
+          testID="qa-workouts"
+          accessibilityRole="button"
+          accessibilityLabel="Go to Workouts"
+        >
+          <Card>
+            <View style={styles.quickActionContent}>
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 0, 0, 0.12)' }]}>
+                <Dumbbell size={20} color={colors.accent.primary} />
+              </View>
+              <Text style={styles.quickActionText}>Workouts</Text>
             </View>
-            <Text style={styles.quickActionText}>Workouts</Text>
-          </View>
-        </Card>
-        
-        <Card style={styles.quickActionCard}>
-          <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(30, 136, 229, 0.12)' }]}>
-              <Users size={20} color={colors.status.info} />
+          </Card>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => router.push('/coaching')}
+          style={styles.quickActionCard}
+          testID="qa-coaching"
+          accessibilityRole="button"
+          accessibilityLabel="Go to Coaching"
+        >
+          <Card>
+            <View style={styles.quickActionContent}>
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(30, 136, 229, 0.12)' }]}>
+                <Users size={20} color={colors.status.info} />
+              </View>
+              <Text style={styles.quickActionText}>Coaching</Text>
             </View>
-            <Text style={styles.quickActionText}>Coaching</Text>
-          </View>
-        </Card>
-        
-        <Card style={styles.quickActionCard}>
-          <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(0, 200, 81, 0.12)' }]}>
-              <Activity size={20} color={colors.status.success} />
+          </Card>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => router.push('/medical')}
+          style={styles.quickActionCard}
+          testID="qa-medical"
+          accessibilityRole="button"
+          accessibilityLabel="Go to Medical"
+        >
+          <Card>
+            <View style={styles.quickActionContent}>
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(0, 200, 81, 0.12)' }]}>
+                <Activity size={20} color={colors.status.success} />
+              </View>
+              <Text style={styles.quickActionText}>Medical</Text>
             </View>
-            <Text style={styles.quickActionText}>Medical</Text>
-          </View>
-        </Card>
-        
-        <Card style={styles.quickActionCard}>
-          <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 215, 0, 0.16)' }]}>
-              <TrendingUp size={20} color={colors.status.warning} />
+          </Card>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          onPress={() => router.push('/meals/progress')}
+          style={styles.quickActionCard}
+          testID="qa-progress"
+          accessibilityRole="button"
+          accessibilityLabel="Go to Progress"
+        >
+          <Card>
+            <View style={styles.quickActionContent}>
+              <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 215, 0, 0.16)' }]}>
+                <TrendingUp size={20} color={colors.status.warning} />
+              </View>
+              <Text style={styles.quickActionText}>Progress</Text>
             </View>
-            <Text style={styles.quickActionText}>Progress</Text>
-          </View>
-        </Card>
+          </Card>
+        </TouchableOpacity>
       </View>
 
         {/* Featured Products */}
@@ -126,24 +186,33 @@ export default function HomeScreen() {
           </View>
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
-            {featuredProducts.slice(0, 3).map((product) => (
+            {featuredList.map((item) => (
               <TouchableOpacity
-                key={product.id}
+                key={item.id}
                 style={styles.featuredProduct}
-                onPress={() => router.push(`/shop/product/${product.id}`)}
+                onPress={() => (item.isExternal && item.url ? Linking.openURL(item.url) : router.push(`/shop/product/${item.id}`))}
+                testID={`featured-product-${item.id}`}
+                accessibilityRole="button"
+                accessibilityLabel={`Open ${item.name}`}
               >
-                <Image source={{ uri: product.images[0] }} style={styles.featuredImage} />
-                <Text style={styles.featuredName} numberOfLines={2}>{product.name}</Text>
-                <View style={styles.featuredRating}>
-                  <Star size={12} color={colors.status.warning} fill={colors.status.warning} />
-                  <Text style={styles.ratingText}>{product.rating}</Text>
-                </View>
-                <Text style={styles.featuredPrice}>${product.price}</Text>
-                {product.originalPrice && (
-                  <Text style={styles.featuredOriginalPrice}>${product.originalPrice}</Text>
+                <Image source={{ uri: item.image }} style={styles.featuredImage} />
+                <Text style={styles.featuredName} numberOfLines={2}>{item.name}</Text>
+                {typeof item.rating === 'number' && (
+                  <View style={styles.featuredRating}>
+                    <Star size={12} color={colors.status.warning} fill={colors.status.warning} />
+                    <Text style={styles.ratingText}>{item.rating}</Text>
+                  </View>
+                )}
+                {typeof item.price === 'number' && (
+                  <Text style={styles.featuredPrice}>${item.price}</Text>
                 )}
               </TouchableOpacity>
             ))}
+            {featuredList.length === 0 && (
+              <View style={{ paddingHorizontal: 16, justifyContent: 'center' }}>
+                <Text style={{ color: colors.text.secondary }}>No featured items yet. Tap Shop All to browse.</Text>
+              </View>
+            )}
           </ScrollView>
         </View>
 
