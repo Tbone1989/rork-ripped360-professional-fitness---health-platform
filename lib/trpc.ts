@@ -14,28 +14,28 @@ const getBaseUrl = () => {
   }
 
   if (Platform.OS === "web") {
-    if (typeof window !== "undefined" && window.location?.origin) {
-      return window.location.origin;
-    }
-    return "http://localhost:3000";
+    return "";
   }
 
   const hostUri: string | undefined = (Constants as any)?.expoConfig?.hostUri ?? undefined;
   if (hostUri) {
-    const host = hostUri.split(":")[0];
-    return `http://${host}:3000`;
+    const clean = hostUri.split("?")[0];
+    const host = clean.split(":")[0];
+    return `http://${host}:19000`;
   }
 
-  return "http://localhost:3000";
+  return "http://localhost:19000";
 };
+
+const endpointUrl = Platform.OS === "web" ? "/api/trpc" : `${getBaseUrl()}/api/trpc`;
 
 export const trpcClient = trpc.createClient({
   links: [
     loggerLink({
-      enabled: (opts) => process.env.NODE_ENV === "development",
+      enabled: () => process.env.NODE_ENV === "development" && Platform.OS !== "web",
     }),
     httpLink({
-      url: `${getBaseUrl()}/api/trpc`,
+      url: endpointUrl,
       transformer: superjson,
       fetch: async (url, options) => {
         console.log("🔄 tRPC Request:", url);
@@ -83,7 +83,7 @@ export const trpcClient = trpc.createClient({
 
           if (error instanceof TypeError && (error as TypeError).message === "Failed to fetch") {
             throw new Error(
-              `Cannot connect to backend at ${getBaseUrl()}. If you are on a device, set EXPO_PUBLIC_RORK_API_BASE_URL to your machine URL (e.g. http://192.168.1.10:3000).`
+              `Cannot connect to backend at ${endpointUrl}. If you are on a device, set EXPO_PUBLIC_RORK_API_BASE_URL to your machine URL (e.g. http://192.168.1.10:19000).`
             );
           }
 
