@@ -23,6 +23,8 @@ function Dosage({ range }: { range: DosageRange }) {
 
 function IngredientItem({ item }: { item: IngredientGuide }) {
   const doses = Array.isArray(item.recommended) ? item.recommended : [item.recommended];
+  const hasFood = (item.foodSources ?? []).length > 0;
+  const hasContra = (item.contraindications ?? []).length > 0;
   return (
     <View style={styles.ingredientItem} testID={`Ingredient-${item.id}`}>
       <Text style={styles.ingredientName}>{item.name}</Text>
@@ -36,6 +38,20 @@ function IngredientItem({ item }: { item: IngredientGuide }) {
           <Dosage key={idx} range={d} />
         ))}
       </View>
+      {hasFood ? (
+        <View style={styles.infoBlock} testID={`FoodSources-${item.id}`}>
+          <Text style={styles.infoTitle}>Food sources</Text>
+          <Text style={styles.infoText}>{(item.foodSources ?? []).join(', ')}</Text>
+        </View>
+      ) : null}
+      {hasContra ? (
+        <View style={[styles.infoBlock, styles.contraBlock]} testID={`Contra-${item.id}`}>
+          <Text style={[styles.infoTitle, styles.contraTitle]}>Contraindications</Text>
+          {(item.contraindications ?? []).map((c, i) => (
+            <Text key={i} style={[styles.noteLine, styles.contraText]}>• {c}</Text>
+          ))}
+        </View>
+      ) : null}
       {item.notes?.length ? (
         <View style={styles.notesBox}>
           {item.notes.map((n, idx) => (
@@ -238,6 +254,32 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.tertiary,
     borderRadius: 8,
     padding: 8,
+  },
+  infoBlock: {
+    marginTop: 8,
+  },
+  infoTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.text.secondary,
+    marginBottom: 2,
+  },
+  infoText: {
+    fontSize: 12,
+    color: colors.text.primary,
+    lineHeight: 18,
+  },
+  contraBlock: {
+    backgroundColor: colors.background.tertiary,
+    padding: 8,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  contraTitle: {
+    color: colors.status.warning,
+  },
+  contraText: {
+    color: colors.text.primary,
   },
   noteLine: {
     fontSize: 12,

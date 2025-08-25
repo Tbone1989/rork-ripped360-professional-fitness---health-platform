@@ -12,6 +12,8 @@ export interface IngredientGuide {
   evidence: 'Strong' | 'Moderate' | 'Emerging';
   recommended: DosageRange | DosageRange[];
   notes?: string[];
+  foodSources?: string[];
+  contraindications?: string[];
 }
 
 export interface SectionGuide {
@@ -78,6 +80,16 @@ export const preworkoutGuide: SectionGuide = {
         { min: 200, max: 400, unit: 'mg', timing: 'Potassium daily' },
       ],
       notes: ['Adjust sodium upward for heavy sweaters'],
+    },
+    {
+      id: 'betaine',
+      name: 'Betaine (Trimethylglycine, TMG)',
+      purpose: ['Power output', 'Methylation support'],
+      evidence: 'Emerging',
+      recommended: { min: 2.5, max: 2.5, unit: 'g', timing: 'Daily, with a meal' },
+      notes: ['Often split 1.25g twice daily'],
+      foodSources: ['Beets', 'Spinach', 'Whole grains', 'Shellfish'],
+      contraindications: ['Consult clinician if on homocysteine-lowering meds', 'May interact with SAMe regimens'],
     },
     {
       id: 'l-tyrosine',
@@ -171,6 +183,26 @@ export const aminoAcidsGuide: SectionGuide = {
   subtitle: 'Evidence-backed roles, when to use, and practical dosing',
   items: [
     {
+      id: 'tryptophan',
+      name: 'L-Tryptophan',
+      purpose: ['Serotonin precursor', 'Sleep support'],
+      evidence: 'Emerging',
+      recommended: { min: 500, max: 1000, unit: 'mg', timing: '30–60 min before bed' },
+      notes: ['Alternative to 5-HTP for some'],
+      foodSources: ['Turkey', 'Chicken', 'Eggs', 'Dairy', 'Pumpkin seeds'],
+      contraindications: ['Do not combine with SSRIs, MAOIs, or other serotonergic agents unless medically supervised'],
+    },
+    {
+      id: 'histidine',
+      name: 'L-Histidine',
+      purpose: ['Hemoglobin formation', 'Histamine synthesis', 'Potential joint support'],
+      evidence: 'Emerging',
+      recommended: { min: 1, max: 2, unit: 'g', timing: 'With meals' },
+      notes: ['Generally obtained via protein intake; targeted supplementation is uncommon'],
+      foodSources: ['Meat', 'Fish', 'Dairy', 'Legumes', 'Whole grains'],
+      contraindications: ['Histamine intolerance individuals should be cautious'],
+    },
+    {
       id: 'eaas',
       name: 'Essential Amino Acids (EAAs)',
       purpose: ['Muscle protein synthesis', 'Recovery'],
@@ -259,6 +291,56 @@ export const neuroSleepGuide: SectionGuide = {
   subtitle: 'Evidence-informed options and practical dosing',
   items: [
     {
+      id: 'ashwagandha',
+      name: 'Ashwagandha (Withania somnifera, KSM-66/Sensoril)',
+      purpose: ['Stress resilience', 'Sleep quality', 'Cortisol support'],
+      evidence: 'Moderate',
+      recommended: { min: 300, max: 600, unit: 'mg', timing: 'Evening or split AM/PM with food' },
+      notes: ['Standardized root extracts (5% withanolides) are commonly studied'],
+      foodSources: [],
+      contraindications: ['Avoid in hyperthyroidism unless supervised', 'Caution with sedatives; may enhance effects', 'Not for pregnancy unless medically advised'],
+    },
+    {
+      id: 'magnesium-glycinate',
+      name: 'Magnesium Glycinate (Bisglycinate)',
+      purpose: ['Relaxation', 'Sleep quality', 'Muscle cramps'],
+      evidence: 'Moderate',
+      recommended: { min: 200, max: 400, unit: 'mg', timing: 'Evening, with food' },
+      notes: ['Elemental magnesium amount varies by brand; check label'],
+      foodSources: ['Pumpkin seeds', 'Almonds', 'Spinach', 'Dark chocolate', 'Legumes'],
+      contraindications: ['Caution in kidney disease; consult clinician', 'May interact with certain antibiotics (separate dosing by 2–4 hours)'],
+    },
+    {
+      id: 'melatonin',
+      name: 'Melatonin',
+      purpose: ['Sleep onset', 'Circadian adjustment (jet lag)'],
+      evidence: 'Moderate',
+      recommended: { min: 0.3, max: 3, unit: 'mg', timing: '30–60 min before bed' },
+      notes: ['Use lowest effective dose; higher doses may cause grogginess'],
+      foodSources: [],
+      contraindications: ['Caution with anticoagulants, immunosuppressants, and in autoimmune conditions'],
+    },
+    {
+      id: 'valerian',
+      name: 'Valerian Root (Valeriana officinalis)',
+      purpose: ['Sleep latency', 'Calm'],
+      evidence: 'Emerging',
+      recommended: { min: 300, max: 600, unit: 'mg', timing: '30–60 min before bed' },
+      notes: ['Standardized extract preferred; may cause vivid dreams'],
+      foodSources: [],
+      contraindications: ['Avoid combining with alcohol or sedatives; may cause daytime drowsiness'],
+    },
+    {
+      id: 'kava',
+      name: 'Kava (Piper methysticum)',
+      purpose: ['Anxiety reduction', 'Calm'],
+      evidence: 'Emerging',
+      recommended: { min: 100, max: 250, unit: 'mg', timing: 'Evening; standardized to kavalactones' },
+      notes: ['Use only solvent-free, noble cultivars from reputable sources'],
+      foodSources: [],
+      contraindications: ['Do not combine with alcohol or hepatotoxic meds', 'Avoid if liver disease present', 'May enhance effects of CNS depressants'],
+    },
+    {
       id: '5-htp',
       name: '5-HTP (5-Hydroxytryptophan)',
       purpose: ['Sleep quality', 'Mood support', 'Appetite regulation'],
@@ -279,6 +361,8 @@ export const neuroSleepGuide: SectionGuide = {
         'PharmaGABA forms (naturally fermented) are often used in studies',
         'Limited BBB penetration; effects may be via peripheral/vagal pathways',
       ],
+      foodSources: ['Fermented foods (kimchi, yogurt)', 'Brown rice germ'],
+      contraindications: ['May enhance sedatives; caution with driving until you know your response'],
     },
   ],
 };
