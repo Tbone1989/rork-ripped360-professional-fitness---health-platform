@@ -53,7 +53,7 @@ export default function HomeScreen() {
             accessibilityLabel="Ripped City Inc. Logo"
             testID="brand-logo"
           />
-          <Text style={styles.slogan}>GET RIPPED. STAY REAL.</Text>
+          <Text style={styles.slogan}>{`GET RIPPED.\nSTAY REAL.`}</Text>
           <Text style={styles.brandTitle}>Ripped City Inc.</Text>
           <Text style={styles.brandSubtitle}>Premium Coaching • Elite Training • Real Results</Text>
           <Text style={styles.brandDescription}>
@@ -348,6 +348,7 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     marginBottom: 12,
     letterSpacing: 1.2,
+    textAlign: 'center',
   },
   brandTitle: {
     fontSize: 26,
