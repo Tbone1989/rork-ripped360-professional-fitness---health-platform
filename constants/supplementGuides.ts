@@ -253,5 +253,35 @@ export const aminoAcidsGuide: SectionGuide = {
   ],
 };
 
+export const neuroSleepGuide: SectionGuide = {
+  id: 'neuro-sleep',
+  title: 'Calm, Mood, and Sleep Support',
+  subtitle: 'Evidence-informed options and practical dosing',
+  items: [
+    {
+      id: '5-htp',
+      name: '5-HTP (5-Hydroxytryptophan)',
+      purpose: ['Sleep quality', 'Mood support', 'Appetite regulation'],
+      evidence: 'Emerging',
+      recommended: { min: 50, max: 200, unit: 'mg', timing: 'Evening or 30–60 min before bed' },
+      notes: [
+        'Do not combine with SSRIs, MAOIs, or other serotonergic meds unless cleared by your clinician',
+        'Start at 50 mg; increase gradually based on tolerance and effect',
+      ],
+    },
+    {
+      id: 'gaba',
+      name: 'GABA (Gamma-Aminobutyric Acid)',
+      purpose: ['Calm', 'Sleep onset'],
+      evidence: 'Emerging',
+      recommended: { min: 100, max: 300, unit: 'mg', timing: '30–60 min before bed or during acute stress' },
+      notes: [
+        'PharmaGABA forms (naturally fermented) are often used in studies',
+        'Limited BBB penetration; effects may be via peripheral/vagal pathways',
+      ],
+    },
+  ],
+};
+
 export const researchDisclaimer =
   'Educational content only. Not medical advice. Consult your healthcare provider before changes to supplements.';
