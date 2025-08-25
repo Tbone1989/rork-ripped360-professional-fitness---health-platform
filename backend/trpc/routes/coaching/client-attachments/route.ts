@@ -1,7 +1,6 @@
 import { z } from 'zod';
 import { publicProcedure } from '../../../create-context';
 
-// Mock user attachments by client id
 const mockClientAttachments: Record<string, Array<{ id: string; title: string; url: string; createdAt: string; visibleToCoaches: boolean }>> = {
   'user-1': [
     { id: 'a1', title: 'Bloodwork Jan 2024', url: 'https://example.com/bloodwork-jan.pdf', createdAt: '2024-01-05', visibleToCoaches: true },
@@ -14,12 +13,12 @@ const mockClientAttachments: Record<string, Array<{ id: string; title: string; u
   'user-4': [],
 };
 
-// Same mock mapping as clients route. In real app, join through DB
-const mockCoachAssignments: Array<{ coachUserId: string; clientIds: string[] }> = [
-  { coachUserId: 'user-1-coach', clientIds: ['user-1', 'user-3'] },
-  { coachUserId: 'user-2-coach', clientIds: ['user-2'] },
-  { coachUserId: '1', clientIds: ['user-1', 'user-3'] },
-  { coachUserId: '2', clientIds: ['user-1'] },
+// Shared mock assignments for both coaches and medical staff
+const mockProfessionalAssignments: Array<{ professionalUserId: string; clientIds: string[] }> = [
+  { professionalUserId: 'user-1-coach', clientIds: ['user-1', 'user-3'] },
+  { professionalUserId: 'user-2-coach', clientIds: ['user-2'] },
+  { professionalUserId: '1', clientIds: ['user-1', 'user-3'] },
+  { professionalUserId: '2', clientIds: ['user-1'] },
 ];
 
 export const clientAttachmentsRoute = publicProcedure
@@ -37,8 +36,8 @@ export const clientAttachmentsRoute = publicProcedure
 
     if (viewerRole === 'admin') {
       canView = true;
-    } else if (viewerRole === 'coach') {
-      const mapping = mockCoachAssignments.find((m) => m.coachUserId === viewerId);
+    } else if (viewerRole === 'coach' || viewerRole === 'medical') {
+      const mapping = mockProfessionalAssignments.find((m) => m.professionalUserId === viewerId);
       canView = !!mapping?.clientIds.includes(clientId);
     } else if (viewerRole === 'user') {
       canView = viewerId === clientId;
