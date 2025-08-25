@@ -358,6 +358,21 @@ export default function MealsScreen() {
         />
       </View>
       
+      {/* Guides & Education */}
+      <Card style={styles.groceryCard}>
+        <View style={styles.groceryHeader}>
+          <Text style={styles.groceryTitle}>Guides & Education</Text>
+          <Text style={styles.grocerySubtitle}>Restaurant ordering, smart swaps, and food basics</Text>
+        </View>
+        <Button
+          title="Open Meal Guides"
+          onPress={() => router.push('/meals/guides')}
+          icon={<UtensilsCrossed size={18} color={colors.text.primary} />}
+          style={styles.groceryButton}
+          testID="btn-open-meal-guides"
+        />
+      </Card>
+
       {/* Grocery Price Finder */}
       <Card style={styles.groceryCard}>
         <View style={styles.groceryHeader}>

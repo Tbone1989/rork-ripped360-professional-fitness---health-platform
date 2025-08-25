@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, PlusCircle, FileText, Pill, Camera, Brain, Leaf } from 'lucide-react-native';
+import { Search, Filter, PlusCircle, FileText, Pill, Camera, Brain, Leaf, Info } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -108,6 +108,25 @@ export default function MedicalScreen() {
                   type="supplement" 
                 />
               ))}
+            </View>
+            <View style={styles.section}>
+              <TouchableOpacity 
+                style={styles.guideLink}
+                onPress={() => {
+                  console.log('[MedicalScreen] Navigate to /supplements/guide');
+                  router.push('/supplements/guide');
+                }}
+                testID="btn-supplement-guide"
+                activeOpacity={0.8}
+              >
+                <View style={styles.guideIconWrap}>
+                  <Info size={18} color={colors.accent.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.guideTitle}>Pre-Workout, Protein & Fiber Guides</Text>
+                  <Text style={styles.guideSubtitle}>What to look for, evidence-backed dosages, and safety checklist</Text>
+                </View>
+              </TouchableOpacity>
             </View>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Herbal Medicine</Text>
@@ -235,6 +254,34 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text.primary,
     marginBottom: 12,
+  },
+  guideLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: colors.background.secondary,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  guideIconWrap: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.background.tertiary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  guideTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  guideSubtitle: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 2,
   },
   fab: {
     position: 'absolute',
