@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { 
@@ -22,14 +22,18 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { allCoaches } from '@/mocks/coaches';
+import { trpc } from '@/lib/trpc';
 
 export default function CoachDetailScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
-  
+  const bookMutation = trpc.coaching.sessions.book.useMutation();
+
   const coach = allCoaches.find(c => c.id === id);
-  
+
+  const isBooking = bookMutation.isPending ?? false;
+
   if (!coach) {
     return (
       <View style={styles.errorContainer}>
@@ -216,19 +220,22 @@ export default function CoachDetailScreen() {
               key={index}
               style={[
                 styles.timeSlot,
-                selectedTimeSlot === `${slot.day}-${slot.startTime}` && styles.selectedTimeSlot
+                selectedTimeSlot === `${slot.day}-${slot.startTime}-${slot.endTime}` && styles.selectedTimeSlot
               ]}
-              onPress={() => setSelectedTimeSlot(`${slot.day}-${slot.startTime}`)}
+              onPress={() => setSelectedTimeSlot(`${slot.day}-${slot.startTime}-${slot.endTime}`)}
+              testID={`slot-${slot.day}-${slot.startTime}`}
+              accessibilityRole="button"
+              accessibilityLabel={`Select ${slot.day} ${slot.startTime}`}
             >
               <Text style={[
                 styles.slotDay,
-                selectedTimeSlot === `${slot.day}-${slot.startTime}` && styles.selectedSlotText
+                selectedTimeSlot === `${slot.day}-${slot.startTime}-${slot.endTime}` && styles.selectedSlotText
               ]}>
                 {slot.day.charAt(0).toUpperCase() + slot.day.slice(1)}
               </Text>
               <Text style={[
                 styles.slotTime,
-                selectedTimeSlot === `${slot.day}-${slot.startTime}` && styles.selectedSlotText
+                selectedTimeSlot === `${slot.day}-${slot.startTime}-${slot.endTime}` && styles.selectedSlotText
               ]}>
                 {slot.startTime} - {slot.endTime}
               </Text>
@@ -245,9 +252,8 @@ export default function CoachDetailScreen() {
               icon={<Phone size={18} color={colors.text.primary} />}
               style={styles.bookButton}
               fullWidth
-              onPress={() => {
-                console.log('Booking consultation with:', coach.name);
-              }}
+              onPress={() => router.push(`/coaching/message/${coach.id}`)}
+              testID="book-consultation"
             />
             <Button
               title="Send Message"
@@ -256,6 +262,7 @@ export default function CoachDetailScreen() {
               style={styles.messageButton}
               fullWidth
               onPress={() => router.push(`/coaching/message/${coach.id}`)}
+              testID="send-message"
             />
           </>
         ) : coach.pricingVisibility === 'after_contact' ? (
@@ -266,6 +273,7 @@ export default function CoachDetailScreen() {
               style={styles.bookButton}
               fullWidth
               onPress={() => router.push(`/coaching/message/${coach.id}`)}
+              testID="request-pricing"
             />
             <Button
               title="Send Message"
@@ -274,21 +282,52 @@ export default function CoachDetailScreen() {
               style={styles.messageButton}
               fullWidth
               onPress={() => router.push(`/coaching/message/${coach.id}`)}
+              testID="send-message"
             />
           </>
         ) : (
           <>
             <Button
-              title="Book Session"
+              title={isBooking ? 'Booking…' : 'Book Session'}
               icon={<Calendar size={18} color={colors.text.primary} />}
               style={styles.bookButton}
               fullWidth
-              disabled={!selectedTimeSlot}
-              onPress={() => {
-                if (selectedTimeSlot) {
-                  console.log('Booking session for:', selectedTimeSlot);
+              disabled={!selectedTimeSlot || isBooking}
+              onPress={async () => {
+                if (!selectedTimeSlot) return;
+                try {
+                  const [day, startTime, endTime] = selectedTimeSlot.split('-');
+                  const dayMap: Record<string, number> = {
+                    sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
+                  };
+                  const targetDow = dayMap[day.toLowerCase()] ?? new Date().getDay();
+                  const today = new Date();
+                  const date = new Date(today);
+                  const addDays = (targetDow - today.getDay() + 7) % 7 || 7;
+                  date.setDate(today.getDate() + addDays);
+                  const yyyy = date.getFullYear();
+                  const mm = String(date.getMonth() + 1).padStart(2, '0');
+                  const dd = String(date.getDate()).padStart(2, '0');
+                  const isoDate = `${yyyy}-${mm}-${dd}`;
+                  const res = await bookMutation.mutateAsync({
+                    coachId: String(coach.id),
+                    date: isoDate,
+                    startTime,
+                    endTime,
+                  });
+                  if (res?.success) {
+                    Alert.alert('Session booked', `Your session on ${isoDate} at ${startTime} is scheduled.`, [
+                      { text: 'OK', onPress: () => {} },
+                      { text: 'Message Coach', onPress: () => router.push(`/coaching/message/${coach.id}`) },
+                    ]);
+                  } else {
+                    Alert.alert('Booking failed', 'Please try again.');
+                  }
+                } catch (e) {
+                  Alert.alert('Booking failed', 'Please check your connection and try again.');
                 }
               }}
+              testID="book-session"
             />
             <Button
               title="Send Message"
@@ -297,6 +336,7 @@ export default function CoachDetailScreen() {
               style={styles.messageButton}
               fullWidth
               onPress={() => router.push(`/coaching/message/${coach.id}`)}
+              testID="send-message"
             />
           </>
         )}
