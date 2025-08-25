@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -33,13 +33,76 @@ type ShopProduct = {
 export default function ShopScreen() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const { data, isLoading, error, refetch } = trpc.shop.products.useQuery({});
+  const [fallback, setFallback] = useState<ShopProduct[]>([]);
+  const [isFallbackLoading, setIsFallbackLoading] = useState<boolean>(false);
+  const [fallbackTried, setFallbackTried] = useState<boolean>(false);
+
+  const tryFetchJson = useCallback(async (url: string) => {
+    try {
+      const res = await fetch(url, { cache: 'no-store' as const, headers: { 'Accept': 'application/json, text/plain, */*' } });
+      if (!res.ok) return null;
+      const text = await res.text();
+      try {
+        return JSON.parse(text) as any;
+      } catch {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }, []);
+
+  const parseProductsFromJson = useCallback((dataAny: any): ShopProduct[] => {
+    const arr = Array.isArray(dataAny?.products) ? dataAny.products : Array.isArray(dataAny) ? dataAny : [];
+    return arr.slice(0, 250).map((p: any) => {
+      const id = String(p.id ?? p.handle ?? p.title ?? Math.random());
+      const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
+      const price = typeof p.price === 'number' ? (p.price > 1000 ? p.price / 100 : p.price) : typeof p.price_min === 'number' ? p.price_min / 100 : typeof p.variants?.[0]?.price === 'string' ? Number(p.variants[0].price) : undefined;
+      const handle = p.handle ?? undefined;
+      const url = handle ? `https://www.rippedcityinc.com/products/${handle}` : typeof p.url === 'string' ? p.url : `https://www.rippedcityinc.com`;
+      const title = String(p.title ?? '');
+      return { id, title, url, image, price } as ShopProduct;
+    }).filter((p: ShopProduct) => !!p.title);
+  }, []);
+
+  useEffect(() => {
+    const run = async () => {
+      if (Array.isArray(data) && data.length > 0) return;
+      if (fallbackTried) return;
+      setIsFallbackLoading(true);
+      setFallbackTried(true);
+      const urls = [
+        `https://www.rippedcityinc.com/products.json?limit=250&_v=${Date.now()}`,
+        `https://www.rippedcityinc.com/collections/all/products.json?limit=250&_v=${Date.now()}`,
+      ];
+      let merged: ShopProduct[] = [];
+      for (const u of urls) {
+        const json = await tryFetchJson(u);
+        if (json) {
+          const parsed = parseProductsFromJson(json);
+          if (parsed.length > 0) {
+            merged = parsed;
+            break;
+          }
+        }
+      }
+      setFallback(merged);
+      setIsFallbackLoading(false);
+    };
+    run();
+  }, [data, fallbackTried, parseProductsFromJson, tryFetchJson]);
+
+  const sourceList: ShopProduct[] = useMemo(() => {
+    const apiList = (data ?? []) as ShopProduct[];
+    return apiList.length > 0 ? apiList : fallback;
+  }, [data, fallback]);
 
   const products: ShopProduct[] = useMemo(() => {
-    const list = (data ?? []) as ShopProduct[];
+    const list = sourceList;
     if (!searchQuery) return list;
     const q = searchQuery.toLowerCase();
     return list.filter((p) => p.title.toLowerCase().includes(q));
-  }, [data, searchQuery]);
+  }, [sourceList, searchQuery]);
 
   const renderProduct = ({ item }: { item: ShopProduct }) => (
     <View style={styles.productCard}>
@@ -100,21 +163,21 @@ export default function ShopScreen() {
         </View>
       </View>
 
-      {isLoading && (
+      {(isLoading || isFallbackLoading) && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.accent.primary} />
           <Text style={styles.loadingText}>Loading products…</Text>
         </View>
       )}
 
-      {error && !isLoading && (
+      {error && !isLoading && products.length === 0 && (
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>Could not load products. Pull to retry.</Text>
           <Button title="Retry" onPress={() => refetch()} />
         </View>
       )}
 
-      {!isLoading && !error && (
+      {products.length > 0 && (
         <>
           <View style={styles.resultsContainer}>
             <Text style={styles.resultsText}>

@@ -20,16 +20,57 @@ import { featuredCoaches } from '@/mocks/coaches';
 import { featuredProducts } from '@/mocks/products';
 import { trpc } from '@/lib/trpc';
 
+type ShopProduct = { id: string; title: string; url: string; image?: string; price?: number };
+
 export default function HomeScreen() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
   const { cartItems } = useShopStore();
   const { data: shopData } = trpc.shop.products.useQuery({});
+
+  const [fallback, setFallback] = React.useState<ShopProduct[]>([]);
+  const [fallbackTried, setFallbackTried] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    const fetchFallback = async () => {
+      if ((Array.isArray(shopData) && shopData.length > 0) || fallbackTried) return;
+      setFallbackTried(true);
+      try {
+        const urls = [
+          `https://www.rippedcityinc.com/products.json?limit=50&_v=${Date.now()}`,
+          `https://www.rippedcityinc.com/collections/all/products.json?limit=50&_v=${Date.now()}`,
+        ];
+        for (const u of urls) {
+          try {
+            const res = await fetch(u, { cache: 'no-store' as const, headers: { Accept: 'application/json, text/plain, */*' } });
+            if (!res.ok) continue;
+            const text = await res.text();
+            let json: any;
+            try { json = JSON.parse(text); } catch { continue; }
+            const arr = Array.isArray(json?.products) ? json.products : Array.isArray(json) ? json : [];
+            const parsed: ShopProduct[] = arr.slice(0, 12).map((p: any) => {
+              const handle = p.handle ?? undefined;
+              const url = handle ? `https://www.rippedcityinc.com/products/${handle}` : (typeof p.url === 'string' ? p.url : 'https://www.rippedcityinc.com');
+              const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
+              const price = typeof p.price === 'number' ? (p.price > 1000 ? p.price / 100 : p.price) : typeof p.price_min === 'number' ? p.price_min / 100 : typeof p.variants?.[0]?.price === 'string' ? Number(p.variants[0].price) : undefined;
+              return { id: String(p.id ?? p.handle ?? p.title ?? Math.random()), title: String(p.title ?? ''), url, image, price };
+            }).filter((p: ShopProduct) => !!p.title);
+            if (parsed.length > 0) {
+              setFallback(parsed);
+              break;
+            }
+          } catch {}
+        }
+      } catch {}
+    };
+    fetchFallback();
+  }, [shopData, fallbackTried]);
+
   type FeaturedItem = { id: string; name: string; image: string; price?: number; rating?: number; isExternal: boolean; url?: string };
   const featuredList: FeaturedItem[] = React.useMemo(() => {
-    const api = Array.isArray(shopData) ? (shopData as any[]).slice(0, 3) : [];
-    if (api.length > 0) {
-      return api.map((p: any) => ({
+    const source = Array.isArray(shopData) && shopData.length > 0 ? (shopData as any[]).slice(0, 3) : fallback.slice(0, 3);
+    if (source.length > 0) {
+      return source.map((p: any) => ({
         id: String(p.id ?? p.title ?? Math.random()),
         name: String(p.title ?? 'Product'),
         image: String(p.image ?? 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=500'),
@@ -46,7 +87,7 @@ export default function HomeScreen() {
       rating: p.rating,
       isExternal: false,
     }));
-  }, [shopData]);
+  }, [shopData, fallback]);
 
   return (
     <View style={styles.container}>
