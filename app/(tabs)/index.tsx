@@ -27,11 +27,12 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <Stack.Screen 
         options={{ 
-          title: 'Ripped360',
+          title: 'Ripped City 360',
           headerRight: () => (
             <TouchableOpacity
               onPress={() => router.push('/shop/cart')}
               style={styles.cartButton}
+              testID="cart-button"
             >
               <ShoppingBag size={24} color={colors.text.primary} />
               {cartItems.length > 0 && (
@@ -44,11 +45,12 @@ export default function HomeScreen() {
       
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Brand Header */}
-        <View style={styles.brandHeader}>
+        <View style={styles.brandHeader} testID="brand-header">
+          <Text style={styles.slogan}>GET RIPPED. STAY REAL.</Text>
           <Text style={styles.brandTitle}>Ripped City Inc.</Text>
-          <Text style={styles.brandSubtitle}>Est. 2019 • Your Complete Fitness Ecosystem</Text>
+          <Text style={styles.brandSubtitle}>Premium Coaching • Elite Training • Real Results</Text>
           <Text style={styles.brandDescription}>
-            From premium gear to expert coaching, we've got everything you need to reach your fitness goals.
+            Built for athletes who demand more. Train harder, recover smarter, live the RCI standard.
           </Text>
         </View>
 
@@ -69,7 +71,7 @@ export default function HomeScreen() {
       <View style={styles.quickActions}>
         <Card style={styles.quickActionCard}>
           <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(229, 57, 53, 0.1)' }]}>
+            <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 0, 0, 0.12)' }]}>
               <Dumbbell size={20} color={colors.accent.primary} />
             </View>
             <Text style={styles.quickActionText}>Workouts</Text>
@@ -78,7 +80,7 @@ export default function HomeScreen() {
         
         <Card style={styles.quickActionCard}>
           <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(33, 150, 243, 0.1)' }]}>
+            <View style={[styles.iconContainer, { backgroundColor: 'rgba(30, 136, 229, 0.12)' }]}>
               <Users size={20} color={colors.status.info} />
             </View>
             <Text style={styles.quickActionText}>Coaching</Text>
@@ -87,7 +89,7 @@ export default function HomeScreen() {
         
         <Card style={styles.quickActionCard}>
           <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(76, 175, 80, 0.1)' }]}>
+            <View style={[styles.iconContainer, { backgroundColor: 'rgba(0, 200, 81, 0.12)' }]}>
               <Activity size={20} color={colors.status.success} />
             </View>
             <Text style={styles.quickActionText}>Medical</Text>
@@ -96,7 +98,7 @@ export default function HomeScreen() {
         
         <Card style={styles.quickActionCard}>
           <View style={styles.quickActionContent}>
-            <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 193, 7, 0.1)' }]}>
+            <View style={[styles.iconContainer, { backgroundColor: 'rgba(255, 215, 0, 0.16)' }]}>
               <TrendingUp size={20} color={colors.status.warning} />
             </View>
             <Text style={styles.quickActionText}>Progress</Text>
@@ -317,21 +319,34 @@ const styles = StyleSheet.create({
   brandHeader: {
     backgroundColor: colors.background.card,
     borderRadius: 16,
-    padding: 24,
+    padding: 28,
     margin: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border.medium,
+  },
+  slogan: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: colors.accent.tertiary,
+    backgroundColor: colors.background.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginBottom: 12,
+    letterSpacing: 1.2,
   },
   brandTitle: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: '700',
-    color: colors.text.primary,
-    marginBottom: 8,
+    color: colors.accent.secondary,
+    marginBottom: 6,
   },
   brandSubtitle: {
     fontSize: 16,
-    color: colors.accent.primary,
+    color: colors.text.secondary,
     fontWeight: '600',
-    marginBottom: 12,
+    marginBottom: 10,
   },
   brandDescription: {
     fontSize: 14,
