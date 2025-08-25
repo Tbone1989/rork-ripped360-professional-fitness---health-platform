@@ -17,13 +17,20 @@ async function tryFetchJson(url: string): Promise<any | null> {
       headers: {
         "User-Agent": "Rip360-Mobile-App/1.0",
         "Accept": "application/json, text/plain, */*",
+        "Referer": "https://www.rippedcityinc.com/",
       },
-    });
+      // Cache buster to avoid stale/protected responses
+      cache: "no-store" as RequestCache,
+    } as RequestInit);
     if (!res.ok) return null;
-    const ct = res.headers.get("content-type") || "";
-    if (!ct.includes("application/json")) return null;
-    const data = await res.json();
-    return data;
+    // Don't strictly require application/json; some CDNs return text/javascript
+    const text = await res.text();
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      console.log("shop.products tryFetchJson parse error", e);
+      return null;
+    }
   } catch (e) {
     console.log("shop.products tryFetchJson error", e);
     return null;
@@ -32,53 +39,96 @@ async function tryFetchJson(url: string): Promise<any | null> {
 
 function parseProductsFromJson(data: any): ShopProduct[] {
   const list = Array.isArray(data?.products) ? data.products : Array.isArray(data) ? data : [];
-  return list.slice(0, 200).map((p: any) => {
-    const id = String(p.id ?? p.handle ?? p.title ?? Math.random());
-    const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
-    const price = typeof p.price === "number" ? p.price / 100 : typeof p.price_min === "number" ? p.price_min / 100 : typeof p.variants?.[0]?.price === "string" ? Number(p.variants[0].price) : undefined;
-    const handle = p.handle ?? undefined;
-    const url = handle ? `https://www.rippedcityinc.com/products/${handle}` : `https://www.rippedcityinc.com`;
-    const title = String(p.title ?? "");
-    return { id, title, url, image, price, handle };
-  }).filter((p: ShopProduct) => !!p.title);
+  return list
+    .slice(0, 250)
+    .map((p: any) => {
+      const id = String(p.id ?? p.handle ?? p.title ?? Math.random());
+      const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
+      const price =
+        typeof p.price === "number"
+          ? // Some Shopify endpoints return cents as integer
+            (p.price > 1000 ? p.price / 100 : p.price)
+          : typeof p.price_min === "number"
+          ? p.price_min / 100
+          : typeof p.variants?.[0]?.price === "string"
+          ? Number(p.variants[0].price)
+          : undefined;
+      const handle = p.handle ?? undefined;
+      const url = handle
+        ? `https://www.rippedcityinc.com/products/${handle}`
+        : typeof p.url === "string"
+        ? p.url
+        : `https://www.rippedcityinc.com`;
+      const title = String(p.title ?? "");
+      return { id, title, url, image, price, handle } as ShopProduct;
+    })
+    .filter((p: ShopProduct) => !!p.title);
 }
 
 async function fetchFromSitemap(): Promise<ShopProduct[]> {
   try {
-    const res = await fetch("https://www.rippedcityinc.com/sitemap_products_1.xml", {
+    // Try main sitemap first to discover product sitemaps
+    const sitemapIndex = await fetch("https://www.rippedcityinc.com/sitemap.xml", {
       headers: { "User-Agent": "Rip360-Mobile-App/1.0" },
     });
-    if (!res.ok) return [];
-    const xml = await res.text();
-    const urls: string[] = [];
-    const locRegex = /<loc>([^<]+)<\/loc>/g;
-    let m: RegExpExecArray | null;
-    while ((m = locRegex.exec(xml)) !== null) {
-      const u = m[1];
-      if (u.includes("/products/")) urls.push(u);
-      if (urls.length >= 100) break;
+    const productSitemaps: string[] = [];
+    if (sitemapIndex.ok) {
+      const indexXml = await sitemapIndex.text();
+      const re = /<loc>([^<]+)<\/loc>/g;
+      let m: RegExpExecArray | null;
+      while ((m = re.exec(indexXml)) !== null) {
+        const loc = m[1];
+        if (loc.includes("sitemap_products")) productSitemaps.push(loc);
+      }
     }
+
+    if (productSitemaps.length === 0) {
+      productSitemaps.push("https://www.rippedcityinc.com/sitemap_products_1.xml");
+    }
+
+    const urls: string[] = [];
+    for (const sm of productSitemaps.slice(0, 3)) {
+      try {
+        const r = await fetch(sm, { headers: { "User-Agent": "Rip360-Mobile-App/1.0" } });
+        if (!r.ok) continue;
+        const xml = await r.text();
+        const locRegex = /<loc>([^<]+)<\/loc>/g;
+        let m: RegExpExecArray | null;
+        while ((m = locRegex.exec(xml)) !== null) {
+          const u = m[1];
+          if (u.includes("/products/")) urls.push(u);
+          if (urls.length >= 120) break;
+        }
+      } catch (e) {
+        console.log("shop.products sitemap fetch error", e);
+      }
+    }
+
     const items: ShopProduct[] = [];
-    for (const url of urls) {
+    for (const url of urls.slice(0, 100)) {
       try {
         const page = await fetch(url, { headers: { "User-Agent": "Rip360-Mobile-App/1.0" } });
         if (!page.ok) continue;
         const html = await page.text();
-        const ldMatch = html.match(/<script type=\"application\/ld\+json\">([\s\S]*?)<\/script>/);
-        if (ldMatch) {
+        // Find all ld+json blocks and pick Product
+        const scripts = Array.from(html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi));
+        for (const s of scripts) {
           try {
-            const json = JSON.parse(ldMatch[1]);
-            const product = Array.isArray(json) ? json.find((j) => j['@type'] === 'Product') : json['@type'] === 'Product' ? json : null;
-            const title = String(product?.name ?? "");
-            const image = typeof product?.image === 'string' ? product?.image : Array.isArray(product?.image) ? product?.image[0] : undefined;
-            const offers = product?.offers as any;
-            const price = typeof offers?.price === 'string' ? Number(offers.price) : typeof offers?.price === 'number' ? offers.price : undefined;
-            if (title) {
+            const jsonText = s[1].trim();
+            const parsed = JSON.parse(jsonText);
+            const arr = Array.isArray(parsed) ? parsed : [parsed];
+            const product = arr.find((j: any) => j && j["@type"] === "Product");
+            if (product && product.name) {
+              const title = String(product.name);
+              const img = typeof product.image === "string" ? product.image : Array.isArray(product.image) ? product.image[0] : undefined;
+              const offers = product.offers as any;
+              const price = typeof offers?.price === "string" ? Number(offers.price) : typeof offers?.price === "number" ? offers.price : undefined;
               const handle = url.split("/products/")[1] ?? undefined;
-              items.push({ id: url, title, url, image, price, handle });
+              items.push({ id: url, title, url, image: img, price, handle });
+              break;
             }
           } catch (err) {
-            console.log("shop.products parse ld+json error", err);
+            // continue
           }
         }
       } catch (err) {
@@ -88,6 +138,47 @@ async function fetchFromSitemap(): Promise<ShopProduct[]> {
     return items;
   } catch (err) {
     console.log("shop.products fetchFromSitemap error", err);
+    return [];
+  }
+}
+
+async function parseFromCollectionsHtml(): Promise<ShopProduct[]> {
+  try {
+    const urls = [
+      "https://www.rippedcityinc.com/collections/all",
+      "https://www.rippedcityinc.com/collections/all?page=2",
+    ];
+    const out: ShopProduct[] = [];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { headers: { "User-Agent": "Rip360-Mobile-App/1.0" } });
+        if (!res.ok) continue;
+        const html = await res.text();
+        // Very loose parsing of product cards
+        const productRegex = /<a[^>]+href=\"(\/products\/[^\"?#]+)[^>]*>([\s\S]*?)<\/a>/gi;
+        let m: RegExpExecArray | null;
+        const seen = new Set<string>();
+        while ((m = productRegex.exec(html)) !== null) {
+          const href = m[1];
+          const block = m[2];
+          const urlFull = `https://www.rippedcityinc.com${href}`;
+          if (seen.has(urlFull)) continue;
+          seen.add(urlFull);
+          const imgMatch = block.match(/<img[^>]+src=\"([^\"]+)/i);
+          const titleMatch = block.match(/alt=\"([^\"]+)/i) || block.match(/<h2[^>]*>([^<]+)/i) || block.match(/<span[^>]*class=\"[^\"]*(title|name)[^\"]*\"[^>]*>([^<]+)/i);
+          const title = titleMatch ? (titleMatch[1] || titleMatch[2]) : undefined;
+          if (title) {
+            out.push({ id: urlFull, title, url: urlFull, image: imgMatch?.[1] });
+          }
+          if (out.length >= 60) break;
+        }
+      } catch (e) {
+        console.log("shop.products parseFromCollectionsHtml error", e);
+      }
+    }
+    return out;
+  } catch (e) {
+    console.log("shop.products parseFromCollectionsHtml outer error", e);
     return [];
   }
 }
@@ -112,8 +203,8 @@ export default publicProcedure
   .input(z.object({}).optional())
   .query(async () => {
     const sources: string[] = [
-      "https://www.rippedcityinc.com/products.json?limit=250",
-      "https://www.rippedcityinc.com/collections/all/products.json?limit=250",
+      "https://www.rippedcityinc.com/products.json?limit=250&_v=" + Date.now(),
+      "https://www.rippedcityinc.com/collections/all/products.json?limit=250&_v=" + Date.now(),
     ];
 
     for (const url of sources) {
@@ -131,6 +222,12 @@ export default publicProcedure
     if (sitemapProducts.length > 0) {
       console.log("shop.products loaded from sitemap:", sitemapProducts.length);
       return sitemapProducts;
+    }
+
+    const collectionParsed = await parseFromCollectionsHtml();
+    if (collectionParsed.length > 0) {
+      console.log("shop.products loaded from collections HTML:", collectionParsed.length);
+      return collectionParsed;
     }
 
     const fallback = fallbackFromMocks();
