@@ -10,27 +10,27 @@ export const trpc = createTRPCReact<AppRouter>();
 const getBaseUrl = () => {
   const customBaseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
   if (customBaseUrl) {
-    return customBaseUrl;
+    return customBaseUrl.replace(/\/$/, "");
   }
 
   if (Platform.OS === "web") {
-    // Use same-origin on web so relative /api works in dev and prod
+    try {
+      const origin = (window as any)?.location?.origin as string | undefined;
+      if (origin && typeof origin === "string") return origin.replace(/\/$/, "");
+    } catch {}
     return "";
   }
 
-  // Try to derive the dev server host:port from Expo constants without forcing a port
   const hostUri: string | undefined =
     (Constants as any)?.expoConfig?.hostUri ??
     (Constants as any)?.expoGoConfig?.debuggerHost ??
     undefined;
 
   if (hostUri) {
-    const clean = hostUri.split("?")[0]; // e.g. 192.168.1.10:8081
-    // If clean already contains host:port, use it as-is
-    return `http://${clean}`;
+    const clean = hostUri.split("?")[0];
+    return `http://${clean}`.replace(/\/$/, "");
   }
 
-  // Fallback to localhost typical Metro port
   return "http://127.0.0.1:8081";
 };
 
@@ -51,6 +51,7 @@ export const trpcClient = trpc.createClient({
             ...options,
             ...(Platform.OS === "web" ? { mode: "cors" as const } : {}),
             headers: {
+              Accept: "application/json",
               ...(options?.headers ?? {}),
               "Content-Type": "application/json",
             },
@@ -64,7 +65,7 @@ export const trpcClient = trpc.createClient({
             const responseText = await response.text();
             console.log("Response text preview:", responseText.substring(0, 100));
 
-            if (responseText.includes("<!DOCTYPE") || responseText.includes("<html")) {
+            if (response.status === 404 || responseText.includes("<!DOCTYPE") || responseText.includes("<html")) {
               throw new Error(
                 "Backend server endpoint not found. The tRPC server may not be running or configured correctly."
               );
