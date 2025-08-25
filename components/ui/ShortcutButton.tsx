@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity, Animated, Easing, Platform, Text, PanResponder, GestureResponderEvent, PanResponderGestureState, Pressable } from 'react-native';
 import { colors } from '@/constants/colors';
-import { Plus, Dumbbell, Utensils, ScanLine, Activity, MessageCircle } from 'lucide-react-native';
+import { Plus, Dumbbell, Utensils, ScanLine, Activity, MessageCircle, Paperclip } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 
 interface ActionItem {
@@ -71,6 +71,15 @@ export const ShortcutButton: React.FC<{ testID?: string }> = ({ testID }) => {
       onPress: () => {
         console.log('[Shortcut] Health scan');
         router.push('/medical/scan');
+      },
+    },
+    {
+      key: 'attachments',
+      label: 'Attachments',
+      icon: <Paperclip color={colors.text.primary} size={18} strokeWidth={2.5} />,
+      onPress: () => {
+        console.log('[Shortcut] Attachments');
+        router.push('/profile/attachments');
       },
     },
     {
