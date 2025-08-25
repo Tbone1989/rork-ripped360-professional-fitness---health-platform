@@ -1,5 +1,3 @@
-import { ImageSourcePropType } from 'react-native';
-
 export type DosageRange = {
   min: number;
   max: number;
@@ -164,6 +162,94 @@ export const safetyNotes: SimpleGuideItem = {
     'Avoid “proprietary blends” without exact amounts for stimulants',
     'Match labels to evidence-backed dosages; beware under-dosed products',
     'Check interactions if on medications; when in doubt, ask your clinician',
+  ],
+};
+
+export const aminoAcidsGuide: SectionGuide = {
+  id: 'amino-acids',
+  title: 'Amino Acids & Uses',
+  subtitle: 'Evidence-backed roles, when to use, and practical dosing',
+  items: [
+    {
+      id: 'eaas',
+      name: 'Essential Amino Acids (EAAs)',
+      purpose: ['Muscle protein synthesis', 'Recovery'],
+      evidence: 'Moderate',
+      recommended: { min: 10, max: 15, unit: 'g', timing: 'Intra- or post-workout' },
+      notes: ['Look for ≥2.5g leucine per serving'],
+    },
+    {
+      id: 'bcaas',
+      name: 'BCAAs (Leucine/Isoleucine/Valine 2:1:1)',
+      purpose: ['Intra-workout support', 'Perceived fatigue'],
+      evidence: 'Emerging',
+      recommended: { min: 5, max: 10, unit: 'g', timing: 'Pre- or intra-workout when fasted or low protein' },
+      notes: ['Less useful if daily protein is sufficient'],
+    },
+    {
+      id: 'leucine',
+      name: 'L-Leucine',
+      purpose: ['Triggers MPS'],
+      evidence: 'Moderate',
+      recommended: { min: 2.5, max: 3.5, unit: 'g', timing: 'With meals low in leucine' },
+      notes: ['Best combined with complete protein source'],
+    },
+    {
+      id: 'glutamine',
+      name: 'L-Glutamine',
+      purpose: ['Gut support', 'Recovery'],
+      evidence: 'Emerging',
+      recommended: { min: 5, max: 10, unit: 'g', timing: 'Post-workout or before bed' },
+      notes: ['More support for GI health than direct hypertrophy'],
+    },
+    {
+      id: 'taurine',
+      name: 'Taurine',
+      purpose: ['Cell hydration', 'Endurance', 'Cardiac support'],
+      evidence: 'Moderate',
+      recommended: { min: 1, max: 2, unit: 'g', timing: 'Pre- or post-workout' },
+      notes: ['Pairs well with caffeine for smoother energy'],
+    },
+    {
+      id: 'theanine',
+      name: 'L-Theanine',
+      purpose: ['Smooth focus', 'Reduce jitters'],
+      evidence: 'Moderate',
+      recommended: { min: 100, max: 200, unit: 'mg', timing: 'With caffeine pre-workout' },
+      notes: ['~2:1 theanine:caffeine ratio can feel balanced'],
+    },
+    {
+      id: 'arginine',
+      name: 'L-Arginine',
+      purpose: ['Nitric oxide'],
+      evidence: 'Emerging',
+      recommended: { min: 3, max: 6, unit: 'g', timing: '30–60 min pre-workout' },
+      notes: ['Less effective than citrulline for NO'],
+    },
+    {
+      id: 'citrulline',
+      name: 'L-Citrulline',
+      purpose: ['Blood flow', 'Pump'],
+      evidence: 'Moderate',
+      recommended: { min: 6, max: 8, unit: 'g', timing: '30–60 min pre-workout' },
+      notes: ['Free-form citrulline preferred; malate 2:1 use ~8g'],
+    },
+    {
+      id: 'carnitine-l-tartrate',
+      name: 'L-Carnitine L-Tartrate',
+      purpose: ['Recovery markers', 'Sperm health'],
+      evidence: 'Emerging',
+      recommended: { min: 1.5, max: 3, unit: 'g', timing: 'With meals' },
+      notes: ['Not a fat-burner acutely; supports transport mechanisms'],
+    },
+    {
+      id: 'glycine',
+      name: 'Glycine',
+      purpose: ['Sleep quality', 'Collagen synthesis'],
+      evidence: 'Emerging',
+      recommended: { min: 3, max: 5, unit: 'g', timing: 'Evening or with collagen' },
+      notes: ['May improve sleep onset latency'],
+    },
   ],
 };
 

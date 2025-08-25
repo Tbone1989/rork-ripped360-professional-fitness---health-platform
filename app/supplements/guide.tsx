@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Stack } from 'expo-router';
-import { Pill, FlaskConical, ShieldCheck, Info } from 'lucide-react-native';
+import { Pill, FlaskConical, ShieldCheck, Info, Dna } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { preworkoutGuide, proteinGuide, fiberGuide, safetyNotes, IngredientGuide, DosageRange } from '@/constants/supplementGuides';
+import { preworkoutGuide, proteinGuide, fiberGuide, safetyNotes, aminoAcidsGuide, IngredientGuide, DosageRange } from '@/constants/supplementGuides';
 
 function Dosage({ range }: { range: DosageRange }) {
   const text = useMemo(() => {
@@ -77,6 +77,20 @@ export default function SupplementGuideScreen() {
 
       <Card style={styles.sectionCard}>
         {proteinGuide.items.map((it) => (
+          <IngredientItem key={it.id} item={it} />
+        ))}
+      </Card>
+
+      <Card style={styles.headerCard}>
+        <View style={styles.headerRow}>
+          <Dna size={20} color={colors.accent.primary} />
+          <Text style={styles.sectionTitle}>{aminoAcidsGuide.title}</Text>
+        </View>
+        <Text style={styles.sectionSubtitle}>{aminoAcidsGuide.subtitle ?? ''}</Text>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        {aminoAcidsGuide.items.map((it) => (
           <IngredientItem key={it.id} item={it} />
         ))}
       </Card>
