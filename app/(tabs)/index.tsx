@@ -4,6 +4,7 @@ import { useRouter, Stack } from 'expo-router';
 import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
+import { brandAssets } from '@/constants/brand';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -46,6 +47,12 @@ export default function HomeScreen() {
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Brand Header */}
         <View style={styles.brandHeader} testID="brand-header">
+          <Image
+            source={{ uri: brandAssets.primaryLogo }}
+            style={styles.brandLogo}
+            accessibilityLabel="Ripped City Inc. Logo"
+            testID="brand-logo"
+          />
           <Text style={styles.slogan}>GET RIPPED. STAY REAL.</Text>
           <Text style={styles.brandTitle}>Ripped City Inc.</Text>
           <Text style={styles.brandSubtitle}>Premium Coaching • Elite Training • Real Results</Text>
@@ -324,6 +331,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: colors.border.medium,
+  },
+  brandLogo: {
+    width: 160,
+    height: 160,
+    resizeMode: 'contain',
+    marginBottom: 12,
   },
   slogan: {
     fontSize: 24,
