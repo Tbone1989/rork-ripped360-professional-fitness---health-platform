@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { 
@@ -103,17 +103,16 @@ const nutritionGoals: NutritionGoals = {
 
 export default function MealsScreen() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState('all');
-  const [waterIntake, setWaterIntake] = useState(2100); // ml
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedFilter, setSelectedFilter] = useState<string>('all');
+  const [waterIntake, setWaterIntake] = useState<number>(2100);
 
-  // Calculate totals
-  const totals = mockMeals.reduce((acc, meal) => ({
+  const totals = useMemo(() => mockMeals.reduce((acc, meal) => ({
     calories: acc.calories + meal.calories,
     protein: acc.protein + meal.protein,
     carbs: acc.carbs + meal.carbs,
     fat: acc.fat + meal.fat
-  }), { calories: 0, protein: 0, carbs: 0, fat: 0 });
+  }), { calories: 0, protein: 0, carbs: 0, fat: 0 }), []);
 
   const filterOptions = [
     { id: 'all', label: 'All Meals' },
@@ -126,6 +125,24 @@ export default function MealsScreen() {
   const addWater = (amount: number) => {
     setWaterIntake(prev => Math.min(prev + amount, nutritionGoals.water));
   };
+
+  type FoodInfo = { name: string; doesForBody: string; nutrients: string[] };
+  const foodDictionary: Record<string, FoodInfo> = useMemo(() => ({
+    'Greek yogurt': { name: 'Greek yogurt', doesForBody: 'Muscle repair and gut support', nutrients: ['Protein', 'Calcium', 'Probiotics'] },
+    'Berries': { name: 'Berries', doesForBody: 'Antioxidant and recovery support', nutrients: ['Vitamin C', 'Fiber', 'Polyphenols'] },
+    'Almonds': { name: 'Almonds', doesForBody: 'Heart-healthy fats and satiety', nutrients: ['Monounsaturated fats', 'Vitamin E', 'Magnesium'] },
+    'Protein powder': { name: 'Protein powder', doesForBody: 'Muscle protein synthesis', nutrients: ['Complete protein'] },
+    'Banana': { name: 'Banana', doesForBody: 'Quick energy and cramp prevention', nutrients: ['Potassium', 'Carbs', 'Vitamin B6'] },
+    'Whey protein': { name: 'Whey protein', doesForBody: 'Fast post-workout recovery', nutrients: ['Leucine', 'Protein'] },
+    'Oats': { name: 'Oats', doesForBody: 'Sustained energy and cholesterol support', nutrients: ['Beta-glucan fiber', 'Manganese', 'Complex carbs'] },
+    'Honey': { name: 'Honey', doesForBody: 'Quick glucose for training', nutrients: ['Simple carbs', 'Trace antioxidants'] },
+    'Grilled chicken': { name: 'Grilled chicken', doesForBody: 'Lean muscle building', nutrients: ['Protein', 'B vitamins'] },
+    'Brown rice': { name: 'Brown rice', doesForBody: 'Glycogen replenishment', nutrients: ['Complex carbs', 'Manganese', 'Fiber'] },
+    'Broccoli': { name: 'Broccoli', doesForBody: 'Detox and immune support', nutrients: ['Vitamin C', 'Vitamin K', 'Sulforaphane'] },
+    'Avocado': { name: 'Avocado', doesForBody: 'Hormone and heart support', nutrients: ['Monounsaturated fats', 'Fiber', 'Potassium'] },
+    'Apple': { name: 'Apple', doesForBody: 'Satiety and gut support', nutrients: ['Pectin fiber', 'Vitamin C'] },
+    'Almond butter': { name: 'Almond butter', doesForBody: 'Energy and satiety', nutrients: ['Healthy fats', 'Vitamin E', 'Magnesium'] },
+  }), []);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -325,9 +342,22 @@ export default function MealsScreen() {
               </View>
               
               <View style={styles.mealFoods}>
-                <Text style={styles.mealFoodsText}>
-                  {meal.foods.join(' • ')}
-                </Text>
+                {meal.foods.map((f, idx) => {
+                  const info = foodDictionary[f];
+                  return (
+                    <View key={idx} style={styles.foodRow} testID={`meal-${meal.id}-food-${idx}`}>
+                      <Text style={styles.foodName}>{f}</Text>
+                      <Text style={styles.foodDoes}>{info?.doesForBody ?? 'General nutrition'}</Text>
+                      <View style={styles.foodNutrientsRow}>
+                        {(info?.nutrients ?? []).slice(0, 3).map((n, i) => (
+                          <View key={i} style={styles.nutrientPill}>
+                            <Text style={styles.nutrientText}>{n}</Text>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  );
+                })}
               </View>
             </TouchableOpacity>
           </Card>
@@ -652,10 +682,35 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
   },
-  mealFoodsText: {
+  foodRow: {
+    marginBottom: 10,
+  },
+  foodName: {
     fontSize: 13,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  foodDoes: {
+    fontSize: 12,
     color: colors.text.secondary,
-    lineHeight: 18,
+    marginTop: 2,
+  },
+  foodNutrientsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 6,
+  },
+  nutrientPill: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    backgroundColor: colors.background.tertiary,
+  },
+  nutrientText: {
+    fontSize: 11,
+    color: colors.text.primary,
+    fontWeight: '600',
   },
   quickActions: {
     flexDirection: 'row',

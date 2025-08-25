@@ -101,6 +101,10 @@ export const fiberGuide: SimpleGuideItem = {
     'Insoluble fiber (whole grains, veg skins): adds bulk and promotes regularity',
     'Psyllium husk: 5–10g/day split; increase water to avoid GI distress',
     'Introduce gradually to mitigate bloating; spread across meals',
+    'Prebiotic fibers (inulin, FOS, GOS): feed beneficial gut bacteria; start with 2–3g/day',
+    'Viscous fibers (beta-glucans from oats/barley): 3g/day supports LDL reduction',
+    'Hydration: drink an extra 250–500ml water per 5g added fiber',
+    'Athletes: place higher-fiber meals away from training to reduce GI distress',
   ],
 };
 
