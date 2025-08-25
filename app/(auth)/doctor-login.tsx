@@ -65,9 +65,9 @@ export default function DoctorLoginScreen() {
               </View>
             </View>
           </LinearGradient>
-          <Text style={styles.title}>Doctor Portal</Text>
+          <Text style={styles.title}>Wellness Provider Portal</Text>
           <Text style={styles.subtitle}>
-            Access patient insights, bloodwork, and medical tools
+            Access client health insights, labs, and practitioner tools
           </Text>
         </View>
 
@@ -84,7 +84,7 @@ export default function DoctorLoginScreen() {
 
         <View style={styles.formContainer}>
           <Input
-            label="Doctor Email"
+            label="Provider Email"
             placeholder="Enter your email"
             value={email}
             onChangeText={setEmail}
@@ -103,7 +103,7 @@ export default function DoctorLoginScreen() {
           {error ? <Text style={styles.errorText} testID="doctor-login-error">{error}</Text> : null}
 
           <Button
-            title="Sign In as Doctor"
+            title="Sign In as Wellness Provider"
             onPress={handleLogin}
             loading={isLoading}
             disabled={isLoading}
@@ -114,7 +114,7 @@ export default function DoctorLoginScreen() {
         </View>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Not a doctor?</Text>
+          <Text style={styles.footerText}>Not a provider?</Text>
           <TouchableOpacity onPress={handleBackToClient} testID="back-to-client">
             <Text style={styles.clientLoginText}>Client Login</Text>
           </TouchableOpacity>
