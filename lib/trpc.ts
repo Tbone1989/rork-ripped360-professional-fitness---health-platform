@@ -14,20 +14,27 @@ const getBaseUrl = () => {
   }
 
   if (Platform.OS === "web") {
+    // Use same-origin on web so relative /api works in dev and prod
     return "";
   }
 
-  const hostUri: string | undefined = (Constants as any)?.expoConfig?.hostUri ?? undefined;
+  // Try to derive the dev server host:port from Expo constants without forcing a port
+  const hostUri: string | undefined =
+    (Constants as any)?.expoConfig?.hostUri ??
+    (Constants as any)?.expoGoConfig?.debuggerHost ??
+    undefined;
+
   if (hostUri) {
-    const clean = hostUri.split("?")[0];
-    const host = clean.split(":")[0];
-    return `http://${host}:19000`;
+    const clean = hostUri.split("?")[0]; // e.g. 192.168.1.10:8081
+    // If clean already contains host:port, use it as-is
+    return `http://${clean}`;
   }
 
-  return "http://localhost:19000";
+  // Fallback to localhost typical Metro port
+  return "http://127.0.0.1:8081";
 };
 
-const endpointUrl = Platform.OS === "web" ? "/api/trpc" : `${getBaseUrl()}/api/trpc`;
+const endpointUrl = `${getBaseUrl()}/api/trpc`;
 
 export const trpcClient = trpc.createClient({
   links: [
@@ -83,7 +90,7 @@ export const trpcClient = trpc.createClient({
 
           if (error instanceof TypeError && (error as TypeError).message === "Failed to fetch") {
             throw new Error(
-              `Cannot connect to backend at ${endpointUrl}. If you are on a device, set EXPO_PUBLIC_RORK_API_BASE_URL to your machine URL (e.g. http://192.168.1.10:19000).`
+              `Cannot connect to backend at ${endpointUrl}. If you are on a device, set EXPO_PUBLIC_RORK_API_BASE_URL to your machine URL (e.g. http://192.168.1.10:8081).`
             );
           }
 

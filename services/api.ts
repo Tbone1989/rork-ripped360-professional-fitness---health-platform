@@ -174,23 +174,31 @@ class ApiService {
     meals: number;
     restrictions: string[];
   }): Promise<any> {
+    // Try tRPC first (has built-in API + mock fallback on server)
     try {
-      return await this.makeRequest(
-        '/nutrition/meal-plan/generate',
-        {
-          method: 'POST',
-          body: JSON.stringify(preferences),
-        },
-        API_KEYS.NUTRITION
-      );
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      if (errorMessage === 'DEVELOPMENT_MODE' || isDevelopmentMode) {
-        console.log('Development mode: Using mock meal plan data');
-      } else {
-        console.error('Error generating meal plan:', error);
+      console.log('Using tRPC nutrition.mealPlan for generation');
+      const data = await trpcClient.nutrition.mealPlan.mutate(preferences);
+      return data as any;
+    } catch (trpcError) {
+      console.warn('tRPC nutrition.mealPlan failed, falling back to HTTP', trpcError);
+      try {
+        return await this.makeRequest(
+          '/nutrition/meal-plan/generate',
+          {
+            method: 'POST',
+            body: JSON.stringify(preferences),
+          },
+          API_KEYS.NUTRITION
+        );
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        if (errorMessage === 'DEVELOPMENT_MODE' || isDevelopmentMode) {
+          console.log('Development mode: Using mock meal plan data');
+        } else {
+          console.error('Error generating meal plan:', error);
+        }
+        return this.getMockMealPlan();
       }
-      return this.getMockMealPlan();
     }
   }
 
