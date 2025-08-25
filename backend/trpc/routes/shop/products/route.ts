@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { publicProcedure } from "../../../create-context";
+import { featuredProducts } from "@/mocks/products";
 
 type ShopProduct = {
   id: string;
@@ -24,6 +25,7 @@ async function tryFetchJson(url: string): Promise<any | null> {
     const data = await res.json();
     return data;
   } catch (e) {
+    console.log("shop.products tryFetchJson error", e);
     return null;
   }
 }
@@ -69,18 +71,39 @@ async function fetchFromSitemap(): Promise<ShopProduct[]> {
             const product = Array.isArray(json) ? json.find((j) => j['@type'] === 'Product') : json['@type'] === 'Product' ? json : null;
             const title = String(product?.name ?? "");
             const image = typeof product?.image === 'string' ? product?.image : Array.isArray(product?.image) ? product?.image[0] : undefined;
-            const offers = product?.offers;
+            const offers = product?.offers as any;
             const price = typeof offers?.price === 'string' ? Number(offers.price) : typeof offers?.price === 'number' ? offers.price : undefined;
             if (title) {
               const handle = url.split("/products/")[1] ?? undefined;
               items.push({ id: url, title, url, image, price, handle });
             }
-          } catch {}
+          } catch (err) {
+            console.log("shop.products parse ld+json error", err);
+          }
         }
-      } catch {}
+      } catch (err) {
+        console.log("shop.products fetch product page error", err);
+      }
     }
     return items;
-  } catch {
+  } catch (err) {
+    console.log("shop.products fetchFromSitemap error", err);
+    return [];
+  }
+}
+
+function fallbackFromMocks(): ShopProduct[] {
+  try {
+    return featuredProducts.map((p) => ({
+      id: p.id,
+      title: p.name,
+      url: "https://www.rippedcityinc.com/",
+      image: p.images?.[0],
+      price: typeof p.price === "number" ? p.price : undefined,
+      handle: undefined,
+    }));
+  } catch (e) {
+    console.log("shop.products fallbackFromMocks error", e);
     return [];
   }
 }
@@ -98,11 +121,19 @@ export default publicProcedure
       if (data) {
         const products = parseProductsFromJson(data);
         if (products.length > 0) {
+          console.log(`shop.products loaded from ${url}:`, products.length);
           return products;
         }
       }
     }
 
     const sitemapProducts = await fetchFromSitemap();
-    return sitemapProducts;
+    if (sitemapProducts.length > 0) {
+      console.log("shop.products loaded from sitemap:", sitemapProducts.length);
+      return sitemapProducts;
+    }
+
+    const fallback = fallbackFromMocks();
+    console.log("shop.products using fallback mocks:", fallback.length);
+    return fallback;
   });
