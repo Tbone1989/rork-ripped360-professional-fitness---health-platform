@@ -3,7 +3,7 @@ import { trpcServer } from "@hono/trpc-server";
 import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
 
-// app will be mounted at /api by the host
+// This app is mounted by the host at /api, so routes here should NOT prefix with /api
 const app = new Hono();
 
 // Enable CORS for all routes
@@ -17,17 +17,17 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// Mount tRPC router at /api/trpc to match client
+// Mount tRPC router at /trpc to match client baseUrl + /api/trpc
 app.use(
-  "/api/trpc/*",
+  "/trpc/*",
   trpcServer({
     router: appRouter,
     createContext,
   })
 );
 
-// Simple health check endpoint
-app.get("/api", (c) => {
+// Simple health check endpoint at / (host mounts at /api)
+app.get("/", (c) => {
   return c.json({ status: "ok", message: "API is running" });
 });
 
