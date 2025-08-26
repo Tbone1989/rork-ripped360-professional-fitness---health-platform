@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
-import { Stack, useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { 
-  Calendar, 
-  Clock, 
   Flame, 
   Plus,
   Edit3,
@@ -20,6 +18,38 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ChipGroup } from '@/components/ui/ChipGroup';
 
+interface GeneratedMeal {
+  name: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  time?: string;
+}
+
+interface GeneratedDayPlan {
+  day: number;
+  breakfast?: GeneratedMeal;
+  lunch?: GeneratedMeal;
+  dinner?: GeneratedMeal;
+  snack?: GeneratedMeal;
+  'pre-workout'?: GeneratedMeal;
+  'post-workout'?: GeneratedMeal;
+}
+
+interface GeneratedPlanData {
+  id: string;
+  name: string;
+  duration: string;
+  totalCalories: number;
+  totalProtein: number;
+  totalCarbs: number;
+  totalFat: number;
+  mealsPerDay: number;
+  restrictions: string[];
+  meals: GeneratedDayPlan[];
+}
+
 interface PlannedMeal {
   id: string;
   name: string;
@@ -33,106 +63,109 @@ interface PlannedMeal {
   notes?: string;
 }
 
-interface DayPlan {
+interface DayPlanUI {
   date: string;
   meals: PlannedMeal[];
   totalCalories: number;
   totalProtein: number;
 }
 
-const mockWeekPlan: DayPlan[] = [
-  {
-    date: '2024-01-22',
-    totalCalories: 2450,
-    totalProtein: 185,
-    meals: [
-      {
-        id: '1',
-        name: 'Power Breakfast',
-        time: '7:30 AM',
-        calories: 485,
-        protein: 32,
-        carbs: 28,
-        fat: 24,
-        foods: ['Greek yogurt', 'Berries', 'Almonds', 'Protein powder'],
-        isCompleted: true
-      },
-      {
-        id: '2',
-        name: 'Pre-Workout Snack',
-        time: '10:00 AM',
-        calories: 320,
-        protein: 25,
-        carbs: 35,
-        fat: 8,
-        foods: ['Banana', 'Whey protein', 'Oats'],
-        isCompleted: true
-      },
-      {
-        id: '3',
-        name: 'Balanced Lunch',
-        time: '1:00 PM',
-        calories: 650,
-        protein: 45,
-        carbs: 52,
-        fat: 22,
-        foods: ['Grilled chicken', 'Brown rice', 'Broccoli', 'Avocado'],
-        isCompleted: false
-      },
-      {
-        id: '4',
-        name: 'Afternoon Snack',
-        time: '4:30 PM',
-        calories: 180,
-        protein: 8,
-        carbs: 28,
-        fat: 6,
-        foods: ['Apple', 'Almond butter'],
-        isCompleted: false
-      },
-      {
-        id: '5',
-        name: 'Dinner',
-        time: '7:00 PM',
-        calories: 720,
-        protein: 55,
-        carbs: 45,
-        fat: 28,
-        foods: ['Salmon', 'Sweet potato', 'Asparagus', 'Olive oil'],
-        isCompleted: false
-      },
-      {
-        id: '6',
-        name: 'Evening Protein',
-        time: '9:30 PM',
-        calories: 95,
-        protein: 20,
-        carbs: 2,
-        fat: 1,
-        foods: ['Casein protein', 'Water'],
-        isCompleted: false
-      }
-    ]
-  }
-];
+const fallbackPlan: DayPlanUI = {
+  date: new Date().toISOString(),
+  totalCalories: 2450,
+  totalProtein: 185,
+  meals: [
+    {
+      id: '1',
+      name: 'Power Breakfast',
+      time: '7:30 AM',
+      calories: 485,
+      protein: 32,
+      carbs: 28,
+      fat: 24,
+      foods: ['Greek yogurt', 'Berries', 'Almonds', 'Protein powder'],
+      isCompleted: true,
+    },
+  ],
+};
+
+function mapGeneratedToUI(day: GeneratedDayPlan | undefined): DayPlanUI {
+  if (!day) return fallbackPlan;
+  const entries: Array<[string, GeneratedMeal | undefined]> = [
+    ['breakfast', day['breakfast']],
+    ['pre-workout', day['pre-workout']],
+    ['lunch', day['lunch']],
+    ['snack', day['snack']],
+    ['post-workout', day['post-workout']],
+    ['dinner', day['dinner']],
+  ];
+  const meals: PlannedMeal[] = entries
+    .filter(([, m]) => !!m)
+    .map(([key, m], idx) => {
+      const meal = m as GeneratedMeal;
+      return {
+        id: `${day.day}-${key}`,
+        name: meal.name,
+        time: meal.time ?? '',
+        calories: meal.calories,
+        protein: meal.protein,
+        carbs: meal.carbs,
+        fat: meal.fat,
+        foods: [],
+        isCompleted: false,
+      } as PlannedMeal;
+    });
+  const totals = meals.reduce(
+    (acc, m) => {
+      acc.cal += m.calories;
+      acc.pro += m.protein;
+      return acc;
+    },
+    { cal: 0, pro: 0 }
+  );
+  return {
+    date: new Date().toISOString(),
+    meals,
+    totalCalories: totals.cal,
+    totalProtein: totals.pro,
+  };
+}
 
 export default function MealPlanScreen() {
   const router = useRouter();
-  const [selectedDay, setSelectedDay] = useState(0);
-  const [viewMode, setViewMode] = useState('today');
+  const params = useLocalSearchParams<{ planData?: string; planId?: string; preview?: string }>();
+  const [selectedDay, setSelectedDay] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<'today' | 'week' | 'upcoming'>('today');
 
   const viewOptions = [
     { id: 'today', label: 'Today' },
     { id: 'week', label: 'This Week' },
-    { id: 'upcoming', label: 'Upcoming' }
+    { id: 'upcoming', label: 'Upcoming' },
   ];
 
-  const currentPlan = mockWeekPlan[selectedDay];
-  const completedMeals = currentPlan.meals.filter(meal => meal.isCompleted).length;
-  const completionRate = (completedMeals / currentPlan.meals.length) * 100;
+  const generated: GeneratedPlanData | null = useMemo(() => {
+    try {
+      if (!params.planData || typeof params.planData !== 'string') return null;
+      const parsed = JSON.parse(params.planData) as GeneratedPlanData;
+      return parsed;
+    } catch (e) {
+      console.error('Failed to parse planData param', e);
+      return null;
+    }
+  }, [params.planData]);
+
+  const currentPlan: DayPlanUI = useMemo(() => {
+    const dayIndex = Math.max(0, Math.min(Number(params.preview ?? '1') - 1, 6));
+    if (generated?.meals?.length) {
+      return mapGeneratedToUI(generated.meals[dayIndex]);
+    }
+    return fallbackPlan;
+  }, [generated?.meals, params.preview]);
+
+  const completedMeals = currentPlan.meals.filter((meal) => meal.isCompleted).length;
+  const completionRate = currentPlan.meals.length > 0 ? (completedMeals / currentPlan.meals.length) * 100 : 0;
 
   const toggleMealCompletion = (mealId: string) => {
-    // In a real app, this would update the meal completion status
     console.log('Toggle meal completion:', mealId);
   };
 
@@ -140,53 +173,42 @@ export default function MealPlanScreen() {
     const date = new Date(dateString);
     const today = new Date();
     const isToday = date.toDateString() === today.toDateString();
-    
-    if (isToday) {
-      return 'Today';
-    }
-    
-    return date.toLocaleDateString('en-US', { 
-      weekday: 'long', 
-      month: 'short', 
-      day: 'numeric' 
-    });
+    if (isToday) return 'Today';
+    return date.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
   };
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Stack.Screen 
-        options={{ 
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} testID="meal-plan-screen">
+      <Stack.Screen
+        options={{
           title: 'Meal Plan',
           headerRight: () => (
             <View style={styles.headerButtons}>
-              <TouchableOpacity 
-                style={styles.headerButton}
-                onPress={() => router.push('/meals/plans/edit')}
-              >
+              <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/meals/plans/edit')}>
                 <Edit3 size={18} color={colors.accent.primary} />
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.headerButton}
-                onPress={() => {}}
+                onPress={() => {
+                  Alert.alert('Share', 'Sharing coming soon');
+                }}
               >
                 <Share size={18} color={colors.accent.primary} />
               </TouchableOpacity>
             </View>
           ),
-        }} 
+        }}
       />
 
-      {/* View Mode Selector */}
       <View style={styles.viewSection}>
         <ChipGroup
           options={viewOptions}
           selectedIds={[viewMode]}
-          onChange={(ids) => setViewMode(ids[0] || 'today')}
+          onChange={(ids) => setViewMode((ids[0] as 'today' | 'week' | 'upcoming') ?? 'today')}
           style={styles.viewChips}
         />
       </View>
 
-      {/* Day Overview */}
       <Card style={styles.overviewCard}>
         <View style={styles.overviewHeader}>
           <View style={styles.dateInfo}>
@@ -197,7 +219,7 @@ export default function MealPlanScreen() {
             <Text style={styles.completionText}>{Math.round(completionRate)}%</Text>
           </View>
         </View>
-        
+
         <View style={styles.dailyStats}>
           <View style={styles.dailyStat}>
             <Flame size={16} color={colors.accent.primary} />
@@ -217,43 +239,28 @@ export default function MealPlanScreen() {
         </View>
       </Card>
 
-      {/* Meals Timeline */}
       <View style={styles.timelineSection}>
         <Text style={styles.sectionTitle}>Today's Meals</Text>
-        
-        {currentPlan.meals.map((meal, index) => (
-          <Card key={meal.id} style={[styles.mealCard, meal.isCompleted && styles.completedMealCard]}>
-            <TouchableOpacity 
-              style={styles.mealContent}
-              onPress={() => toggleMealCompletion(meal.id)}
-            >
+        {currentPlan.meals.map((meal) => (
+          <Card key={meal.id} style={[styles.mealCard, meal.isCompleted && styles.completedMealCard]} testID={`meal-${meal.id}`}>
+            <TouchableOpacity style={styles.mealContent} onPress={() => toggleMealCompletion(meal.id)}>
               <View style={styles.mealHeader}>
                 <View style={styles.mealTime}>
                   <View style={[styles.timeIndicator, meal.isCompleted && styles.completedIndicator]} />
                   <View style={styles.mealTimeInfo}>
                     <Text style={styles.mealTimeText}>{meal.time}</Text>
-                    <Text style={[styles.mealName, meal.isCompleted && styles.completedText]}>
-                      {meal.name}
-                    </Text>
+                    <Text style={[styles.mealName, meal.isCompleted && styles.completedText]}>{meal.name}</Text>
                   </View>
                 </View>
-                
                 <View style={styles.mealActions}>
-                  <TouchableOpacity 
-                    style={styles.mealAction}
-                    onPress={() => router.push(`/meals/edit/${meal.id}`)}
-                  >
+                  <TouchableOpacity style={styles.mealAction} onPress={() => router.push(`/meals/edit/${meal.id}`)}>
                     <Edit3 size={16} color={colors.text.secondary} />
                   </TouchableOpacity>
-                  <TouchableOpacity 
-                    style={styles.mealAction}
-                    onPress={() => {}}
-                  >
+                  <TouchableOpacity style={styles.mealAction} onPress={() => {}}>
                     <Copy size={16} color={colors.text.secondary} />
                   </TouchableOpacity>
                 </View>
               </View>
-              
               <View style={styles.mealNutrition}>
                 <View style={styles.nutritionItem}>
                   <Flame size={12} color={colors.accent.primary} />
@@ -272,13 +279,6 @@ export default function MealPlanScreen() {
                   <Text style={styles.nutritionText}>{meal.fat}g fat</Text>
                 </View>
               </View>
-              
-              <View style={styles.mealFoods}>
-                <Text style={[styles.mealFoodsText, meal.isCompleted && styles.completedText]}>
-                  {meal.foods.join(' • ')}
-                </Text>
-              </View>
-              
               {meal.notes && (
                 <View style={styles.mealNotes}>
                   <Text style={styles.mealNotesText}>{meal.notes}</Text>
@@ -289,7 +289,6 @@ export default function MealPlanScreen() {
         ))}
       </View>
 
-      {/* Quick Actions */}
       <View style={styles.quickActions}>
         <Button
           title="Add Meal"
@@ -300,7 +299,7 @@ export default function MealPlanScreen() {
         <Button
           title="Generate Plan"
           variant="outline"
-          onPress={() => router.push('/meals/plans/generate')}
+          onPress={() => router.push('/meals/plans/create')}
           icon={<ChefHat size={18} color={colors.accent.primary} />}
           style={styles.actionButton}
         />
