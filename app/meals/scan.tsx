@@ -1,117 +1,44 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Platform, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { X, Flashlight, FlashlightOff, RotateCcw, TestTube } from 'lucide-react-native';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { apiService } from '@/services/api';
 
-// Web fallback component
-const WebScanner = () => {
+const Scanner = () => {
   const router = useRouter();
-  
-  const handleManualEntry = () => {
-    Alert.alert(
-      'Manual Entry',
-      'Enter barcode manually or search for food',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Search Food', onPress: () => router.push('/meals/add') }
-      ]
-    );
-  };
-  
-  return (
-    <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Scan Food Barcode' }} />
-      <View style={styles.webContainer}>
-        <Text style={styles.webTitle}>Camera Scanner</Text>
-        <Text style={styles.webSubtitle}>Camera scanning is not available on web</Text>
-        <Button title="Search Food Manually" onPress={handleManualEntry} />
-      </View>
-    </View>
-  );
-};
-
-// Mobile camera component
-const MobileScanner = () => {
-  const router = useRouter();
-  const [scanned, setScanned] = useState(false);
-  const [flashEnabled, setFlashEnabled] = useState(false);
+  const [scanned, setScanned] = useState<boolean>(false);
+  const [flashEnabled, setFlashEnabled] = useState<boolean>(false);
   const [facing, setFacing] = useState<'back' | 'front'>('back');
-  const [CameraView, setCameraView] = useState<any>(null);
-  const [cameraPermission, setCameraPermission] = useState<any>(null);
-  const [requestCameraPermission, setRequestCameraPermission] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    // Dynamically import expo-camera only on mobile
-    if (Platform.OS !== 'web') {
-      const loadCamera = async () => {
-        try {
-          const camera = await import('expo-camera');
-          setCameraView(() => camera.CameraView);
-          
-          // Get initial permission status
-          const { status } = await camera.Camera.getCameraPermissionsAsync();
-          setCameraPermission({ granted: status === 'granted' });
-          
-          // Set up request permission function
-          setRequestCameraPermission(() => async () => {
-            const { status: newStatus } = await camera.Camera.requestCameraPermissionsAsync();
-            const newPermission = { granted: newStatus === 'granted' };
-            setCameraPermission(newPermission);
-            return newPermission;
-          });
-          
-          setIsLoading(false);
-        } catch (error) {
-          console.error('Failed to load camera:', error);
-          setIsLoading(false);
-        }
-      };
-      
-      loadCamera();
-    }
-  }, []);
+  const [permission, requestPermission] = useCameraPermissions();
 
   const handleRequestPermission = async () => {
-    if (requestCameraPermission) {
-      await requestCameraPermission();
+    try {
+      await requestPermission();
+    } catch (e) {
+      console.error('Camera permission request failed', e);
     }
   };
 
   const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
     if (scanned) return;
-    
     setScanned(true);
 
     try {
       const startTime = Date.now();
-      // Try to get food data from API
       const foodData = await apiService.getFoodByBarcode(data);
       const apiDuration = Date.now() - startTime;
-      
+
       if (foodData) {
         Alert.alert(
           'Food Found! ✓',
           `${foodData.name}${foodData.brand ? ` by ${foodData.brand}` : ''}\n${foodData.calories} calories per ${foodData.servingSize}\n\nAPI Response: ${apiDuration}ms`,
           [
-            {
-              text: 'Scan Another',
-              onPress: () => setScanned(false),
-              style: 'cancel'
-            },
-            {
-              text: 'Add to Meal',
-              onPress: () => {
-                router.push({
-                  pathname: '/meals/add',
-                  params: { foodData: JSON.stringify(foodData) }
-                });
-              }
-            }
+            { text: 'Scan Another', onPress: () => setScanned(false), style: 'cancel' },
+            { text: 'Add to Meal', onPress: () => router.push({ pathname: '/meals/add', params: { foodData: JSON.stringify(foodData) } }) },
           ]
         );
       } else {
@@ -119,20 +46,8 @@ const MobileScanner = () => {
           'Food Not Found',
           `This barcode was not found in our database. Would you like to add it manually?\n\nAPI Response: ${apiDuration}ms`,
           [
-            {
-              text: 'Scan Another',
-              onPress: () => setScanned(false),
-              style: 'cancel'
-            },
-            {
-              text: 'Add Manually',
-              onPress: () => {
-                router.push({
-                  pathname: '/meals/add',
-                  params: { barcode: data }
-                });
-              }
-            }
+            { text: 'Scan Another', onPress: () => setScanned(false), style: 'cancel' },
+            { text: 'Add Manually', onPress: () => router.push({ pathname: '/meals/add', params: { barcode: data } }) },
           ]
         );
       }
@@ -143,29 +58,17 @@ const MobileScanner = () => {
         'API Error ✗',
         `Unable to process barcode: ${errorMessage}\n\nPlease try again or add food manually.`,
         [
-          {
-            text: 'Scan Another',
-            onPress: () => setScanned(false),
-            style: 'cancel'
-          },
-          {
-            text: 'Add Manually',
-            onPress: () => router.push('/meals/add')
-          }
+          { text: 'Scan Another', onPress: () => setScanned(false), style: 'cancel' },
+          { text: 'Add Manually', onPress: () => router.push('/meals/add') },
         ]
       );
     }
   };
 
-  const toggleFlash = () => {
-    setFlashEnabled(!flashEnabled);
-  };
+  const toggleFlash = () => setFlashEnabled(!flashEnabled);
+  const toggleCamera = () => setFacing(current => (current === 'back' ? 'front' : 'back'));
 
-  const toggleCamera = () => {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
-  };
-
-  if (isLoading || !CameraView) {
+  if (!permission) {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: 'Scan Food Barcode' }} />
@@ -176,20 +79,15 @@ const MobileScanner = () => {
     );
   }
 
-  if (!cameraPermission || !cameraPermission.granted) {
+  if (!permission.granted) {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: 'Scan Food Barcode' }} />
         <View style={styles.permissionContainer}>
           <Text style={styles.permissionTitle}>Camera Permission Required</Text>
-          <Text style={styles.permissionText}>
-            We need access to your camera to scan food barcodes
-          </Text>
-          <Button
-            title="Grant Permission"
-            onPress={handleRequestPermission}
-            style={styles.permissionButton}
-          />
+          <Text style={styles.permissionText}>We need access to your camera to scan food barcodes</Text>
+          <Button title="Grant Permission" onPress={handleRequestPermission} style={styles.permissionButton} testID="grant-permission" />
+          <Button title="Enter Manually" variant="outline" onPress={() => router.push('/meals/add')} style={[styles.permissionButton, { marginTop: 12 }]} />
         </View>
       </View>
     );
@@ -197,48 +95,40 @@ const MobileScanner = () => {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen 
-        options={{ 
+      <Stack.Screen
+        options={{
           title: 'Scan Food Barcode',
           headerLeft: () => (
-            <TouchableOpacity onPress={() => router.back()}>
+            <TouchableOpacity onPress={() => router.back()} testID="close-scanner">
               <X size={24} color={colors.text.primary} />
             </TouchableOpacity>
-          )
-        }} 
+          ),
+        }}
       />
-      
+
       <CameraView
         style={styles.camera}
         facing={facing}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-        barcodeScannerSettings={{
-          barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8', 'code128', 'code39'],
-        }}
+        barcodeScannerSettings={{ barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8', 'code128', 'code39'] }}
+        {...(flashEnabled ? { enableTorch: true } : {})}
+        testID="camera-view"
       >
         <View style={styles.overlay}>
-          {/* Top controls */}
           <View style={styles.topControls}>
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={toggleFlash}
-            >
+            <TouchableOpacity style={styles.controlButton} onPress={toggleFlash} testID="toggle-flash">
               {flashEnabled ? (
                 <FlashlightOff size={24} color={colors.text.primary} />
               ) : (
                 <Flashlight size={24} color={colors.text.primary} />
               )}
             </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={toggleCamera}
-            >
+
+            <TouchableOpacity style={styles.controlButton} onPress={toggleCamera} testID="toggle-camera">
               <RotateCcw size={24} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
 
-          {/* Scanning frame */}
           <View style={styles.scanFrame}>
             <View style={styles.scanCorner} />
             <View style={[styles.scanCorner, styles.scanCornerTopRight]} />
@@ -246,29 +136,14 @@ const MobileScanner = () => {
             <View style={[styles.scanCorner, styles.scanCornerBottomRight]} />
           </View>
 
-          {/* Instructions */}
           <View style={styles.instructions}>
             <Text style={styles.instructionTitle}>Scan Food Barcode</Text>
-            <Text style={styles.instructionText}>
-              Position the barcode within the frame to scan
-            </Text>
+            <Text style={styles.instructionText}>Position the barcode within the frame to scan</Text>
           </View>
 
-          {/* Manual entry option */}
           <View style={styles.bottomControls}>
-            <Button
-              title="Enter Manually"
-              variant="outline"
-              onPress={() => router.push('/meals/add')}
-              style={styles.manualButton}
-            />
-            <Button
-              title="Test Nutrition API"
-              variant="outline"
-              onPress={() => router.push('/test-apis')}
-              style={[styles.manualButton, { marginTop: 8 }]}
-              icon={<TestTube size={16} color={colors.text.primary} />}
-            />
+            <Button title="Enter Manually" variant="outline" onPress={() => router.push('/meals/add')} style={styles.manualButton} testID="enter-manually" />
+            <Button title="Test Nutrition API" variant="outline" onPress={() => router.push('/test-apis')} style={[styles.manualButton, { marginTop: 8 }]} icon={<TestTube size={16} color={colors.text.primary} />} testID="test-nutrition-api" />
           </View>
         </View>
       </CameraView>
@@ -277,7 +152,7 @@ const MobileScanner = () => {
 };
 
 export default function MealScanScreen() {
-  return Platform.OS === 'web' ? <WebScanner /> : <MobileScanner />;
+  return <Scanner />;
 }
 
 const styles = StyleSheet.create({
@@ -285,26 +160,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  webContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  webTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: colors.text.primary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  webSubtitle: {
-    fontSize: 16,
-    color: colors.text.secondary,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 22,
-  },
+
   permissionContainer: {
     flex: 1,
     justifyContent: 'center',
