@@ -7,7 +7,7 @@ import Constants from "expo-constants";
 
 export const trpc = createTRPCReact<AppRouter>();
 
-const getBaseUrl = () => {
+const getBaseOrigin = () => {
   const customBaseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
   if (customBaseUrl) {
     return customBaseUrl.replace(/\/$/, "");
@@ -34,7 +34,15 @@ const getBaseUrl = () => {
   return "http://127.0.0.1:8081";
 };
 
-const endpointUrl = `${getBaseUrl()}/api/trpc`;
+const getTrpcEndpoint = () => {
+  const base = getBaseOrigin();
+  const withoutTrailing = base.replace(/\/$/, "");
+  const hasApi = /\/(api)(\b|\/)/.test(withoutTrailing);
+  const baseWithApi = hasApi ? withoutTrailing : `${withoutTrailing}/api`;
+  return `${baseWithApi.replace(/\/+$/, "")}/trpc`;
+};
+
+const endpointUrl = getTrpcEndpoint();
 
 export const trpcClient = trpc.createClient({
   links: [
