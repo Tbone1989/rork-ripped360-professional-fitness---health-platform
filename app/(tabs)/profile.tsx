@@ -39,6 +39,7 @@ import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Button } from '@/components/ui/Button';
 import { useUserStore } from '@/store/userStore';
 import { useMedicalStore } from '@/store/medicalStore';
+import { brandAssets } from '@/constants/brand';
 
 export default function ProfileScreen() {
   const router = useRouter();
@@ -399,7 +400,7 @@ export default function ProfileScreen() {
             <View style={styles.logoWrap}>
               <View style={styles.logoBg}>
                 <Image
-                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/8noce6pnnzgzdwl870mr3' }}
+                  source={{ uri: brandAssets.primaryLogo }}
                   style={styles.logo}
                   resizeMode="contain"
                 />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -93,6 +93,14 @@ export default function AdminMessagesScreen() {
     type: 'notification' as SystemMessage['type'],
     priority: 'medium' as SystemMessage['priority'],
   });
+  const { isAdmin, user } = require('@/store/userStore').useUserStore((s: any) => ({ isAdmin: s.isAdmin, user: s.user }));
+
+  useEffect(() => {
+    const admin = isAdmin || (user?.role === 'admin');
+    if (!admin) {
+      router.replace('/admin/login');
+    }
+  }, [isAdmin, user, router]);
 
   const filteredMessages = messages.filter(msg => {
     const matchesSearch = msg.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

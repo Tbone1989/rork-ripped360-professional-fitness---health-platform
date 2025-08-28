@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
@@ -21,10 +21,19 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useWellnessStore } from '@/store/wellnessStore';
+import { useUserStore } from '@/store/userStore';
 
 export default function AdminTestingScreen() {
   const router = useRouter();
   const { gymTestingScenarios, nutritionTestScenarios } = useWellnessStore();
+  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+
+  useEffect(() => {
+    const admin = isAdmin || (user?.role === 'admin');
+    if (!admin) {
+      router.replace('/admin/login');
+    }
+  }, [isAdmin, user, router]);
 
   // Calculate test completion stats
   const gymTestsCompleted = gymTestingScenarios.reduce((total, scenario) => 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -27,6 +27,7 @@ import {
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
+import { useUserStore } from '@/store/userStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -114,6 +115,14 @@ export default function AdminSettingsScreen() {
   const [settings, setSettings] = useState<SystemSetting[]>(mockSettings);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'security' | 'notifications' | 'system' | 'api'>('all');
   const [hasChanges, setHasChanges] = useState(false);
+  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+
+  useEffect(() => {
+    const admin = isAdmin || (user?.role === 'admin');
+    if (!admin) {
+      router.replace('/admin/login');
+    }
+  }, [isAdmin, user, router]);
 
   const handleSettingChange = (settingId: string, newValue: any) => {
     setSettings(prev =>

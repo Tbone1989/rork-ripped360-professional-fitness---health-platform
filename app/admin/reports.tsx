@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -22,6 +22,7 @@ import {
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
+import { useUserStore } from '@/store/userStore';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -84,6 +85,14 @@ export default function AdminReportsScreen() {
   const router = useRouter();
   const [reports, setReports] = useState<ReportData[]>(mockReports);
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
+  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+
+  useEffect(() => {
+    const admin = isAdmin || (user?.role === 'admin');
+    if (!admin) {
+      router.replace('/admin/login');
+    }
+  }, [isAdmin, user, router]);
 
   const handleGenerateReport = (reportId: string) => {
     setReports(prev =>

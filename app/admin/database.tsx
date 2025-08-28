@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -74,6 +74,14 @@ export default function AdminDatabaseScreen() {
   const router = useRouter();
   const [databases, setDatabases] = useState<DatabaseInfo[]>(mockDatabases);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const { isAdmin, user } = require('@/store/userStore').useUserStore((s: any) => ({ isAdmin: s.isAdmin, user: s.user }));
+
+  useEffect(() => {
+    const admin = isAdmin || (user?.role === 'admin');
+    if (!admin) {
+      router.replace('/admin/login');
+    }
+  }, [isAdmin, user, router]);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
