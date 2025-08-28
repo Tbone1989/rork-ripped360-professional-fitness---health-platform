@@ -397,25 +397,15 @@ export default function ProfileScreen() {
           </View>
 
           <View style={styles.founderContainer}>
-            <View style={styles.logoWrap}>
-              <View style={styles.logoBg} testID="logo-ripped-city">
+            <View style={styles.founderContent}>
+              <View style={styles.orgHeaderRow} testID="header-ripped-city">
                 <Image
                   source={{ uri: brandAssets.rippedCityIncLogo }}
-                  style={styles.logo}
+                  style={styles.orgLogoSmall}
                   resizeMode="contain"
                 />
+                <Text style={styles.founderTitle}>Ripped City Inc. Mission</Text>
               </View>
-              <View style={[styles.logoBg, { marginTop: 10 }]} testID="logo-digesting-life-balance">
-                <Image
-                  source={{ uri: brandAssets.digestingLifeBalanceLogo }}
-                  style={styles.logo}
-                  resizeMode="contain"
-                />
-              </View>
-            </View>
-
-            <View style={styles.founderContent}>
-              <Text style={styles.founderTitle}>Ripped City Inc. Mission</Text>
               <Text style={styles.founderTagline}>"Born from Rock Bottom, Built for Champions"</Text>
               <Text style={styles.founderText}>
                 Ripped City Inc. was founded by Tyrone Hayes after a life-changing transformation from 338 pounds to a champion mindset.
@@ -431,7 +421,14 @@ export default function ProfileScreen() {
                 />
               </View>
 
-              <Text style={[styles.founderTitle, { marginTop: 12 }]}>Digesting Life Balance Mission</Text>
+              <View style={[styles.orgHeaderRow, { marginTop: 12 }]} testID="header-digesting-life-balance">
+                <Image
+                  source={{ uri: brandAssets.digestingLifeBalanceLogo }}
+                  style={styles.orgLogoSmall}
+                  resizeMode="contain"
+                />
+                <Text style={styles.founderTitle}>Digesting Life Balance Mission</Text>
+              </View>
               <Text style={styles.founderTagline}>"From Personal Struggle to Community Healing"</Text>
               <Text style={styles.founderText}>
                 Digesting Life Balance was born from firsthand experience with the devastating effects of poor nutrition and emotional eating.
@@ -818,28 +815,18 @@ const styles = StyleSheet.create({
     color: colors.text.tertiary,
   },
   founderContainer: {
-    flexDirection: 'row',
     paddingHorizontal: 16,
     paddingBottom: 16,
-    gap: 12 as unknown as number,
   },
-  logoWrap: {
+  orgHeaderRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
+    gap: 8 as unknown as number,
   },
-  logoBg: {
-    width: 72,
-    height: 72,
-    borderRadius: 12,
-    backgroundColor: '#000000',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-  },
-  logo: {
-    width: 64,
-    height: 64,
+  orgLogoSmall: {
+    width: 22,
+    height: 22,
+    borderRadius: 4,
   },
   founderContent: {
     flex: 1,
