@@ -107,11 +107,28 @@ export function getImageForMedicine(item: MedicineInfo): string {
     if (isPillForm) {
       return pillBlisterUrl;
     }
-    // default to liquid peptide image when not explicitly a pill form
     return liquidPeptideUrl;
   }
 
-  if (category.includes('hormone') || name.includes('testosterone') || name.includes('estradiol') || name.includes('progesterone')) {
+  if (name.includes('testosterone')) {
+    return syringeUrl;
+  }
+
+  if (name.includes('estradiol')) {
+    if (category.includes('patch') || name.includes('patch') || name.includes('gel') || category.includes('gel') || name.includes('vaginal') || category.includes('vaginal')) {
+      return bottleDropperUrl;
+    }
+    if (isPillForm) {
+      return pillBlisterUrl;
+    }
+    return syringeUrl;
+  }
+
+  if (name.includes('dhea') || name.includes('prasterone')) {
+    return isPillForm ? pillBlisterUrl : bottleDropperUrl;
+  }
+
+  if (category.includes('hormone') || name.includes('progesterone')) {
     return syringeUrl;
   }
   if (category.includes('patch')) return bottleDropperUrl;
