@@ -52,7 +52,7 @@ export default function AttachmentsVisibilityScreen() {
 
   return (
     <View style={styles.container}>
-      <Stack.Screen options={{ title: 'Attachments' }} />
+      <Stack.Screen options={{ title: 'Files' }} />
 
       <Card style={styles.infoCard}>
         <View style={styles.infoRow}>

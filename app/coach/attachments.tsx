@@ -67,7 +67,6 @@ export default function CoachAttachmentsScreen() {
         )}
       />
 
-      <Text style={styles.sectionTitle}>Attachments</Text>
 
       {selectedClientId == null ? (
         <View style={styles.emptyWrap}>

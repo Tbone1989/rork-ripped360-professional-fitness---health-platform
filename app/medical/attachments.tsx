@@ -67,8 +67,6 @@ export default function MedicalAttachmentsScreen() {
         )}
       />
 
-      <Text style={styles.sectionTitle}>Attachments</Text>
-
       {selectedClientId == null ? (
         <View style={styles.emptyWrap}>
           <Text style={styles.emptyText} testID="attachments-prompt">Select a patient to view attachments.</Text>
