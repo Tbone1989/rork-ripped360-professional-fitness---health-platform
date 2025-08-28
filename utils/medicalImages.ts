@@ -11,7 +11,7 @@ const creatineScoopUrl = 'https://images.unsplash.com/photo-1605296867304-46d546
 const bottleDropperUrl = 'https://images.unsplash.com/photo-1601841162542-8341f9b31fbe?q=80&w=900&auto=format&fit=crop';
 
 // Liquid peptides common image (vial + syringe). Only used for liquid/injectable peptides.
-const liquidPeptideUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/6vyuhslcblzbwnfbzoddl';
+const liquidPeptideUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/s5bpf20odmg1xc4s0f6gk';
 
 export const herbsImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0dv48um5g9m8eayocblgx';
 export function getImageForHerb(): string { return herbsImageUrl; }
