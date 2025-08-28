@@ -22,7 +22,7 @@ const getBaseOrigin = () => {
 
   if (Platform.OS === "web") {
     try {
-      const origin = (window as any)?.location?.origin as string | undefined;
+      const origin = (globalThis as any)?.location?.origin as string | undefined;
       if (origin && typeof origin === "string") return normalizeUrl(origin);
     } catch {}
     return "";
@@ -54,23 +54,29 @@ const getBaseOrigin = () => {
 };
 
 const getTrpcEndpointCandidates = (): string[] => {
+  const forced = (process.env.EXPO_PUBLIC_TRPC_URL ?? "").trim();
   const base = getBaseOrigin();
-  const roots = new Set<string>();
-  if (base) roots.add(base.replace(/\/$/, ""));
-  // Always include relative root so web can hit same origin even if base couldn't be resolved
-  roots.add("");
+  const cleanBase = base ? base.replace(/\/$/, "") : "";
 
-  const candidates = new Set<string>();
-  for (const r of roots) {
-    const root = r.length > 0 ? r : "";
-    const withApi = `${root}${root.endsWith("/api") || /\/(api)(\b|\/)/.test(root) ? "" : "/api"}`.replace(/\/+$/, "");
-    candidates.add(`${withApi}/trpc`);
-    // Also try without /api in case the host already mounts at root
-    const noApiBase = root.replace(/\/+$/, "");
-    candidates.add(`${noApiBase}/trpc`);
+  const ordered: string[] = [];
+  if (forced) ordered.push(forced);
+  ordered.push("/api/trpc");
+  if (cleanBase) {
+    const withApi = `${cleanBase}${cleanBase.endsWith("/api") || /(\/api)(\b|\/)/.test(cleanBase) ? "" : "/api"}`.replace(/\/+$/, "");
+    ordered.push(`${withApi}/trpc`);
+    ordered.push(`${cleanBase}/trpc`);
   }
-  // Normalize duplicates
-  return Array.from(candidates).filter((u) => u !== "/trpc" ? true : true);
+  ordered.push("/trpc");
+
+  const seen = new Set<string>();
+  const deduped = ordered.filter((u) => {
+    if (!u) return false;
+    const key = u.replace(/\/+$/, "");
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  return deduped;
 };
 
 const endpointCandidates = getTrpcEndpointCandidates();
