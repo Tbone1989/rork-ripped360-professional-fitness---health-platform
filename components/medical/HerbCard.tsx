@@ -7,6 +7,7 @@ import { ChevronRight } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 import { HerbalInteraction } from '@/types/medical';
 import { Badge } from '@/components/ui/Badge';
+import { herbsImageUrl } from '@/utils/medicalImages';
 
 interface HerbCardProps {
   herb: HerbalInteraction;
@@ -14,10 +15,6 @@ interface HerbCardProps {
 
 export const HerbCard: React.FC<HerbCardProps> = ({ herb }) => {
   const router = useRouter();
-
-  const imageUri = `https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=600&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=&herb=${encodeURIComponent(
-    herb.herb,
-  )}`;
 
   const handlePress = () => {
     router.push({ pathname: '/supplements/herb/[id]', params: { id: herb.id } });
@@ -30,7 +27,7 @@ export const HerbCard: React.FC<HerbCardProps> = ({ herb }) => {
       activeOpacity={0.85}
       testID={`HerbCard-${herb.id}`}
     >
-      <Image source={{ uri: imageUri }} style={styles.image} contentFit="cover" transition={250} />
+      <Image source={{ uri: herbsImageUrl }} style={styles.image} contentFit="cover" transition={250} />
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <Text style={styles.name} numberOfLines={1}>

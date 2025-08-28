@@ -8,6 +8,7 @@ import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { herbalInteractions } from '@/mocks/supplements';
+import { herbsImageUrl } from '@/utils/medicalImages';
 
 export default function HerbDetailsScreen() {
   const router = useRouter();
@@ -27,16 +28,12 @@ export default function HerbDetailsScreen() {
     );
   }
 
-  const imageUri = `https://images.unsplash.com/photo-1501004318641-b39e6451bec6?q=80&w=1200&auto=format&fit=crop&ixlib=rb-4.0.3&herb=${encodeURIComponent(
-    herb.herb,
-  )}`;
-
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: herb.herb }} />
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <View style={styles.headerImageWrap}>
-          <Image source={{ uri: imageUri }} style={styles.headerImage} contentFit="cover" />
+          <Image source={{ uri: herbsImageUrl }} style={styles.headerImage} contentFit="cover" />
           <View style={styles.headerOverlay}>
             <View style={styles.titleRow}>
               <Leaf size={18} color={colors.text.primary} />

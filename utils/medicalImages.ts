@@ -10,6 +10,9 @@ const powderScoopUrl = 'https://images.unsplash.com/photo-1593095948071-474c5cc2
 const creatineScoopUrl = 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=900&auto=format&fit=crop';
 const bottleDropperUrl = 'https://images.unsplash.com/photo-1601841162542-8341f9b31fbe?q=80&w=900&auto=format&fit=crop';
 
+export const herbsImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0dv48um5g9m8eayocblgx';
+export function getImageForHerb(): string { return herbsImageUrl; }
+
 export function getImageForSupplement(item: SupplementInfo): string {
   const name = (item.name ?? '').toLowerCase();
   const category = (item.category ?? '').toLowerCase();
