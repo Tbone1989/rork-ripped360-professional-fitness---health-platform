@@ -444,6 +444,29 @@ export const mockGroceryStores: GroceryStore[] = [
     features: ['organic', 'bulk']
   },
   {
+    id: '25',
+    name: 'Walmart Supercenter Delray Beach',
+    chain: 'Walmart',
+    address: '3155 S Federal Hwy',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33483',
+    phone: '561-450-1853',
+    logo: 'https://logos-world.net/wp-content/uploads/2020/09/Walmart-Logo.png',
+    distance: 2.2,
+    coordinates: { latitude: 26.4307, longitude: -80.0706 },
+    hours: [
+      { day: 'Monday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Tuesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Wednesday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Thursday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Friday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Saturday', open: '6:00 AM', close: '11:00 PM' },
+      { day: 'Sunday', open: '6:00 AM', close: '11:00 PM' }
+    ],
+    features: ['pharmacy', 'grocery']
+  },
+  {
     id: '22',
     name: "The Boys Farmers Market",
     chain: 'Independent',
@@ -714,6 +737,7 @@ export const mockGroceryItems: GroceryItem[] = [
 export const mockGroceryPrices: GroceryPrice[] = [
   // Bananas
   { id: '1', itemId: '1', storeId: '1', price: 0.68, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
+  { id: '65', itemId: '1', storeId: '25', price: 0.54, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2025-08-28T22:00:00Z' },
   { id: '2', itemId: '1', storeId: '2', price: 0.79, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
   { id: '3', itemId: '1', storeId: '3', price: 0.89, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
   { id: '4', itemId: '1', storeId: '4', price: 1.29, unit: 'lb', size: '1 lb', inStock: true, lastUpdated: '2024-01-15T10:00:00Z' },
