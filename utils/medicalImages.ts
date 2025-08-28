@@ -50,7 +50,9 @@ export function getImageForSupplement(item: SupplementInfo): string {
     name.includes('semax') ||
     name.includes('selank') ||
     name.includes('aod') ||
-    name.includes('ll-37');
+    name.includes('ll-37') ||
+    name.includes('next-gen') ||
+    name.includes('next gen');
   const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
 
   if (looksLikePeptide && !isPillForm) {
@@ -60,7 +62,7 @@ export function getImageForSupplement(item: SupplementInfo): string {
   if (name.includes('creatine')) return creatineScoopUrl;
   if (category.includes('protein') || name.includes('whey') || name.includes('plant') || name.includes('vegan')) return powderScoopUrl;
   if (name.includes('fish oil') || name.includes('omega') || category.includes('oil')) return softgelsUrl;
-  if ((category.includes('vitamin') || name.includes('vitamin')) && !category.includes('mineral') && !name.includes('mineral')) return vitaminsImageUrl;
+  if ((category.includes('vitamin') || name.includes('vitamin') || name.includes('vitamin d') || name.includes('cholecalciferol') || name.includes('ergocalciferol')) && !category.includes('mineral') && !name.includes('mineral')) return vitaminsImageUrl;
   if (category.includes('capsule') || name.includes('capsule')) return capsulesUrl;
   if (category.includes('tablet') || name.includes('pill')) return pillBlisterUrl;
   if (category.includes('liquid') || name.includes('drops') || name.includes('tincture')) return bottleDropperUrl;
@@ -100,7 +102,9 @@ export function getImageForMedicine(item: MedicineInfo): string {
     name.includes('selank') ||
     name.includes('aod') ||
     name.includes('ll-37') ||
-    name.includes('mab');
+    name.includes('mab') ||
+    name.includes('next-gen') ||
+    name.includes('next gen');
   const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
 
   if (looksLikePeptide) {
@@ -110,7 +114,23 @@ export function getImageForMedicine(item: MedicineInfo): string {
     return liquidPeptideUrl;
   }
 
-  if (name.includes('testosterone')) {
+  if (
+    name.includes('testosterone') ||
+    name.includes('cypionate') ||
+    name.includes('enanthate') ||
+    name.includes('propionate') ||
+    name.includes('undecanoate') ||
+    name.includes('sustanon') ||
+    category.includes('androgen') ||
+    category.includes('trt') ||
+    category.includes('anabolic')
+  ) {
+    if (category.includes('gel') || name.includes('gel') || category.includes('patch') || name.includes('patch')) {
+      return bottleDropperUrl;
+    }
+    if (category.includes('oral') || name.includes('oral') || name.includes('undecanoate')) {
+      return pillBlisterUrl;
+    }
     return syringeUrl;
   }
 

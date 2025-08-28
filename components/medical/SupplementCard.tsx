@@ -24,6 +24,7 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
 }) => {
   const router = useRouter();
   const [expanded, setExpanded] = useState<boolean>(initialExpanded ?? false);
+  const [imageFailed, setImageFailed] = useState<boolean>(false);
 
   const handlePress = () => {
     if (onPress) {
@@ -89,6 +90,14 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
     return uri;
   }, [item, type, isPeptide]);
 
+  const fallbackUri = useMemo<string>(() => {
+    if (type === 'medicine') {
+      if (isPeptide) return 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/s5bpf20odmg1xc4s0f6gk';
+      return 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?q=80&w=900&auto=format&fit=crop';
+    }
+    return 'https://images.unsplash.com/photo-1535747790212-30c585ab4863?q=80&w=900&auto=format&fit=crop';
+  }, [type, isPeptide]);
+
   const toggleExpanded = () => {
     console.log('[SupplementCard] toggleExpanded', { id: item.id, name: item.name, expandedTo: !expanded });
     setExpanded(prev => !prev);
@@ -103,10 +112,14 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
     >
       <View style={styles.imageWrap}>
         <Image
-          source={{ uri: imageUri }}
+          source={{ uri: imageFailed ? fallbackUri : imageUri }}
           style={styles.image}
           contentFit="cover"
           transition={300}
+          onError={(e) => {
+            console.log('[SupplementCard] image load error - switching to fallback', { id: item.id, name: item.name, uri: imageUri, error: (e as any)?.nativeEvent });
+            setImageFailed(true);
+          }}
         />
       </View>
       <View style={styles.content}>
