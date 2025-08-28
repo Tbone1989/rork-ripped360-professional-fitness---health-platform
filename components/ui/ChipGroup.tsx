@@ -9,7 +9,7 @@ interface ChipOption {
 }
 
 interface ChipGroupProps {
-  options: ChipOption[];
+  options?: ChipOption[];
   selectedIds?: string[];
   selectedId?: string;
   onChange?: (selectedIds: string[]) => void;
@@ -17,6 +17,7 @@ interface ChipGroupProps {
   multiSelect?: boolean;
   style?: ViewStyle;
   scrollable?: boolean;
+  children?: React.ReactNode;
 }
 
 export const ChipGroup: React.FC<ChipGroupProps> = ({
@@ -28,6 +29,7 @@ export const ChipGroup: React.FC<ChipGroupProps> = ({
   multiSelect = false,
   style,
   scrollable = true,
+  children,
 }) => {
   const actualSelectedIds = selectedId ? [selectedId] : selectedIds;
   const handleChange = onChange || onSelect || (() => {});
@@ -43,6 +45,8 @@ export const ChipGroup: React.FC<ChipGroupProps> = ({
   };
 
   const renderChips = () => {
+    if (children) return children;
+    if (!options) return null;
     return options.map((option) => (
       <Chip
         key={option.id}

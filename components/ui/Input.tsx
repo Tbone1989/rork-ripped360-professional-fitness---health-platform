@@ -30,6 +30,7 @@ interface InputProps {
   editable?: boolean;
   onBlur?: () => void;
   onFocus?: () => void;
+  leftIcon?: React.ReactNode;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -51,6 +52,7 @@ export const Input: React.FC<InputProps> = ({
   onBlur,
   onFocus,
   testID,
+  leftIcon,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -81,6 +83,7 @@ export const Input: React.FC<InputProps> = ({
           !editable && styles.inputContainerDisabled,
         ]}
       >
+        {leftIcon ? <View style={styles.leftIconContainer}>{leftIcon}</View> : null}
         <TextInput
           testID={testID}
           style={[
@@ -157,6 +160,10 @@ const styles = StyleSheet.create({
   multilineInput: {
     textAlignVertical: 'top',
     minHeight: 100,
+  },
+  leftIconContainer: {
+    paddingLeft: 12,
+    paddingRight: 8,
   },
   iconContainer: {
     padding: 12,
