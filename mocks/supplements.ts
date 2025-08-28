@@ -125,7 +125,7 @@ export const popularSupplements: SupplementInfo[] = [
       'https://pubmed.ncbi.nlm.nih.gov/21427040/',
       'https://pubmed.ncbi.nlm.nih.gov/20439679/',
     ],
-    imageUrl: 'https://images.unsplash.com/photo-1577460551100-907fc6e6d955?q=80&w=500',
+    imageUrl: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/4fstoxmxbl66beltouga5',
   },
   {
     id: '5',
@@ -155,6 +155,31 @@ export const popularSupplements: SupplementInfo[] = [
       'https://pubmed.ncbi.nlm.nih.gov/18548362/',
     ],
     imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?q=80&w=500',
+  },
+  {
+    id: '6',
+    name: 'Plant-Based Protein (Pea/Rice)',
+    category: 'Protein - Plant-Based',
+    description: 'Vegan protein blend from pea and brown rice providing a complete amino acid profile with good digestibility. Ideal for dairy-free users.',
+    benefits: [
+      'Supports muscle recovery and growth',
+      'Dairy-free and easier on digestion for many',
+      'Often includes fiber and micronutrients',
+    ],
+    sideEffects: [
+      'Possible bloating if high in fiber',
+    ],
+    dosage: '20-30g per serving, 1-2 servings daily based on needs',
+    interactions: [
+      'May reduce absorption of certain medications when taken together',
+    ],
+    warnings: [
+      'Check for added sweeteners and allergens',
+    ],
+    researchUrls: [
+      'https://pubmed.ncbi.nlm.nih.gov/27874045/',
+    ],
+    imageUrl: 'https://images.unsplash.com/photo-1543357480-c60d40007a6a?q=80&w=500',
   },
 ];
 

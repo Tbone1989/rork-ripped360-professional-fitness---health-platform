@@ -22,7 +22,21 @@ export function getImageForSupplement(item: SupplementInfo): string {
   const category = (item.category ?? '').toLowerCase();
 
   // Peptides as supplements: only map liquid/injectable to liquidPeptideUrl
-  const looksLikePeptide = category.includes('peptide') || name.includes('peptide') || name.includes('semaglutide') || name.includes('tirzepatide') || name.includes('bpc') || name.includes('cjc') || name.includes('ipamorelin') || name.includes('tb-500');
+  const looksLikePeptide =
+    category.includes('peptide') ||
+    name.includes('peptide') ||
+    name.includes('semaglutide') ||
+    name.includes('tirzepatide') ||
+    name.includes('bpc') ||
+    name.includes('cjc') ||
+    name.includes('ipamorelin') ||
+    name.includes('tb-500') ||
+    name.includes('sermorelin') ||
+    name.includes('ghrh') ||
+    name.includes('ghrp') ||
+    name.includes('myostatin') ||
+    name.includes('ace-083') ||
+    name.includes('ace-031');
   const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
   const isLiquidForm = category.includes('liquid') || category.includes('inject') || category.includes('injection') || category.includes('subq') || category.includes('vial') || name.includes('liquid') || name.includes('inject') || name.includes('injection') || name.includes('subq') || name.includes('vial');
 
@@ -31,7 +45,7 @@ export function getImageForSupplement(item: SupplementInfo): string {
   }
 
   if (name.includes('creatine')) return creatineScoopUrl;
-  if (category.includes('protein') || name.includes('whey')) return powderScoopUrl;
+  if (category.includes('protein') || name.includes('whey') || name.includes('plant') || name.includes('vegan')) return powderScoopUrl;
   if (name.includes('fish oil') || name.includes('omega') || category.includes('oil')) return softgelsUrl;
   if ((category.includes('vitamin') || name.includes('vitamin')) && !category.includes('mineral') && !name.includes('mineral')) return vitaminsImageUrl;
   if (category.includes('capsule') || name.includes('capsule')) return capsulesUrl;
@@ -48,6 +62,7 @@ export function getImageForMedicine(item: MedicineInfo): string {
     category.includes('glp') ||
     category.includes('gip') ||
     category.includes('peptide') ||
+    category.includes('myostatin') ||
     name.includes('semaglutide') ||
     name.includes('tirzepatide') ||
     name.includes('cjc') ||
@@ -55,16 +70,24 @@ export function getImageForMedicine(item: MedicineInfo): string {
     name.includes('bpc') ||
     name.includes('tb-500') ||
     name.includes('follistatin') ||
+    name.includes('myostatin') ||
+    name.includes('anti-myostatin') ||
+    name.includes('ace-083') ||
+    name.includes('ace-031') ||
     name.includes('igf') ||
     name.includes('mgf') ||
     name.includes('peg-mgf') ||
     name.includes('ghk') ||
     name.includes('kisspeptin') ||
     name.includes('gonadorelin') ||
+    name.includes('sermorelin') ||
+    name.includes('ghrh') ||
+    name.includes('ghrp') ||
     name.includes('semax') ||
     name.includes('selank') ||
     name.includes('aod') ||
-    name.includes('ll-37');
+    name.includes('ll-37') ||
+    name.includes('mab');
   const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
 
   if (looksLikePeptide) {
