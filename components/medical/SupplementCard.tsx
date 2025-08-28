@@ -71,8 +71,9 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
 
   const imageUri = useMemo<string>(() => {
     const provided = (item as any)?.imageUrl as string | undefined;
-    const uri = provided ?? (type === 'medicine' ? getImageForMedicine(item as MedicineInfo) : getImageForSupplement(item as SupplementInfo));
-    console.log('[SupplementCard] imageUri resolved', { id: item.id, name: item.name, isPeptide, provided, uri });
+    const mapped = type === 'medicine' ? getImageForMedicine(item as MedicineInfo) : getImageForSupplement(item as SupplementInfo);
+    const uri = isPeptide ? mapped : (provided ?? mapped);
+    console.log('[SupplementCard] imageUri resolved', { id: item.id, name: item.name, isPeptide, provided, mapped, uri });
     return uri;
   }, [item, type, isPeptide]);
 
