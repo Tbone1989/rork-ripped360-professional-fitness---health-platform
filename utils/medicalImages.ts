@@ -15,6 +15,7 @@ const liquidPeptideUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/at
 
 export const herbsImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0dv48um5g9m8eayocblgx';
 export function getImageForHerb(): string { return herbsImageUrl; }
+export const vitaminsImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/4fstoxmxbl66beltouga5';
 
 export function getImageForSupplement(item: SupplementInfo): string {
   const name = (item.name ?? '').toLowerCase();
@@ -32,7 +33,7 @@ export function getImageForSupplement(item: SupplementInfo): string {
   if (name.includes('creatine')) return creatineScoopUrl;
   if (category.includes('protein') || name.includes('whey')) return powderScoopUrl;
   if (name.includes('fish oil') || name.includes('omega') || category.includes('oil')) return softgelsUrl;
-  if (category.includes('vitamin') || name.includes('vitamin')) return tabletsUrl;
+  if ((category.includes('vitamin') || name.includes('vitamin')) && !category.includes('mineral') && !name.includes('mineral')) return vitaminsImageUrl;
   if (category.includes('capsule') || name.includes('capsule')) return capsulesUrl;
   if (category.includes('tablet') || name.includes('pill')) return pillBlisterUrl;
   if (category.includes('liquid') || name.includes('drops') || name.includes('tincture')) return bottleDropperUrl;
