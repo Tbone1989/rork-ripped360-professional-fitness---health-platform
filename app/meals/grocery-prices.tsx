@@ -60,26 +60,30 @@ export default function GroceryPricesScreen() {
             locationService.setCurrentLocation(loc);
           } else {
             console.warn('Current location not available on mount, using sample location');
-            const fallbackStore = mockGroceryStores[0];
+            const preferred = mockGroceryStores.find(s => s.city === 'Delray Beach' && s.state === 'FL')
+              ?? mockGroceryStores.find(s => s.state === 'FL')
+              ?? mockGroceryStores[0];
             const fallbackLocation: UserLocation = {
-              city: fallbackStore.city,
-              state: fallbackStore.state,
-              zipCode: fallbackStore.zipCode,
-              coordinates: fallbackStore.coordinates,
-              address: fallbackStore.address
+              city: preferred.city,
+              state: preferred.state,
+              zipCode: preferred.zipCode,
+              coordinates: preferred.coordinates,
+              address: preferred.address
             };
             setCurrentLocation(fallbackLocation);
             locationService.setCurrentLocation(fallbackLocation);
           }
         } catch (e) {
           console.error('Failed to acquire current location on mount', e);
-          const fallbackStore = mockGroceryStores[0];
+          const preferred = mockGroceryStores.find(s => s.city === 'Delray Beach' && s.state === 'FL')
+            ?? mockGroceryStores.find(s => s.state === 'FL')
+            ?? mockGroceryStores[0];
           const fallbackLocation: UserLocation = {
-            city: fallbackStore.city,
-            state: fallbackStore.state,
-            zipCode: fallbackStore.zipCode,
-            coordinates: fallbackStore.coordinates,
-            address: fallbackStore.address
+            city: preferred.city,
+            state: preferred.state,
+            zipCode: preferred.zipCode,
+            coordinates: preferred.coordinates,
+            address: preferred.address
           };
           setCurrentLocation(fallbackLocation);
           locationService.setCurrentLocation(fallbackLocation);

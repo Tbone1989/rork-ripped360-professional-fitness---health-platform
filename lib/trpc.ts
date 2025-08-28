@@ -8,9 +8,12 @@ import Constants from "expo-constants";
 export const trpc = createTRPCReact<AppRouter>();
 
 const getBaseOrigin = () => {
-  const customBaseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
-  if (customBaseUrl) {
+  const customBaseUrlRaw = process.env.EXPO_PUBLIC_RORK_API_BASE_URL;
+  const customBaseUrl = typeof customBaseUrlRaw === 'string' ? customBaseUrlRaw.trim() : undefined;
+  if (customBaseUrl && /^https?:\/\//i.test(customBaseUrl) && !/your_backend_api_base_url_here/i.test(customBaseUrl)) {
     return customBaseUrl.replace(/\/$/, "");
+  } else if (customBaseUrl && !/^https?:\/\//i.test(customBaseUrl)) {
+    console.warn("EXPO_PUBLIC_RORK_API_BASE_URL is set but not a valid URL. Ignoring.");
   }
 
   if (Platform.OS === "web") {
@@ -28,10 +31,12 @@ const getBaseOrigin = () => {
 
   if (hostUri) {
     const clean = hostUri.split("?")[0];
-    return `http://${clean}`.replace(/\/$/, "");
+    const prefixed = /^https?:\/\//i.test(clean) ? clean : `http://${clean}`;
+    return prefixed.replace(/\/$/, "");
   }
 
-  return "http://127.0.0.1:8081";
+  console.warn("Could not resolve hostUri from Expo Constants. Falling back to relative API.");
+  return "";
 };
 
 const getTrpcEndpoint = () => {
@@ -43,6 +48,7 @@ const getTrpcEndpoint = () => {
 };
 
 const endpointUrl = getTrpcEndpoint();
+console.log("tRPC endpoint resolved:", endpointUrl);
 
 export const trpcClient = trpc.createClient({
   links: [
