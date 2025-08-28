@@ -147,7 +147,7 @@ export default function LoginScreen() {
               <Image
                 source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zlyg6140n6n0l0ojdcwpx' }}
                 style={styles.logoImage}
-                resizeMode="cover"
+                resizeMode="contain"
                 accessibilityLabel="Ripped360 logo"
                 testID="login-logo"
               />
@@ -300,12 +300,13 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'transparent',
+    backgroundColor: '#000000',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 8,
+    overflow: 'hidden',
   },
   logoContent: {
     alignItems: 'center',
