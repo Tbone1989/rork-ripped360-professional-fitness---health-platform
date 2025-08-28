@@ -197,13 +197,15 @@ export default function ProfileScreen() {
       onPress: () => router.push('/profile/privacy'),
       testID: 'menu-privacy',
     },
-    {
-      icon: <TestTube size={20} color={colors.status.info} />,
-      title: 'API Test Suite',
-      onPress: () => router.push('/test-apis'),
-      isSpecial: true,
-      testID: 'menu-api-tests',
-    },
+    ...(user?.role === 'admin'
+      ? [{
+        icon: <TestTube size={20} color={colors.status.info} />,
+        title: 'API Test Suite',
+        onPress: () => router.push('/test-apis'),
+        isSpecial: true as const,
+        testID: 'menu-api-tests',
+      }] as const
+      : []),
 
   ];
 
@@ -405,15 +407,28 @@ export default function ProfileScreen() {
             </View>
 
             <View style={styles.founderContent}>
-              <Text style={styles.founderTitle}>Ripped City Inc.</Text>
+              <Text style={styles.founderTitle}>Ripped City Inc. Mission</Text>
+              <Text style={styles.founderTagline}>"Born from Rock Bottom, Built for Champions"</Text>
               <Text style={styles.founderText}>
-                Building stronger bodies and habits with science-backed coaching and inclusive community.
+                Ripped City Inc. was founded by Tyrone Hayes after a life-changing transformation from 338 pounds to a champion mindset.
+                With the support of mentors Mark Alvisi and Duveuil Valcena, he lost 97 pounds in 12 months and discovered a profound truth:
+                "It's better to suffer in the gym than suffer in the hospital." We build for athletes who demand more—through daily commitment,
+                resilience, and community support.
               </Text>
+              <View style={styles.ctaRow}>
+                <Button
+                  title="Shop Collection"
+                  onPress={() => router.push('/(tabs)/shop')}
+                  testID="rci-shop-button"
+                />
+              </View>
 
-              <Text style={styles.founderTitle}>Digesting Life Balance</Text>
+              <Text style={[styles.founderTitle, { marginTop: 12 }]}>Digesting Life Balance Mission</Text>
+              <Text style={styles.founderTagline}>"From Personal Struggle to Community Healing"</Text>
               <Text style={styles.founderText}>
-                A nonprofit raising awareness on critical health issues like obesity, and mobilizing communities
-                toward healthier eating and social diversity.
+                Digesting Life Balance was born from firsthand experience with the devastating effects of poor nutrition and emotional eating.
+                Our nonprofit raises awareness about obesity while mobilizing communities toward healthier eating and social diversity. Our mission:
+                to break cycles of unhealthy eating by providing education, resources, and community support that address the whole person—mind, body, and spirit.
               </Text>
 
               <View style={styles.linkRow}>
@@ -423,7 +438,7 @@ export default function ProfileScreen() {
                   testID="dlb-facebook-link"
                 >
                   <ExternalLink size={16} color={colors.text.primary} />
-                  <Text style={styles.linkLabel}>DLB Facebook</Text>
+                  <Text style={styles.linkLabel}>Learn More</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => openExternal('https://zeffy.com/en-US/donation-form/e41efe15-414a-4aaa-be55-0376ff88a404')}
@@ -435,8 +450,8 @@ export default function ProfileScreen() {
                 </TouchableOpacity>
               </View>
 
-              <Text style={styles.mission}>
-                My mission: empower every person to take charge of their health—mind, body, and community.
+              <Text style={styles.quote}>
+                "Better to suffer in the gym than suffer in the hospital"
               </Text>
             </View>
           </View>
@@ -831,6 +846,24 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.text.secondary,
     marginBottom: 8,
+  },
+  founderTagline: {
+    fontSize: 13,
+    color: colors.text.primary,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  ctaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 6,
+    marginBottom: 2,
+  },
+  quote: {
+    marginTop: 8,
+    fontSize: 13,
+    fontStyle: 'italic',
+    color: colors.text.secondary,
   },
   linkRow: {
     flexDirection: 'row',
