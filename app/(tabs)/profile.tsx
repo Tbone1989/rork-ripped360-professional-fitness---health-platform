@@ -399,7 +399,7 @@ export default function ProfileScreen() {
             <View style={styles.logoWrap}>
               <View style={styles.logoBg}>
                 <Image
-                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/ng7izgz2vy6ukx88zon7f' }}
+                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/8noce6pnnzgzdwl870mr3' }}
                   style={styles.logo}
                   resizeMode="contain"
                 />
