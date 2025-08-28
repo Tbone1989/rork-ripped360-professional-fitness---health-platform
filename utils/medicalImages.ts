@@ -10,12 +10,24 @@ const powderScoopUrl = 'https://images.unsplash.com/photo-1593095948071-474c5cc2
 const creatineScoopUrl = 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?q=80&w=900&auto=format&fit=crop';
 const bottleDropperUrl = 'https://images.unsplash.com/photo-1601841162542-8341f9b31fbe?q=80&w=900&auto=format&fit=crop';
 
+// Liquid peptides common image (vial + syringe). Only used for liquid/injectable peptides.
+const liquidPeptideUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/6vyuhslcblzbwnfbzoddl';
+
 export const herbsImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0dv48um5g9m8eayocblgx';
 export function getImageForHerb(): string { return herbsImageUrl; }
 
 export function getImageForSupplement(item: SupplementInfo): string {
   const name = (item.name ?? '').toLowerCase();
   const category = (item.category ?? '').toLowerCase();
+
+  // Peptides as supplements: only map liquid/injectable to liquidPeptideUrl
+  const looksLikePeptide = category.includes('peptide') || name.includes('peptide') || name.includes('semaglutide') || name.includes('tirzepatide') || name.includes('bpc') || name.includes('cjc') || name.includes('ipamorelin') || name.includes('tb-500');
+  const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
+  const isLiquidForm = category.includes('liquid') || category.includes('inject') || category.includes('injection') || category.includes('subq') || category.includes('vial') || name.includes('liquid') || name.includes('inject') || name.includes('injection') || name.includes('subq') || name.includes('vial');
+
+  if (looksLikePeptide && isLiquidForm && !isPillForm) {
+    return liquidPeptideUrl;
+  }
 
   if (name.includes('creatine')) return creatineScoopUrl;
   if (category.includes('protein') || name.includes('whey')) return powderScoopUrl;
@@ -31,9 +43,17 @@ export function getImageForMedicine(item: MedicineInfo): string {
   const name = (item.name ?? '').toLowerCase();
   const category = (item.category ?? '').toLowerCase();
 
-  if (category.includes('glp') || category.includes('gip') || category.includes('peptide') || name.includes('cjc') || name.includes('ipamorelin') || name.includes('bpc') || name.includes('tb-500') || name.includes('semaglutide') || name.includes('tirzepatide')) {
-    return vialUrl;
+  const looksLikePeptide = category.includes('glp') || category.includes('gip') || category.includes('peptide') || name.includes('cjc') || name.includes('ipamorelin') || name.includes('bpc') || name.includes('tb-500') || name.includes('semaglutide') || name.includes('tirzepatide');
+  const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
+
+  if (looksLikePeptide) {
+    if (isPillForm) {
+      return pillBlisterUrl;
+    }
+    // default to liquid peptide image when not explicitly a pill form
+    return liquidPeptideUrl;
   }
+
   if (category.includes('hormone') || name.includes('testosterone') || name.includes('estradiol') || name.includes('progesterone')) {
     return syringeUrl;
   }
