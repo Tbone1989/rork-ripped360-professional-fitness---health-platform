@@ -21,7 +21,7 @@ export function getImageForSupplement(item: SupplementInfo): string {
   const name = (item.name ?? '').toLowerCase();
   const category = (item.category ?? '').toLowerCase();
 
-  // Peptides as supplements: only map liquid/injectable to liquidPeptideUrl
+  // Peptides as supplements: default to liquid peptide image unless explicitly pill/oral form
   const looksLikePeptide =
     category.includes('peptide') ||
     name.includes('peptide') ||
@@ -35,12 +35,25 @@ export function getImageForSupplement(item: SupplementInfo): string {
     name.includes('ghrh') ||
     name.includes('ghrp') ||
     name.includes('myostatin') ||
+    name.includes('anti-myostatin') ||
+    name.includes('mab') ||
+    name.includes('follistatin') ||
+    name.includes('fst') ||
     name.includes('ace-083') ||
-    name.includes('ace-031');
+    name.includes('ace-031') ||
+    name.includes('igf') ||
+    name.includes('mgf') ||
+    name.includes('peg-mgf') ||
+    name.includes('ghk') ||
+    name.includes('kisspeptin') ||
+    name.includes('gonadorelin') ||
+    name.includes('semax') ||
+    name.includes('selank') ||
+    name.includes('aod') ||
+    name.includes('ll-37');
   const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
-  const isLiquidForm = category.includes('liquid') || category.includes('inject') || category.includes('injection') || category.includes('subq') || category.includes('vial') || name.includes('liquid') || name.includes('inject') || name.includes('injection') || name.includes('subq') || name.includes('vial');
 
-  if (looksLikePeptide && isLiquidForm && !isPillForm) {
+  if (looksLikePeptide && !isPillForm) {
     return liquidPeptideUrl;
   }
 
