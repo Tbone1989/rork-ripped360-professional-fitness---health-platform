@@ -39,7 +39,7 @@ export default function MedicineDetailScreen() {
   useEffect(() => {
     try {
       if (medicine) {
-        const next = medicine.imageUrl ?? getImageForMedicine(medicine);
+        const next = getImageForMedicine(medicine) ?? medicine.imageUrl;
         console.log('[MedicineDetail] init image', { id: medicine.id, next });
         setCurrentUri(next);
       } else {
