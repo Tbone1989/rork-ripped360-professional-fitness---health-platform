@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import React, { memo } from 'react';
+import { Platform, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Image } from 'expo-image';
 import { Clock, Dumbbell, ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -14,7 +14,7 @@ interface WorkoutCardProps {
   onPress?: () => void;
 }
 
-export const WorkoutCard: React.FC<WorkoutCardProps> = ({
+export const WorkoutCard: React.FC<WorkoutCardProps> = memo(({ 
   item,
   type,
   onPress,
@@ -51,12 +51,14 @@ export const WorkoutCard: React.FC<WorkoutCardProps> = ({
       style={styles.container}
       onPress={handlePress}
       activeOpacity={0.8}
+      testID={`workout-card-${item.id}`}
     >
       <Image
         source={{ uri: item.imageUrl }}
         style={styles.image}
         contentFit="cover"
-        transition={300}
+        transition={Platform.OS === 'web' ? 0 : 150}
+        cachePolicy="disk"
       />
       <View style={styles.overlay} />
       <View style={styles.content}>
@@ -120,12 +122,7 @@ const styles = StyleSheet.create({
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    backgroundGradient: {
-      colors: ['transparent', 'rgba(0, 0, 0, 0.8)'],
-      start: { x: 0, y: 0 },
-      end: { x: 0, y: 1 },
-    },
+    backgroundColor: 'rgba(0, 0, 0, 0.4)'
   },
   content: {
     flex: 1,

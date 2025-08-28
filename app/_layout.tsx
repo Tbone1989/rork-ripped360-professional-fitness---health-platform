@@ -13,7 +13,18 @@ import { trpc, trpcClient } from "@/lib/trpc";
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+      gcTime: 10 * 60 * 1000,
+    },
+    mutations: {
+      retry: 0,
+    },
+  },
+});
 
 function RootLayoutNav() {
   return (
@@ -148,7 +159,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <WellnessProvider>
           <GestureHandlerRootView style={{ flex: 1 }}>
-            <View style={{ flex: 1, backgroundColor: colors.background.primary }}>
+            <View style={{ flex: 1, backgroundColor: colors.background.primary }} testID="root-layout">
               <StatusBar style="light" />
               <RootLayoutNav />
             </View>

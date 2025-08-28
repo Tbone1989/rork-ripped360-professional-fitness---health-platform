@@ -1,5 +1,5 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { memo } from 'react';
+import { Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { Image } from 'expo-image';
 import { ChevronRight } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
@@ -13,10 +13,7 @@ interface ExerciseCardProps {
   onPress?: () => void;
 }
 
-export const ExerciseCard: React.FC<ExerciseCardProps> = ({
-  exercise,
-  onPress,
-}) => {
+const ExerciseCardComponent: React.FC<ExerciseCardProps> = ({ exercise, onPress }) => {
   const router = useRouter();
 
   const handlePress = () => {
@@ -32,12 +29,14 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
       style={styles.container}
       onPress={handlePress}
       activeOpacity={0.8}
+      testID={`exercise-card-${exercise.id}`}
     >
       <Image
         source={{ uri: exercise.thumbnailUrl }}
         style={styles.image}
         contentFit="cover"
-        transition={300}
+        transition={Platform.OS === 'web' ? 0 : 150}
+        cachePolicy="disk"
       />
       <View style={styles.content}>
         <View>
@@ -50,22 +49,11 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
         </View>
         <View style={styles.footer}>
           <View style={styles.tagsContainer}>
-            {exercise.muscleGroups.slice(0, 2).map((muscle, index) => (
-              <Badge
-                key={index}
-                label={muscle}
-                size="small"
-                variant="default"
-                style={styles.tag}
-              />
+            {exercise.muscleGroups.slice(0, 2).map((m, index) => (
+              <Badge key={index} label={m} size="small" variant="default" style={styles.tag} />
             ))}
             {exercise.muscleGroups.length > 2 && (
-              <Badge
-                label={`+${exercise.muscleGroups.length - 2}`}
-                size="small"
-                variant="default"
-                style={styles.tag}
-              />
+              <Badge label={`+${exercise.muscleGroups.length - 2}`} size="small" variant="default" style={styles.tag} />
             )}
           </View>
           <ChevronRight size={16} color={colors.text.secondary} />
@@ -74,6 +62,8 @@ export const ExerciseCard: React.FC<ExerciseCardProps> = ({
     </TouchableOpacity>
   );
 };
+
+export const ExerciseCard = memo(ExerciseCardComponent);
 
 const styles = StyleSheet.create({
   container: {
