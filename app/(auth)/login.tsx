@@ -145,10 +145,10 @@ export default function LoginScreen() {
           <View style={styles.logoWrapper}>
             <View style={styles.logoContainer}>
               <Image
-                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zlyg6140n6n0l0ojdcwpx' }}
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/j0kmjueyoyauvvhriwjtq' }}
                 style={styles.logoImage}
                 resizeMode="contain"
-                accessibilityLabel="Ripped360 logo"
+                accessibilityLabel="RIPPED360 app icon"
                 testID="login-logo"
               />
             </View>
@@ -295,26 +295,27 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 25,
+    width: 160,
+    height: 160,
+    borderRadius: 36,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000000',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.35,
+    shadowRadius: 18,
+    elevation: 12,
     overflow: 'hidden',
   },
   logoContent: {
     alignItems: 'center',
   },
   logoImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 20,
+    width: 160,
+    height: 160,
+    borderRadius: 32,
+    backgroundColor: '#000000',
   },
   logoMainText: {
     fontSize: 36,
@@ -344,10 +345,10 @@ const styles = StyleSheet.create({
     marginTop: -8,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 32,
+    fontWeight: '900',
     color: colors.text.primary,
-    marginBottom: 8,
+    marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
@@ -355,6 +356,7 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     textAlign: 'center',
     marginHorizontal: 20,
+    opacity: 0.85,
   },
   formContainer: {
     marginBottom: 24,
