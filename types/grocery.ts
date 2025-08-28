@@ -41,6 +41,7 @@ export interface GroceryStore {
   };
   hours: StoreHours[];
   features: string[]; // 'organic', 'pharmacy', 'deli', etc.
+  permanentlyClosed?: boolean;
 }
 
 export interface StoreHours {

@@ -112,37 +112,52 @@ export default function GroceryPricesScreen() {
 
   const priceComparisons = useMemo(() => {
     if (!currentLocation) return [];
+
+    const isEligibleStore = (storeState?: string, storeZip?: string, closed?: boolean, distance?: number) => {
+      if (closed) return false;
+      if (!storeState || storeState !== currentLocation.state) return false;
+      const maxD = filters.maxDistance ?? 10;
+      const withinDistance = (distance ?? Number.MAX_SAFE_INTEGER) <= maxD;
+      if (currentLocation.zipCode && storeZip) {
+        const sameZip = currentLocation.zipCode === storeZip;
+        return sameZip || withinDistance;
+      }
+      return withinDistance;
+    };
     
     const comparisons = createPriceComparisons();
-    // Update store distances based on current location
-    return comparisons.map(comparison => ({
-      ...comparison,
-      prices: comparison.prices.map(price => ({
-        ...price,
-        store: {
-          ...price.store,
-          distance: locationService.calculateDistance(
-            currentLocation.coordinates.latitude,
-            currentLocation.coordinates.longitude,
-            price.store.coordinates.latitude,
-            price.store.coordinates.longitude
-          )
-        }
-      })),
-      lowestPrice: {
-        ...comparison.lowestPrice,
-        store: {
-          ...comparison.lowestPrice.store,
-          distance: locationService.calculateDistance(
-            currentLocation.coordinates.latitude,
-            currentLocation.coordinates.longitude,
-            comparison.lowestPrice.store.coordinates.latitude,
-            comparison.lowestPrice.store.coordinates.longitude
-          )
-        }
-      }
-    }));
-  }, [currentLocation]);
+    return comparisons.map(comparison => {
+      const pricesWithDistance = comparison.prices.map(price => {
+        const dist = locationService.calculateDistance(
+          currentLocation.coordinates.latitude,
+          currentLocation.coordinates.longitude,
+          price.store.coordinates.latitude,
+          price.store.coordinates.longitude
+        );
+        return {
+          ...price,
+          store: {
+            ...price.store,
+            distance: dist,
+          }
+        };
+      });
+
+      const eligiblePrices = pricesWithDistance.filter(p =>
+        isEligibleStore(p.store.state, p.store.zipCode, p.store.permanentlyClosed, p.store.distance)
+      );
+
+      const lowest = eligiblePrices.length > 0
+        ? [...eligiblePrices].sort((a,b) => (a.salePrice ?? a.price) - (b.salePrice ?? b.price))[0]
+        : pricesWithDistance.sort((a,b) => (a.store.distance ?? 0) - (b.store.distance ?? 0))[0];
+
+      return {
+        ...comparison,
+        prices: eligiblePrices,
+        lowestPrice: lowest,
+      };
+    });
+  }, [currentLocation, filters.maxDistance]);
 
   const categoryOptions = [
     { id: 'all' as const, label: 'All Categories' },
@@ -185,14 +200,25 @@ export default function GroceryPricesScreen() {
       });
     }
 
+    if (currentLocation) {
+      filtered = filtered.filter(comparison =>
+        comparison.prices.some(p => p.store.state === currentLocation.state && !p.store.permanentlyClosed)
+      );
+    }
+
     if (filtered.length === 0 && priceComparisons.length > 0) {
-      const expanded = priceComparisons.filter(c => (c.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) <= 25);
+      const expanded = priceComparisons.filter(c => {
+        const d = c.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER;
+        const sameState = currentLocation ? c.lowestPrice.store.state === currentLocation.state : true;
+        return sameState && d <= 25;
+      });
       if (expanded.length > 0) {
         note = 'expanded';
         filtered = expanded;
       } else {
         note = 'nearest';
         filtered = [...priceComparisons]
+          .filter(c => (currentLocation ? c.lowestPrice.store.state === currentLocation.state : true))
           .sort((a, b) => (a.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER) - (b.lowestPrice.store.distance ?? Number.MAX_SAFE_INTEGER))
           .slice(0, 10);
       }
@@ -241,6 +267,8 @@ export default function GroceryPricesScreen() {
     if (!currentLocation) return 0;
     
     return mockGroceryStores.filter(store => {
+      if (store.permanentlyClosed) return false;
+      if (store.state !== currentLocation.state) return false;
       const distance = locationService.calculateDistance(
         currentLocation.coordinates.latitude,
         currentLocation.coordinates.longitude,
@@ -526,7 +554,7 @@ export default function GroceryPricesScreen() {
                     const list = (local.length > 0
                       ? [...local].sort((a,b)=> (a.salePrice ?? a.price) - (b.salePrice ?? b.price))
                       : [...comparison.prices].sort((a,b)=> (a.store.distance ?? 0) - (b.store.distance ?? 0))
-                    ).slice(0,3);
+                    ).filter(p => !p.store.permanentlyClosed).slice(0,3);
                     return list.map((priceData, index) => {
                       const price = priceData.salePrice || priceData.price;
                       const isLowest = index === 0;
@@ -694,7 +722,7 @@ export default function GroceryPricesScreen() {
                 <View style={styles.allStoresList}>
                   {(() => {
                     const maxD = filters.maxDistance ?? Number.MAX_SAFE_INTEGER;
-                    const withDistance = selectedComparison.prices.map(p => p);
+                    const withDistance = selectedComparison.prices.map(p => p).filter(p => !p.store.permanentlyClosed && (!currentLocation || p.store.state === currentLocation.state));
                     const scoped = allIncludeFar ? withDistance : withDistance.filter(p => (p.store.distance ?? Number.MAX_SAFE_INTEGER) <= maxD);
                     const sorted = scoped.sort((a,b) => {
                       if (allSort === 'price') {
