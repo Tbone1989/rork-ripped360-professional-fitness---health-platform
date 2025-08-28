@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
     marginBottom: 40,
   },
   logoWrapper: {
-    marginBottom: 24,
+    marginBottom: 8,
   },
   logoContainer: {
     width: 160,
