@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { Play, CheckCircle, XCircle, Clock, Zap, Apple, Pill, Activity, HelpCircle } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -9,10 +9,21 @@ import { Card } from '@/components/ui/Card';
 import { apiService } from '@/services/api';
 import { apiTester, TestResult } from '@/utils/apiTester';
 import { envChecker } from '@/utils/envChecker';
+import { useUserStore } from '@/store/userStore';
 
 
 
 export default function TestApisScreen() {
+  const router = useRouter();
+  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+  const admin = isAdmin || (user?.role === 'admin');
+
+  useEffect(() => {
+    if (!admin) {
+      router.replace('/');
+    }
+  }, [admin, router]);
+
   const [tests, setTests] = useState<TestResult[]>([
     { name: 'Workout Generation (Rip360_Ninja)', status: 'pending' },
     { name: 'Nutrition Lookup (Rip360_Nutrition)', status: 'pending' },
@@ -179,8 +190,12 @@ export default function TestApisScreen() {
     Alert.alert(test.name, details, [{ text: 'OK' }]);
   };
 
+  if (!admin) {
+    return <ScrollView style={styles.container} testID="restricted-screen" />;
+  }
+
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false} testID="api-test-suite">
       <Stack.Screen options={{ title: 'API Test Suite' }} />
       
       <View style={styles.header}>

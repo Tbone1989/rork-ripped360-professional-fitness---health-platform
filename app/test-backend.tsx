@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { trpc } from '@/lib/trpc';
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
+import { useUserStore } from '@/store/userStore';
 import { Input } from '@/components/ui/Input';
 
 export default function TestBackend() {
+  const router = useRouter();
+  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+  const admin = isAdmin || (user?.role === 'admin');
+
+  useEffect(() => {
+    if (!admin) {
+      router.replace('/');
+    }
+  }, [admin, router]);
+
   const [searchQuery, setSearchQuery] = useState<string>('chicken');
   const [barcode, setBarcode] = useState<string>('123456789');
 
@@ -54,16 +65,29 @@ export default function TestBackend() {
   const testBloodworkAnalysis = async () => {
     try {
       const result = await analyzeBloodworkMutation.mutateAsync({
-        tests: ['cholesterol', 'vitamin_d']
+        bloodworkData: { id: 'bw_mock_1', userId: user?.id ?? 'user_123' },
+        userProfile: { bloodType: 'O+' },
+        includeBloodType: true,
+        includeDigestiveHealth: true,
+        includeDetoxRecommendations: false,
       });
-      Alert.alert('Success', `Analyzed ${result.length} tests`);
+      if (result.success) {
+        const count = result.analysis?.keyFindings?.length ?? 0;
+        Alert.alert('Success', `Analyzed with ${count} key findings`);
+      } else {
+        Alert.alert('Error', result.error ?? 'Failed to analyze bloodwork');
+      }
     } catch (error) {
       Alert.alert('Error', 'Failed to analyze bloodwork');
     }
   };
 
+  if (!admin) {
+    return <ScrollView style={styles.container} testID="restricted-screen" />;
+  }
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} testID="backend-api-test">
       <Stack.Screen options={{ title: 'Backend API Test' }} />
       
       <View style={styles.section}>
