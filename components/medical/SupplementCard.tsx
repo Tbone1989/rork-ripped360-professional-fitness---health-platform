@@ -44,12 +44,41 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
       ? ((item as SupplementInfo).benefits ?? [])
       : ((item as MedicineInfo).usedFor ?? []);
 
+  const isPeptide = useMemo<boolean>(() => {
+    const n = (item.name ?? '').toLowerCase();
+    const c = (item.category ?? '').toLowerCase();
+    return (
+      c.includes('peptide') ||
+      n.includes('semaglutide') ||
+      n.includes('tirzepatide') ||
+      n.includes('cjc') ||
+      n.includes('ipamorelin') ||
+      n.includes('bpc') ||
+      n.includes('tb-500') ||
+      n.includes('follistatin') ||
+      n.includes('igf') ||
+      n.includes('mgf') ||
+      n.includes('peg-mgf') ||
+      n.includes('ghk') ||
+      n.includes('kisspeptin') ||
+      n.includes('gonadorelin') ||
+      n.includes('semax') ||
+      n.includes('selank') ||
+      n.includes('aod') ||
+      n.includes('ll-37')
+    );
+  }, [item]);
+
   const imageUri = useMemo<string>(() => {
-    if (item.imageUrl) return item.imageUrl;
-    return type === 'medicine'
-      ? getImageForMedicine(item as MedicineInfo)
-      : getImageForSupplement(item as SupplementInfo);
-  }, [item, type]);
+    let uri: string;
+    if (type === 'medicine') {
+      uri = isPeptide ? getImageForMedicine(item as MedicineInfo) : (item.imageUrl ?? getImageForMedicine(item as MedicineInfo));
+    } else {
+      uri = isPeptide ? getImageForSupplement(item as SupplementInfo) : (item.imageUrl ?? getImageForSupplement(item as SupplementInfo));
+    }
+    console.log('[SupplementCard] imageUri resolved', { id: item.id, name: item.name, isPeptide, uri });
+    return uri;
+  }, [item, type, isPeptide]);
 
   const toggleExpanded = () => {
     console.log('[SupplementCard] toggleExpanded', { id: item.id, name: item.name, expandedTo: !expanded });

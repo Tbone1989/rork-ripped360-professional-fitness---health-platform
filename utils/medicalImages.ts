@@ -44,7 +44,27 @@ export function getImageForMedicine(item: MedicineInfo): string {
   const name = (item.name ?? '').toLowerCase();
   const category = (item.category ?? '').toLowerCase();
 
-  const looksLikePeptide = category.includes('glp') || category.includes('gip') || category.includes('peptide') || name.includes('cjc') || name.includes('ipamorelin') || name.includes('bpc') || name.includes('tb-500') || name.includes('semaglutide') || name.includes('tirzepatide');
+  const looksLikePeptide =
+    category.includes('glp') ||
+    category.includes('gip') ||
+    category.includes('peptide') ||
+    name.includes('semaglutide') ||
+    name.includes('tirzepatide') ||
+    name.includes('cjc') ||
+    name.includes('ipamorelin') ||
+    name.includes('bpc') ||
+    name.includes('tb-500') ||
+    name.includes('follistatin') ||
+    name.includes('igf') ||
+    name.includes('mgf') ||
+    name.includes('peg-mgf') ||
+    name.includes('ghk') ||
+    name.includes('kisspeptin') ||
+    name.includes('gonadorelin') ||
+    name.includes('semax') ||
+    name.includes('selank') ||
+    name.includes('aod') ||
+    name.includes('ll-37');
   const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
 
   if (looksLikePeptide) {
