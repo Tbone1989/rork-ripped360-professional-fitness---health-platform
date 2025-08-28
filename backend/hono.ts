@@ -3,10 +3,8 @@ import { trpcServer } from "@hono/trpc-server";
 import { appRouter } from "./trpc/app-router";
 import { createContext } from "./trpc/create-context";
 
-// This app is mounted by the host at /api, so routes here should NOT prefix with /api
 const app = new Hono();
 
-// Enable CORS for all routes
 app.use("*", async (c, next) => {
   c.header("Access-Control-Allow-Origin", "*");
   c.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -17,18 +15,13 @@ app.use("*", async (c, next) => {
   await next();
 });
 
-// Mount tRPC router at /trpc to match client baseUrl + /api/trpc
-app.use(
-  "/trpc/*",
-  trpcServer({
-    router: appRouter,
-    createContext,
-  })
-);
+// Support both /trpc/* and /api/trpc/* to avoid 404s regardless of mount path
+const trpcHandler = trpcServer({ router: appRouter, createContext });
+app.use("/trpc/*", trpcHandler);
+app.use("/api/trpc/*", trpcHandler);
 
-// Simple health check endpoint at / (host mounts at /api)
-app.get("/", (c) => {
-  return c.json({ status: "ok", message: "API is running" });
-});
+// Health checks at both / and /api
+app.get("/", (c) => c.json({ status: "ok", message: "API is running" }));
+app.get("/api", (c) => c.json({ status: "ok", message: "API root ok" }));
 
 export default app;
