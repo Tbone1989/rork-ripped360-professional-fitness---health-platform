@@ -13,6 +13,9 @@ const bottleDropperUrl = 'https://images.unsplash.com/photo-1601841162542-8341f9
 // Liquid peptides common image (vial + syringe). Only used for liquid/injectable peptides.
 const liquidPeptideUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/s5bpf20odmg1xc4s0f6gk';
 
+// Shared image for hormone listings (Testosterone, Estradiol, DHEA, etc.)
+export const hormonesListImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/5bys3xre472nfzgzi5yfy';
+
 export const herbsImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/0dv48um5g9m8eayocblgx';
 export function getImageForHerb(): string { return herbsImageUrl; }
 export const vitaminsImageUrl = 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/4fstoxmxbl66beltouga5';
@@ -107,6 +110,18 @@ export function getImageForMedicine(item: MedicineInfo): string {
     name.includes('next gen');
   const isPillForm = category.includes('tablet') || category.includes('pill') || category.includes('capsule') || name.includes('tablet') || name.includes('pill') || name.includes('capsule') || name.includes('oral');
 
+  // Force shared hormones image for hormone listings
+  if (
+    category.includes('hormone') ||
+    name.includes('testosterone') ||
+    name.includes('estradiol') ||
+    name.includes('dhea') ||
+    name.includes('prasterone') ||
+    name.includes('progesterone')
+  ) {
+    return hormonesListImageUrl;
+  }
+
   if (looksLikePeptide) {
     if (isPillForm) {
       return pillBlisterUrl;
@@ -114,43 +129,6 @@ export function getImageForMedicine(item: MedicineInfo): string {
     return liquidPeptideUrl;
   }
 
-  if (
-    name.includes('testosterone') ||
-    name.includes('cypionate') ||
-    name.includes('enanthate') ||
-    name.includes('propionate') ||
-    name.includes('undecanoate') ||
-    name.includes('sustanon') ||
-    category.includes('androgen') ||
-    category.includes('trt') ||
-    category.includes('anabolic')
-  ) {
-    if (category.includes('gel') || name.includes('gel') || category.includes('patch') || name.includes('patch')) {
-      return bottleDropperUrl;
-    }
-    if (category.includes('oral') || name.includes('oral') || name.includes('undecanoate')) {
-      return pillBlisterUrl;
-    }
-    return syringeUrl;
-  }
-
-  if (name.includes('estradiol')) {
-    if (category.includes('patch') || name.includes('patch') || name.includes('gel') || category.includes('gel') || name.includes('vaginal') || category.includes('vaginal')) {
-      return bottleDropperUrl;
-    }
-    if (isPillForm) {
-      return pillBlisterUrl;
-    }
-    return syringeUrl;
-  }
-
-  if (name.includes('dhea') || name.includes('prasterone')) {
-    return isPillForm ? pillBlisterUrl : bottleDropperUrl;
-  }
-
-  if (category.includes('hormone') || name.includes('progesterone')) {
-    return syringeUrl;
-  }
   if (category.includes('patch')) return bottleDropperUrl;
   if (category.includes('tablet') || name.includes('tablet') || name.includes('pill')) return pillBlisterUrl;
   return vialUrl;
