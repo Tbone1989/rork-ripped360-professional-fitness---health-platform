@@ -49,6 +49,9 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
     const c = (item.category ?? '').toLowerCase();
     return (
       c.includes('peptide') ||
+      c.includes('glp') ||
+      c.includes('gip') ||
+      c.includes('myostatin') ||
       n.includes('semaglutide') ||
       n.includes('tirzepatide') ||
       n.includes('cjc') ||
@@ -65,7 +68,16 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
       n.includes('semax') ||
       n.includes('selank') ||
       n.includes('aod') ||
-      n.includes('ll-37')
+      n.includes('ll-37') ||
+      n.includes('sermorelin') ||
+      n.includes('ghrh') ||
+      n.includes('ghrp') ||
+      n.includes('ace-031') ||
+      n.includes('ace-083') ||
+      n.includes('anti-myostatin') ||
+      n.includes('mab') ||
+      n.includes('next-gen myostatin') ||
+      n.includes('myostatin modulator')
     );
   }, [item]);
 
