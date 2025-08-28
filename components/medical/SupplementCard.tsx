@@ -63,12 +63,14 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
       activeOpacity={0.8}
       testID="SupplementCard"
     >
-      <Image
-        source={{ uri: imageUri }}
-        style={styles.image}
-        contentFit="cover"
-        transition={300}
-      />
+      <View style={styles.imageWrap}>
+        <Image
+          source={{ uri: imageUri }}
+          style={styles.image}
+          contentFit="cover"
+          transition={300}
+        />
+      </View>
       <View style={styles.content}>
         <View>
           <View style={styles.header}>
@@ -127,26 +129,34 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.card,
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 16,
-    height: 120,
+    marginBottom: 12,
+    height: 104,
+  },
+  imageWrap: {
+    width: 104,
+    height: '100%',
+    padding: 8,
+    backgroundColor: colors.background.secondary,
   },
   image: {
-    width: 100,
+    width: '100%',
     height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
   },
   content: {
     flex: 1,
-    padding: 12,
+    padding: 10,
     justifyContent: 'space-between',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   name: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.text.primary,
     flex: 1,
@@ -157,13 +167,13 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     alignSelf: 'flex-start',
-    marginBottom: 6,
+    marginBottom: 4,
     backgroundColor: colors.background.tertiary,
   },
   description: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.text.secondary,
-    lineHeight: 16,
+    lineHeight: 15,
   },
   footer: {
     flexDirection: 'row',
@@ -174,15 +184,15 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   benefit: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.text.secondary,
   },
   moreBenefits: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.accent.primary,
     fontWeight: '500',
   },
   expandButton: {
-    marginTop: 4,
+    marginTop: 2,
   },
 });

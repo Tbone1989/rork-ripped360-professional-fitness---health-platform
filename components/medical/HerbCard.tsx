@@ -27,7 +27,9 @@ export const HerbCard: React.FC<HerbCardProps> = ({ herb }) => {
       activeOpacity={0.85}
       testID={`HerbCard-${herb.id}`}
     >
-      <Image source={{ uri: herbsImageUrl }} style={styles.image} contentFit="cover" transition={250} />
+      <View style={styles.imageWrap}>
+        <Image source={{ uri: herbsImageUrl }} style={styles.image} contentFit="cover" transition={250} />
+      </View>
       <View style={styles.content}>
         <View style={styles.headerRow}>
           <Text style={styles.name} numberOfLines={1}>
@@ -56,16 +58,24 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.card,
     borderRadius: 12,
     overflow: 'hidden',
-    marginBottom: 16,
-    height: 110,
+    marginBottom: 12,
+    height: 104,
+  },
+  imageWrap: {
+    width: 104,
+    height: '100%',
+    padding: 8,
+    backgroundColor: colors.background.secondary,
   },
   image: {
-    width: 110,
+    width: '100%',
     height: '100%',
+    borderRadius: 10,
+    overflow: 'hidden',
   },
   content: {
     flex: 1,
-    padding: 12,
+    padding: 10,
     justifyContent: 'center',
   },
   headerRow: {
@@ -82,9 +92,9 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   subtitle: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.text.secondary,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   badges: {
     flexDirection: 'row',
@@ -94,8 +104,8 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
   meta: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.text.secondary,
-    marginTop: 6,
+    marginTop: 4,
   },
 });
