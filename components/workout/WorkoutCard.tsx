@@ -105,7 +105,7 @@ export const WorkoutCard: React.FC<WorkoutCardProps> = memo(({
       </View>
     </TouchableOpacity>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {
