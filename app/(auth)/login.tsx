@@ -62,10 +62,13 @@ export default function LoginScreen() {
     }
   }, []);
 
-  const ensureEnv = useCallback((key: string) => {
-    const val = process.env[key];
+  const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID ?? '';
+  const APPLE_CLIENT_ID = process.env.EXPO_PUBLIC_APPLE_OAUTH_CLIENT_ID ?? '';
+  const MICROSOFT_CLIENT_ID = process.env.EXPO_PUBLIC_MICROSOFT_OAUTH_CLIENT_ID ?? '';
+
+  const ensureEnvVal = useCallback((label: string, val: string) => {
     if (!val) {
-      const msg = `Missing ${key}. Please add it to your .env and restart.`;
+      const msg = `Missing ${label}. Please add it to your .env and restart.`;
       setError(msg);
       Alert.alert('Configuration needed', msg);
     }
@@ -76,12 +79,11 @@ export default function LoginScreen() {
     await withHaptics(Haptics.ImpactFeedbackStyle.Light);
     try {
       setError('');
-      const clientIdKey = {
-        google: 'EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID',
-        apple: 'EXPO_PUBLIC_APPLE_OAUTH_CLIENT_ID',
-        microsoft: 'EXPO_PUBLIC_MICROSOFT_OAUTH_CLIENT_ID',
+      const clientId = {
+        google: ensureEnvVal('EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID', GOOGLE_CLIENT_ID),
+        apple: ensureEnvVal('EXPO_PUBLIC_APPLE_OAUTH_CLIENT_ID', APPLE_CLIENT_ID),
+        microsoft: ensureEnvVal('EXPO_PUBLIC_MICROSOFT_OAUTH_CLIENT_ID', MICROSOFT_CLIENT_ID),
       }[provider];
-      const clientId = ensureEnv(clientIdKey);
       if (!clientId || !redirectUri) return;
 
       const discovery = {
@@ -131,7 +133,7 @@ export default function LoginScreen() {
       console.error('[OAuth] Error', e);
       setError('Unable to sign in right now. Please try again later.');
     }
-  }, [ensureEnv, redirectUri, router, withHaptics]);
+  }, [ensureEnvVal, redirectUri, router, withHaptics, GOOGLE_CLIENT_ID, APPLE_CLIENT_ID, MICROSOFT_CLIENT_ID]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
