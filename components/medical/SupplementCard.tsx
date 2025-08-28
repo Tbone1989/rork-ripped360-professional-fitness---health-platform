@@ -70,13 +70,9 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
   }, [item]);
 
   const imageUri = useMemo<string>(() => {
-    let uri: string;
-    if (type === 'medicine') {
-      uri = isPeptide ? getImageForMedicine(item as MedicineInfo) : (item.imageUrl ?? getImageForMedicine(item as MedicineInfo));
-    } else {
-      uri = isPeptide ? getImageForSupplement(item as SupplementInfo) : (item.imageUrl ?? getImageForSupplement(item as SupplementInfo));
-    }
-    console.log('[SupplementCard] imageUri resolved', { id: item.id, name: item.name, isPeptide, uri });
+    const provided = (item as any)?.imageUrl as string | undefined;
+    const uri = provided ?? (type === 'medicine' ? getImageForMedicine(item as MedicineInfo) : getImageForSupplement(item as SupplementInfo));
+    console.log('[SupplementCard] imageUri resolved', { id: item.id, name: item.name, isPeptide, provided, uri });
     return uri;
   }, [item, type, isPeptide]);
 
