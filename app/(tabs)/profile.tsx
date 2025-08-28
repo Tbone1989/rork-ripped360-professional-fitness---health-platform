@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Platform } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Platform, Linking, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
   Settings, 
@@ -27,7 +27,8 @@ import {
   Camera,
   TestTube,
   Trophy,
-  ShoppingBag
+  ShoppingBag,
+  ExternalLink
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -206,6 +207,21 @@ export default function ProfileScreen() {
 
   ];
 
+  const openExternal = async (url: string) => {
+    try {
+      console.log('Opening URL', url);
+      const supported = await Linking.canOpenURL(url);
+      if (!supported) {
+        Alert.alert('Unable to open link');
+        return;
+      }
+      await Linking.openURL(url);
+    } catch (e) {
+      console.error('openExternal error', e);
+      Alert.alert('Something went wrong opening the link.');
+    }
+  };
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
@@ -365,6 +381,63 @@ export default function ProfileScreen() {
               </View>
               <Text style={styles.coachingValue}>+12%</Text>
               <Text style={styles.coachingLabel}>Progress</Text>
+            </View>
+          </View>
+        </Card>
+      </View>
+
+      {/* About the Founder */}
+      <View style={styles.statsSection}>
+        <Card style={styles.statsCard}>
+          <View style={styles.statsHeader}>
+            <Text style={styles.statsTitle}>About the Founder</Text>
+          </View>
+
+          <View style={styles.founderContainer}>
+            <View style={styles.logoWrap}>
+              <View style={styles.logoBg}>
+                <Image
+                  source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/ng7izgz2vy6ukx88zon7f' }}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+            </View>
+
+            <View style={styles.founderContent}>
+              <Text style={styles.founderTitle}>Ripped City Inc.</Text>
+              <Text style={styles.founderText}>
+                Building stronger bodies and habits with science-backed coaching and inclusive community.
+              </Text>
+
+              <Text style={styles.founderTitle}>Digesting Life Balance</Text>
+              <Text style={styles.founderText}>
+                A nonprofit raising awareness on critical health issues like obesity, and mobilizing communities
+                toward healthier eating and social diversity.
+              </Text>
+
+              <View style={styles.linkRow}>
+                <TouchableOpacity
+                  onPress={() => openExternal('https://facebook.com/profile.php?id=100029187646814')}
+                  style={styles.linkButton}
+                  testID="dlb-facebook-link"
+                >
+                  <ExternalLink size={16} color={colors.text.primary} />
+                  <Text style={styles.linkLabel}>DLB Facebook</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={() => openExternal('https://zeffy.com/en-US/donation-form/e41efe15-414a-4aaa-be55-0376ff88a404')}
+                  style={[styles.linkButton, styles.linkPrimary]}
+                  testID="dlb-donate-link"
+                >
+                  <ExternalLink size={16} color={colors.text.primary} />
+                  <Text style={styles.linkLabel}>Donate</Text>
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.mission}>
+                My mission: empower every person to take charge of their health—mind, body, and community.
+              </Text>
             </View>
           </View>
         </Card>
@@ -720,5 +793,72 @@ const styles = StyleSheet.create({
   copyright: {
     fontSize: 12,
     color: colors.text.tertiary,
+  },
+  founderContainer: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    gap: 12 as unknown as number,
+  },
+  logoWrap: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  logoBg: {
+    width: 72,
+    height: 72,
+    borderRadius: 12,
+    backgroundColor: '#000000',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  logo: {
+    width: 64,
+    height: 64,
+  },
+  founderContent: {
+    flex: 1,
+  },
+  founderTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  founderText: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  linkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8 as unknown as number,
+    marginTop: 4,
+    marginBottom: 8,
+  },
+  linkButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: colors.background.tertiary,
+    marginRight: 8,
+  },
+  linkPrimary: {
+    backgroundColor: colors.accent.primary,
+  },
+  linkLabel: {
+    marginLeft: 6,
+    color: colors.text.primary,
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  mission: {
+    fontSize: 13,
+    color: colors.text.secondary,
   },
 });
