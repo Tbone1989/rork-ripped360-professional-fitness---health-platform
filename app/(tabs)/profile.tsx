@@ -398,9 +398,16 @@ export default function ProfileScreen() {
 
           <View style={styles.founderContainer}>
             <View style={styles.logoWrap}>
-              <View style={styles.logoBg}>
+              <View style={styles.logoBg} testID="logo-ripped-city">
                 <Image
-                  source={{ uri: brandAssets.primaryLogo }}
+                  source={{ uri: brandAssets.rippedCityIncLogo }}
+                  style={styles.logo}
+                  resizeMode="contain"
+                />
+              </View>
+              <View style={[styles.logoBg, { marginTop: 10 }]} testID="logo-digesting-life-balance">
+                <Image
+                  source={{ uri: brandAssets.digestingLifeBalanceLogo }}
                   style={styles.logo}
                   resizeMode="contain"
                 />
