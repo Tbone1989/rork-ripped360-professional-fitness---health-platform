@@ -317,15 +317,16 @@ export const mockGroceryStores: GroceryStore[] = [
     distance: 2.9,
     coordinates: { latitude: 26.4571, longitude: -80.1333 },
     hours: [
-      { day: 'Monday', open: '7:00 AM', close: '10:00 PM' },
-      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM' },
-      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM' },
-      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM' },
-      { day: 'Friday', open: '7:00 AM', close: '10:00 PM' },
-      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM' },
-      { day: 'Sunday', open: '7:00 AM', close: '10:00 PM' }
+      { day: 'Monday', open: '7:00 AM', close: '10:00 PM', closed: true },
+      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM', closed: true },
+      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM', closed: true },
+      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM', closed: true },
+      { day: 'Friday', open: '7:00 AM', close: '10:00 PM', closed: true },
+      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM', closed: true },
+      { day: 'Sunday', open: '7:00 AM', close: '10:00 PM', closed: true }
     ],
-    features: ['pharmacy', 'deli', 'bakery']
+    features: ['pharmacy', 'deli', 'bakery'],
+    permanentlyClosed: true
   },
   {
     id: '15',
@@ -418,6 +419,98 @@ export const mockGroceryStores: GroceryStore[] = [
       { day: 'Sunday', open: '7:00 AM', close: '9:00 PM' }
     ],
     features: ['organic', 'bulk']
+  },
+  {
+    id: '21',
+    name: 'Sprouts Farmers Market Delray Beach',
+    chain: 'Sprouts',
+    address: '14917 Lyons Rd',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33446',
+    phone: '(561) 555-0818',
+    logo: 'https://1000logos.net/wp-content/uploads/2021/05/Sprouts-Logo.png',
+    distance: 5.6,
+    coordinates: { latitude: 26.4625, longitude: -80.1845 },
+    hours: [
+      { day: 'Monday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Tuesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Wednesday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Thursday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Friday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Saturday', open: '7:00 AM', close: '10:00 PM' },
+      { day: 'Sunday', open: '7:00 AM', close: '9:00 PM' }
+    ],
+    features: ['organic', 'bulk']
+  },
+  {
+    id: '22',
+    name: "The Boys Farmers Market",
+    chain: 'Independent',
+    address: '14378 Military Trail',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33484',
+    phone: '(561) 555-0820',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/3/3f/Market_Basket.svg',
+    distance: 2.0,
+    coordinates: { latitude: 26.455, longitude: -80.125 },
+    hours: [
+      { day: 'Monday', open: '8:00 AM', close: '7:00 PM' },
+      { day: 'Tuesday', open: '8:00 AM', close: '7:00 PM' },
+      { day: 'Wednesday', open: '8:00 AM', close: '7:00 PM' },
+      { day: 'Thursday', open: '8:00 AM', close: '7:00 PM' },
+      { day: 'Friday', open: '8:00 AM', close: '7:00 PM' },
+      { day: 'Saturday', open: '8:00 AM', close: '7:00 PM' },
+      { day: 'Sunday', open: '8:00 AM', close: '6:00 PM' }
+    ],
+    features: ['produce', 'bakery', 'deli']
+  },
+  {
+    id: '23',
+    name: "The Girls Strawberry Patch",
+    chain: 'Independent',
+    address: '14466 Military Trail',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33484',
+    phone: '(561) 555-0821',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/1/15/Strawberries.jpg',
+    distance: 3.0,
+    coordinates: { latitude: 26.456, longitude: -80.124 },
+    hours: [
+      { day: 'Monday', open: '9:00 AM', close: '6:00 PM' },
+      { day: 'Tuesday', open: '9:00 AM', close: '6:00 PM' },
+      { day: 'Wednesday', open: '9:00 AM', close: '6:00 PM' },
+      { day: 'Thursday', open: '9:00 AM', close: '6:00 PM' },
+      { day: 'Friday', open: '9:00 AM', close: '6:00 PM' },
+      { day: 'Saturday', open: '9:00 AM', close: '6:00 PM' },
+      { day: 'Sunday', open: '9:00 AM', close: '5:00 PM' }
+    ],
+    features: ['produce', 'desserts']
+  },
+  {
+    id: '24',
+    name: "Joseph's Classic Market Delray",
+    chain: "Joseph's Classic Market",
+    address: '1733 S Federal Hwy',
+    city: 'Delray Beach',
+    state: 'FL',
+    zipCode: '33483',
+    phone: '(561) 555-0822',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4f/Shopping_cart_icon.svg',
+    distance: 2.4,
+    coordinates: { latitude: 26.438, longitude: -80.071 },
+    hours: [
+      { day: 'Monday', open: '8:00 AM', close: '8:00 PM' },
+      { day: 'Tuesday', open: '8:00 AM', close: '8:00 PM' },
+      { day: 'Wednesday', open: '8:00 AM', close: '8:00 PM' },
+      { day: 'Thursday', open: '8:00 AM', close: '8:00 PM' },
+      { day: 'Friday', open: '8:00 AM', close: '8:00 PM' },
+      { day: 'Saturday', open: '8:00 AM', close: '8:00 PM' },
+      { day: 'Sunday', open: '8:00 AM', close: '7:00 PM' }
+    ],
+    features: ['deli', 'bakery', 'prepared-foods']
   },
   {
     id: '19',
