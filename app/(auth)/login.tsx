@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 import { ArrowRight, Apple, Microscope, ShieldQuestion, Stethoscope, ShieldCheck } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
@@ -144,13 +144,13 @@ export default function LoginScreen() {
         <View style={styles.header}>
           <View style={styles.logoWrapper}>
             <View style={styles.logoContainer}>
-              <View style={styles.logoContent}>
-                <Text style={styles.logoMainText}>R</Text>
-                <View style={styles.logoSubContainer}>
-                  <Text style={styles.logoSubText}>360</Text>
-                  <View style={styles.logoDot} />
-                </View>
-              </View>
+              <Image
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/zlyg6140n6n0l0ojdcwpx' }}
+                style={styles.logoImage}
+                resizeMode="cover"
+                accessibilityLabel="Ripped360 logo"
+                testID="login-logo"
+              />
             </View>
           </View>
           <Text style={styles.title}>Welcome to Ripped360</Text>
@@ -300,7 +300,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#E53935',
+    backgroundColor: 'transparent',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -309,6 +309,11 @@ const styles = StyleSheet.create({
   },
   logoContent: {
     alignItems: 'center',
+  },
+  logoImage: {
+    width: 100,
+    height: 100,
+    borderRadius: 20,
   },
   logoMainText: {
     fontSize: 36,
