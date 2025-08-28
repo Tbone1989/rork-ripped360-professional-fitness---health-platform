@@ -53,76 +53,87 @@ const getBaseOrigin = () => {
   return "";
 };
 
-const getTrpcEndpoint = () => {
+const getTrpcEndpointCandidates = (): string[] => {
   const base = getBaseOrigin();
-  const withoutTrailing = base.replace(/\/$/, "");
-  const hasApi = /\/(api)(\b|\/)/.test(withoutTrailing);
-  const baseWithApi = withoutTrailing.length > 0 ? (hasApi ? withoutTrailing : `${withoutTrailing}/api`) : "/api";
-  return `${baseWithApi.replace(/\/+$/, "")}/trpc`;
+  const roots = new Set<string>();
+  if (base) roots.add(base.replace(/\/$/, ""));
+  // Always include relative root so web can hit same origin even if base couldn't be resolved
+  roots.add("");
+
+  const candidates = new Set<string>();
+  for (const r of roots) {
+    const root = r.length > 0 ? r : "";
+    const withApi = `${root}${root.endsWith("/api") || /\/(api)(\b|\/)/.test(root) ? "" : "/api"}`.replace(/\/+$/, "");
+    candidates.add(`${withApi}/trpc`);
+    // Also try without /api in case the host already mounts at root
+    const noApiBase = root.replace(/\/+$/, "");
+    candidates.add(`${noApiBase}/trpc`);
+  }
+  // Normalize duplicates
+  return Array.from(candidates).filter((u) => u !== "/trpc" ? true : true);
 };
 
-const endpointUrl = getTrpcEndpoint();
-console.log("tRPC endpoint resolved:", endpointUrl);
+const endpointCandidates = getTrpcEndpointCandidates();
+console.log("tRPC endpoint candidates:", endpointCandidates);
 
 export const trpcClient = trpc.createClient({
   links: [
     loggerLink({ enabled: () => process.env.NODE_ENV === "development" }),
     httpLink({
-      url: endpointUrl,
+      url: endpointCandidates[0] ?? "/api/trpc",
       transformer: superjson,
       fetch: async (url, options) => {
-        console.log("🔄 tRPC Request:", url);
-        try {
-          const response = await fetch(url, {
-            ...options,
-            ...(Platform.OS === "web" ? { mode: "cors" as const } : {}),
-            headers: {
-              Accept: "application/json",
-              ...(options?.headers ?? {}),
-              "Content-Type": "application/json",
-            },
-          });
-
-          console.log("📡 tRPC Response:", response.status, response.statusText);
-
-          if (!response.ok) {
-            console.error("❌ tRPC Error Response:", response.status, response.statusText);
-
-            const responseText = await response.text();
-            console.log("Response text preview:", responseText.substring(0, 120));
-
-            if (response.status === 404 || responseText.includes("<!DOCTYPE") || responseText.includes("<html")) {
-              throw new Error(
-                "Backend server endpoint not found. The tRPC server may not be running or configured correctly."
-              );
-            }
-
-            try {
-              const errorData = JSON.parse(responseText);
-              console.error("❌ tRPC JSON Error:", errorData);
-            } catch {
-              console.error("❌ tRPC Non-JSON Error:", responseText);
-            }
-
-            return new Response(responseText, {
-              status: response.status,
-              statusText: response.statusText,
-              headers: response.headers,
+        const tryUrls = [url, ...endpointCandidates.filter((u) => u !== url)];
+        let lastErr: unknown;
+        for (const u of tryUrls) {
+          try {
+            console.log("🔄 tRPC Request:", u);
+            const response = await fetch(u, {
+              ...options,
+              ...(Platform.OS === "web" ? { mode: "cors" as const } : {}),
+              headers: {
+                Accept: "application/json",
+                ...(options?.headers ?? {}),
+                "Content-Type": "application/json",
+              },
             });
+
+            console.log("📡 tRPC Response:", response.status, response.statusText);
+
+            if (!response.ok) {
+              const responseText = await response.text();
+              console.error("❌ tRPC Error Response:", response.status, response.statusText);
+              console.log("Response text preview:", responseText.substring(0, 120));
+
+              if (
+                response.status === 404 ||
+                responseText.includes("<!DOCTYPE") ||
+                responseText.includes("<html")
+              ) {
+                continue;
+              }
+
+              return new Response(responseText, {
+                status: response.status,
+                statusText: response.statusText,
+                headers: response.headers,
+              });
+            }
+
+            return response;
+          } catch (error) {
+            lastErr = error;
+            console.error("❌ tRPC Network Error:", error);
+            continue;
           }
-
-          return response;
-        } catch (error) {
-          console.error("❌ tRPC Network Error:", error);
-
-          if (error instanceof TypeError && (error as TypeError).message === "Failed to fetch") {
-            throw new Error(
-              `Cannot connect to backend at ${endpointUrl}. If you are on a device, set EXPO_PUBLIC_RORK_API_BASE_URL to your machine or tunnel URL (e.g. http://192.168.1.10:8081 or https://<tunnel>.ngrok-free.app).`
-            );
-          }
-
-          throw error as Error;
         }
+
+        if (lastErr instanceof TypeError && (lastErr as TypeError).message === "Failed to fetch") {
+          throw new Error(
+            `Cannot connect to backend. If you are on a device, set EXPO_PUBLIC_RORK_API_BASE_URL to your machine or tunnel URL (e.g. http://192.168.1.10:8081 or https://<tunnel>.ngrok-free.app).`
+          );
+        }
+        throw (lastErr as Error) ?? new Error("Unknown tRPC connection error");
       },
     }),
   ],
