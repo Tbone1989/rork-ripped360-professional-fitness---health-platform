@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Alert, FlatList, Linking, Platform, StyleSheet, Switch, Text, TouchableOpacity, View } from 'react-native';
 import { Stack } from 'expo-router';
 import { colors } from '@/constants/colors';
@@ -35,12 +35,64 @@ export default function AttachmentsVisibilityScreen() {
     }
   };
 
+  const seedSamples = useCallback(() => {
+    try {
+      const now = new Date().toISOString();
+      const samples: Attachment[] = [
+        {
+          id: `s-${Date.now()}-1`,
+          title: 'Blood Panel - Comprehensive',
+          url: 'https://www.hhs.texas.gov/sites/default/files/documents/laws-regulations/forms/hhs-1100.pdf',
+          createdAt: now,
+          visibleToCoaches: false,
+        },
+        {
+          id: `s-${Date.now()}-2`,
+          title: 'MRI Report - Left Knee',
+          url: 'https://www.massgeneral.org/assets/mgh/pdf/imaging/radiology-report-example.pdf',
+          createdAt: now,
+          visibleToCoaches: true,
+        },
+        {
+          id: `s-${Date.now()}-3`,
+          title: 'Supplement Protocol',
+          url: 'https://files.nccih.nih.gov/s3fs-public/media_files/Herbal_Supplements_At_A_Glance.pdf',
+          createdAt: now,
+          visibleToCoaches: true,
+        },
+      ];
+      setLocalAttachments(samples);
+      if (isClient) {
+        updateUser({ attachments: samples });
+      }
+      Alert.alert('Added', 'Sample attachments have been added.');
+    } catch (e) {
+      console.log('[Attachments] seedSamples error', e);
+      Alert.alert('Error', 'Could not add samples.');
+    }
+  }, [isClient, updateUser]);
+
   const emptyState = useMemo(() => (
     <View style={styles.empty} testID="attachments-empty">
       <Text style={styles.emptyTitle}>No attachments yet</Text>
       <Text style={styles.emptySubtitle}>Upload medical PDFs or links in Medical {'>'} Upload, then manage which ones coaches can see here.</Text>
+      <TouchableOpacity onPress={seedSamples} style={styles.addSamplesBtn} testID="add-sample-attachments">
+        <Text style={styles.addSamplesText}>Add sample files</Text>
+      </TouchableOpacity>
     </View>
-  ), []);
+  ), [seedSamples]);
+
+  useEffect(() => {
+    try {
+      const isEmpty = (localAttachments?.length ?? 0) === 0;
+      const userEmpty = (user?.attachments?.length ?? 0) === 0;
+      if (isEmpty && userEmpty) {
+        seedSamples();
+      }
+    } catch (e) {
+      console.log('[Attachments] auto-seed error', e);
+    }
+  }, [user?.attachments, localAttachments?.length, seedSamples]);
 
   const openUrl = (url: string) => {
     if (Platform.OS === 'web') {
@@ -125,6 +177,8 @@ const styles = StyleSheet.create({
   warnText: { color: colors.status.warning, fontSize: 13, flex: 1 },
   listEmptyContainer: { flexGrow: 1, justifyContent: 'center' },
   empty: { alignItems: 'center', padding: 26 },
+  addSamplesBtn: { marginTop: 16, backgroundColor: colors.accent.primary, paddingVertical: 12, paddingHorizontal: 16, borderRadius: 10 },
+  addSamplesText: { color: colors.text.primary, fontWeight: '700', fontSize: 16 },
   emptyTitle: { color: colors.text.primary, fontSize: 18, fontWeight: '600', marginBottom: 8 },
   emptySubtitle: { color: colors.text.secondary, fontSize: 15, textAlign: 'center' },
   itemCard: { marginHorizontal: 16, marginBottom: 12, padding: 14 },
