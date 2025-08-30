@@ -64,7 +64,6 @@ export default function LoginScreen() {
 
   const GOOGLE_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID ?? '';
   const APPLE_CLIENT_ID = process.env.EXPO_PUBLIC_APPLE_OAUTH_CLIENT_ID ?? '';
-  const MICROSOFT_CLIENT_ID = process.env.EXPO_PUBLIC_MICROSOFT_OAUTH_CLIENT_ID ?? '';
 
   const ensureEnvVal = useCallback((label: string, val: string) => {
     if (!val) {
@@ -75,27 +74,24 @@ export default function LoginScreen() {
     return val ?? '';
   }, []);
 
-  const handleOAuth = useCallback(async (provider: 'google' | 'apple' | 'microsoft') => {
+  const handleOAuth = useCallback(async (provider: 'google' | 'apple') => {
     await withHaptics(Haptics.ImpactFeedbackStyle.Light);
     try {
       setError('');
       const clientId = {
         google: ensureEnvVal('EXPO_PUBLIC_GOOGLE_OAUTH_CLIENT_ID', GOOGLE_CLIENT_ID),
         apple: ensureEnvVal('EXPO_PUBLIC_APPLE_OAUTH_CLIENT_ID', APPLE_CLIENT_ID),
-        microsoft: ensureEnvVal('EXPO_PUBLIC_MICROSOFT_OAUTH_CLIENT_ID', MICROSOFT_CLIENT_ID),
       }[provider];
       if (!clientId || !redirectUri) return;
 
       const discovery = {
         google: { authorizationEndpoint: 'https://accounts.google.com/o/oauth2/v2/auth' },
         apple: { authorizationEndpoint: 'https://appleid.apple.com/auth/authorize' },
-        microsoft: { authorizationEndpoint: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize' },
       }[provider];
 
       const scope = {
         google: 'openid profile email',
         apple: 'name email',
-        microsoft: 'openid profile email offline_access',
       }[provider];
 
       const query = new URLSearchParams({
@@ -133,7 +129,7 @@ export default function LoginScreen() {
       console.error('[OAuth] Error', e);
       setError('Unable to sign in right now. Please try again later.');
     }
-  }, [ensureEnvVal, redirectUri, router, withHaptics, GOOGLE_CLIENT_ID, APPLE_CLIENT_ID, MICROSOFT_CLIENT_ID]);
+  }, [ensureEnvVal, redirectUri, router, withHaptics, GOOGLE_CLIENT_ID, APPLE_CLIENT_ID]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -215,15 +211,6 @@ export default function LoginScreen() {
               style={styles.socialButton}
               icon={<Apple size={18} color={colors.text.primary} />}
               testID="apple-signin"
-            />
-            <Button
-              title="Sign in with Microsoft"
-              onPress={() => handleOAuth('microsoft')}
-              variant="secondary"
-              fullWidth
-              style={styles.socialButton}
-              icon={<Microscope size={18} color={colors.text.primary} />}
-              testID="microsoft-signin"
             />
           </View>
 
@@ -321,7 +308,7 @@ const styles = StyleSheet.create({
   },
   logoMainText: {
     fontSize: 36,
-    fontWeight: '900',
+    fontWeight: '900' as const,
     color: colors.text.primary,
     textShadowColor: 'rgba(0,0,0,0.3)',
     textShadowOffset: { width: 1, height: 1 },
@@ -334,7 +321,7 @@ const styles = StyleSheet.create({
   },
   logoSubText: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: colors.text.primary,
     opacity: 0.9,
   },
@@ -348,7 +335,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 32,
-    fontWeight: '900',
+    fontWeight: '900' as const,
     color: colors.text.primary,
     marginBottom: 6,
     textAlign: 'center',
@@ -394,7 +381,7 @@ const styles = StyleSheet.create({
   },
   signUpText: {
     color: colors.accent.primary,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   roleButtonsRow: {
     flexDirection: 'row',
@@ -416,7 +403,7 @@ const styles = StyleSheet.create({
   roleButtonText: {
     color: colors.text.secondary,
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     marginLeft: 6,
     textAlign: 'center',
   },
