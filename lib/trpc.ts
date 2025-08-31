@@ -84,7 +84,9 @@ console.log("tRPC endpoint candidates:", endpointCandidates);
 
 export const trpcClient = trpc.createClient({
   links: [
-    loggerLink({ enabled: () => process.env.NODE_ENV === "development" }),
+    loggerLink({
+      enabled: () => process.env.NODE_ENV === "development" && Platform.OS !== "web",
+    }),
     httpLink({
       url: endpointCandidates[0] ?? "/api/trpc",
       transformer: superjson,
