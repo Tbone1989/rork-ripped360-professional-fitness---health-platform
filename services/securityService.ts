@@ -224,6 +224,138 @@ class SecurityService {
     }
   }
 
+  public async validateCoachApplication(userId: string, certifications: any[], backgroundCheck: any): Promise<{ approved: boolean; reasons: string[] }> {
+    const reasons: string[] = [];
+    let approved = true;
+
+    // Check certifications
+    if (!certifications || certifications.length === 0) {
+      approved = false;
+      reasons.push('No valid certifications provided');
+    } else {
+      const validCerts = certifications.filter(cert => 
+        cert.verificationStatus === 'verified' && 
+        (!cert.expiryDate || new Date(cert.expiryDate) > new Date())
+      );
+      if (validCerts.length === 0) {
+        approved = false;
+        reasons.push('No valid, non-expired certifications');
+      }
+    }
+
+    // Check background check
+    if (!backgroundCheck || backgroundCheck.status !== 'passed') {
+      approved = false;
+      reasons.push('Background check not passed');
+    }
+
+    return { approved, reasons };
+  }
+
+  public async validateProductSellingApplication(userId: string, businessInfo: any): Promise<{ approved: boolean; reasons: string[] }> {
+    const reasons: string[] = [];
+    let approved = true;
+
+    // Check business license
+    if (!businessInfo.businessLicense) {
+      approved = false;
+      reasons.push('Valid business license required');
+    }
+
+    // Check tax ID
+    if (!businessInfo.taxId) {
+      approved = false;
+      reasons.push('Tax ID required');
+    }
+
+    // Check insurance
+    if (!businessInfo.insurance || new Date(businessInfo.insurance.expiryDate) <= new Date()) {
+      approved = false;
+      reasons.push('Valid liability insurance required');
+    }
+
+    return { approved, reasons };
+  }
+
+  public validateProductListing(product: any, userPermissions: any): { valid: boolean; violations: string[] } {
+    const violations: string[] = [];
+    let valid = true;
+
+    // Check if user has permission to sell products
+    if (!userPermissions || userPermissions.status !== 'approved') {
+      valid = false;
+      violations.push('User not approved for product selling');
+      return { valid, violations };
+    }
+
+    // Check category permissions
+    if (!userPermissions.allowedCategories.includes(product.category)) {
+      valid = false;
+      violations.push(`Not authorized to sell in category: ${product.category}`);
+    }
+
+    // Check for prohibited content
+    const prohibitedTerms = [
+      'guaranteed weight loss', 'miracle cure', 'fda approved', 'medical grade',
+      'prescription', 'steroid', 'anabolic', 'illegal', 'banned substance'
+    ];
+
+    const productText = `${product.name} ${product.description}`.toLowerCase();
+    prohibitedTerms.forEach(term => {
+      if (productText.includes(term)) {
+        valid = false;
+        violations.push(`Prohibited term detected: ${term}`);
+      }
+    });
+
+    // Check pricing
+    if (product.price < 1 || product.price > 10000) {
+      valid = false;
+      violations.push('Price must be between $1 and $10,000');
+    }
+
+    return { valid, violations };
+  }
+
+  public async logSecurityEvent(event: {
+    type: 'login_attempt' | 'product_violation' | 'content_violation' | 'payment_issue' | 'data_breach';
+    userId?: string;
+    details: any;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+  }) {
+    try {
+      const logEntry = {
+        ...event,
+        timestamp: new Date().toISOString(),
+        id: `sec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      };
+
+      // Store security log
+      const logs = await AsyncStorage.getItem('security_logs') || '[]';
+      const parsedLogs = JSON.parse(logs);
+      parsedLogs.push(logEntry);
+      
+      // Keep only last 1000 entries
+      if (parsedLogs.length > 1000) {
+        parsedLogs.splice(0, parsedLogs.length - 1000);
+      }
+      
+      await AsyncStorage.setItem('security_logs', JSON.stringify(parsedLogs));
+
+      // Alert for critical events
+      if (event.severity === 'critical') {
+        this.alertAdministrators(logEntry);
+      }
+    } catch (error) {
+      console.error('Failed to log security event:', error);
+    }
+  }
+
+  private async alertAdministrators(event: any) {
+    // In production, this would send alerts to administrators
+    console.warn('CRITICAL SECURITY EVENT:', event);
+  }
+
   public cleanup() {
     if (this.sessionTimer) {
       clearInterval(this.sessionTimer);

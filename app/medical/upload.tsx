@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Alert, Modal } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Upload, Camera, File, X, Check, Brain, Shield, AlertTriangle } from 'lucide-react-native';
+import { Upload, Camera, File, X, Check, Brain } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 
@@ -9,8 +9,10 @@ import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
+import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { Image } from 'expo-image';
 import { apiService } from '@/services/api';
+import securityService from '@/services/securityService';
 
 export default function UploadBloodworkScreen() {
   const router = useRouter();
@@ -87,6 +89,18 @@ export default function UploadBloodworkScreen() {
       return;
     }
     
+    // Log security event for medical data upload
+    await securityService.logSecurityEvent({
+      type: 'content_violation',
+      details: {
+        type: 'medical_upload',
+        labName,
+        imageCount: images.length,
+        hasNotes: !!notes
+      },
+      severity: 'medium'
+    });
+    
     setUploading(true);
     setIsAnalyzing(true);
     
@@ -112,13 +126,9 @@ export default function UploadBloodworkScreen() {
           {
             text: 'View Results',
             onPress: () => {
-              router.push({
-                pathname: '/medical/bloodwork/results',
-                params: { 
-                  analysisId: 'analysis-1',
-                  results: JSON.stringify(analysisResults)
-                }
-              });
+              // Navigate to results screen
+              router.back();
+              console.log('Analysis results:', analysisResults);
             }
           }
         ]
@@ -251,84 +261,17 @@ export default function UploadBloodworkScreen() {
         )}
       </View>
 
-      <Modal
+      <LegalDisclaimer
         visible={showDisclaimer}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setShowDisclaimer(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <View style={styles.disclaimerIconContainer}>
-              <Shield size={32} color={colors.accent.primary} />
-            </View>
-            <Text style={styles.modalTitle}>Medical Disclaimer</Text>
-            <TouchableOpacity onPress={() => setShowDisclaimer(false)} style={styles.closeButton}>
-              <X size={24} color={colors.text.secondary} />
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
-            <View style={styles.warningBox}>
-              <AlertTriangle size={20} color={colors.status.warning} />
-              <Text style={styles.warningText}>Important Legal Notice</Text>
-            </View>
-            
-            <Text style={styles.disclaimerText}>
-              By uploading your bloodwork results, you acknowledge and agree to the following:
-            </Text>
-            
-            <View style={styles.disclaimerPoints}>
-              <Text style={styles.disclaimerPoint}>
-                • <Text style={styles.bold}>Not Medical Advice:</Text> This app provides informational analysis only and does not constitute medical advice, diagnosis, or treatment recommendations.
-              </Text>
-              
-              <Text style={styles.disclaimerPoint}>
-                • <Text style={styles.bold}>Consult Healthcare Providers:</Text> Always consult with qualified healthcare professionals before making any medical decisions based on this analysis.
-              </Text>
-              
-              <Text style={styles.disclaimerPoint}>
-                • <Text style={styles.bold}>Data Security:</Text> Your medical data is encrypted and stored securely. We do not share your personal health information with third parties without your consent.
-              </Text>
-              
-              <Text style={styles.disclaimerPoint}>
-                • <Text style={styles.bold}>Accuracy Limitations:</Text> AI analysis may contain errors or inaccuracies. This tool is meant to supplement, not replace, professional medical evaluation.
-              </Text>
-              
-              <Text style={styles.disclaimerPoint}>
-                • <Text style={styles.bold}>Emergency Situations:</Text> If you have urgent health concerns, contact emergency services or your healthcare provider immediately.
-              </Text>
-              
-              <Text style={styles.disclaimerPoint}>
-                • <Text style={styles.bold}>Liability:</Text> Ripped360 and its affiliates are not liable for any health decisions made based on this analysis.
-              </Text>
-            </View>
-            
-            <Text style={styles.disclaimerFooter}>
-              By proceeding, you confirm that you understand these limitations and agree to use this service responsibly as part of your overall health management strategy.
-            </Text>
-          </ScrollView>
-          
-          <View style={styles.modalFooter}>
-            <Button
-              title="I Understand & Agree"
-              onPress={() => {
-                setDisclaimerAccepted(true);
-                setShowDisclaimer(false);
-                // Proceed with upload
-                setTimeout(() => handleUpload(), 100);
-              }}
-              style={styles.agreeButton}
-            />
-            <Button
-              title="Cancel"
-              variant="outline"
-              onPress={() => setShowDisclaimer(false)}
-              style={styles.cancelButton}
-            />
-          </View>
-        </View>
-      </Modal>
+        onClose={() => setShowDisclaimer(false)}
+        onAccept={() => {
+          setDisclaimerAccepted(true);
+          setShowDisclaimer(false);
+          // Proceed with upload
+          setTimeout(() => handleUpload(), 100);
+        }}
+        type="medical"
+      />
     </ScrollView>
   );
 }
