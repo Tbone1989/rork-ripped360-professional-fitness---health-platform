@@ -150,7 +150,7 @@ export const SupplementCard: React.FC<SupplementCardProps> = ({
         <View style={styles.footer}>
           <View style={styles.benefitsContainer}>
             {(expanded ? displayBenefits : displayBenefits.slice(0, 1)).map((benefit, index) => (
-              <Text key={index} style={styles.benefit} numberOfLines={expanded ? 2 : 1}>
+              <Text key={`${item.id}-benefit-${index}-${benefit.slice(0, 10)}`} style={styles.benefit} numberOfLines={expanded ? 2 : 1}>
                 • {benefit}
               </Text>
             ))}

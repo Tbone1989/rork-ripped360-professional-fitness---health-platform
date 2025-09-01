@@ -73,7 +73,7 @@ export const CoachCard: React.FC<CoachCardProps> = ({
           <View style={styles.specialtiesContainer}>
             {coach.specialties.slice(0, 2).map((specialty, index) => (
               <Badge
-                key={index}
+                key={`${coach.id}-specialty-${index}-${specialty}`}
                 label={specialty}
                 size="small"
                 variant="default"
@@ -82,6 +82,7 @@ export const CoachCard: React.FC<CoachCardProps> = ({
             ))}
             {coach.specialties.length > 2 && (
               <Badge
+                key={`${coach.id}-specialty-more`}
                 label={`+${coach.specialties.length - 2}`}
                 size="small"
                 variant="default"

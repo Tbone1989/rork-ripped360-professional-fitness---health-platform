@@ -50,10 +50,10 @@ const ExerciseCardComponent: React.FC<ExerciseCardProps> = ({ exercise, onPress 
         <View style={styles.footer}>
           <View style={styles.tagsContainer}>
             {exercise.muscleGroups.slice(0, 2).map((m, index) => (
-              <Badge key={index} label={m} size="small" variant="default" style={styles.tag} />
+              <Badge key={`${exercise.id}-muscle-${index}-${m}`} label={m} size="small" variant="default" style={styles.tag} />
             ))}
             {exercise.muscleGroups.length > 2 && (
-              <Badge label={`+${exercise.muscleGroups.length - 2}`} size="small" variant="default" style={styles.tag} />
+              <Badge key={`${exercise.id}-muscle-more`} label={`+${exercise.muscleGroups.length - 2}`} size="small" variant="default" style={styles.tag} />
             )}
           </View>
           <ChevronRight size={16} color={colors.text.secondary} />
