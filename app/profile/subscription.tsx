@@ -16,69 +16,38 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { useUserStore } from '@/store/userStore';
+import { useBrandStore } from '@/store/brandStore';
 
-const plans = [
-  {
-    id: 'free',
-    name: 'Free',
-    price: 0,
-    period: 'forever',
-    features: [
-      'Basic workout tracking',
-      'Exercise database access',
-      'Community support',
-      'Limited AI features'
-    ],
-    limitations: [
-      'Max 3 workouts per week',
-      'Basic progress tracking',
-      'No coaching access',
-      'Limited medical features'
-    ]
-  },
-  {
-    id: 'premium',
-    name: 'Premium',
-    price: 29.99,
-    yearlyPrice: 299.99,
-    period: 'month',
-    popular: true,
-    features: [
-      'Unlimited workout tracking',
-      'Full exercise database',
-      'AI workout generator',
-      'Advanced progress analytics',
-      'Coaching marketplace access',
-      'Basic medical tracking',
-      'Priority support'
-    ]
-  },
-  {
-    id: 'medical',
-    name: 'Medical Pro',
-    price: 99.99,
-    yearlyPrice: 999.99,
-    period: 'month',
-    features: [
-      'Everything in Premium',
-      'Advanced bloodwork analysis',
-      'Medical professional portal',
-      'Supplement interaction checker',
-      'Telemedicine integration',
-      'HIPAA-compliant data',
-      'Medical report generation',
-      'Doctor collaboration tools'
-    ]
-  }
-];
+const freePlan = {
+  id: 'free',
+  name: 'Free',
+  price: 0,
+  period: 'forever',
+  features: [
+    'Basic workout tracking',
+    'Exercise database access',
+    'Community support',
+    'Limited AI features'
+  ],
+  limitations: [
+    'Max 3 workouts per week',
+    'Basic progress tracking',
+    'No coaching access',
+    'Limited medical features'
+  ]
+};
 
 export default function SubscriptionScreen() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
-  const [selectedPlan, setSelectedPlan] = useState<'free' | 'premium' | 'medical'>(
-    (user?.subscription?.plan as 'free' | 'premium' | 'medical') || 'free'
+  const { membershipTiers, userMembership } = useBrandStore();
+  const [selectedPlan, setSelectedPlan] = useState<string>(
+    userMembership?.tier.id || user?.subscription?.plan || 'free'
   );
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'yearly'>('monthly');
+
+  // Combine free plan with membership tiers
+  const allPlans = [freePlan, ...membershipTiers];
 
   const handleUpgrade = (planId: string) => {
     if (planId === 'free') return;
@@ -87,7 +56,7 @@ export default function SubscriptionScreen() {
     router.push(`/profile/payment?plan=${planId}&billing=${billingPeriod}`);
   };
 
-  const currentPlan = plans.find(plan => plan.id === user?.subscription?.plan);
+  const currentPlan = allPlans.find(plan => plan.id === (userMembership?.tier.id || user?.subscription?.plan));
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -108,23 +77,25 @@ export default function SubscriptionScreen() {
               <Text style={styles.currentPlanTitle}>Current Plan</Text>
               <Badge
                 label={currentPlan.name}
-                variant={currentPlan.id === 'premium' ? 'primary' : currentPlan.id === 'medical' ? 'success' : 'default'}
+                variant={currentPlan.id === 'elite' ? 'primary' : currentPlan.id === 'champion' ? 'success' : 'default'}
               />
             </View>
             
-            {user?.subscription && user.subscription.plan !== 'free' && (
+            {((userMembership && userMembership.status === 'active') || (user?.subscription && user.subscription.plan !== 'free')) && (
               <View style={styles.subscriptionInfo}>
                 <View style={styles.subscriptionDetail}>
                   <Calendar size={16} color={colors.text.secondary} />
                   <Text style={styles.subscriptionText}>
-                    Renews on {new Date(user.subscription.endDate).toLocaleDateString()}
+                    Renews on {new Date(
+                      userMembership?.endDate || user?.subscription?.endDate || new Date()
+                    ).toLocaleDateString()}
                   </Text>
                 </View>
                 
                 <View style={styles.subscriptionDetail}>
                   <CreditCard size={16} color={colors.text.secondary} />
                   <Text style={styles.subscriptionText}>
-                    ${currentPlan.price}/month
+                    ${currentPlan?.price || 0}/month
                   </Text>
                 </View>
               </View>
@@ -167,91 +138,99 @@ export default function SubscriptionScreen() {
       </View>
 
       <View style={styles.plansSection}>
-        {plans.map((plan) => (
-          <TouchableOpacity
-            key={plan.id}
-            style={[
-              styles.planCard,
-              selectedPlan === plan.id && styles.selectedPlan,
-              plan.popular && styles.popularPlan
-            ]}
-            onPress={() => setSelectedPlan(plan.id as 'free' | 'premium' | 'medical')}
-            activeOpacity={0.8}
-          >
-            {plan.popular && (
-              <View style={styles.popularBadge}>
-                <Star size={12} color={colors.text.primary} fill={colors.text.primary} />
-                <Text style={styles.popularText}>Most Popular</Text>
-              </View>
-            )}
-            
-            <View style={styles.planHeader}>
-              <Text style={styles.planName}>{plan.name}</Text>
-              <View style={styles.priceContainer}>
-                {plan.id !== 'free' && billingPeriod === 'yearly' && plan.yearlyPrice ? (
-                  <>
-                    <Text style={styles.price}>
-                      ${(plan.yearlyPrice / 12).toFixed(2)}
-                    </Text>
-                    <Text style={styles.period}>/month</Text>
-                    <Text style={styles.yearlyNote}>
-                      (${plan.yearlyPrice}/year)
-                    </Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.price}>
-                      ${plan.price}
-                    </Text>
-                    <Text style={styles.period}>/{plan.period}</Text>
-                  </>
-                )}
-              </View>
-            </View>
-            
-            <View style={styles.featuresContainer}>
-              {plan.features.map((feature, index) => (
-                <View key={index} style={styles.feature}>
-                  <Check size={16} color={colors.status.success} />
-                  <Text style={styles.featureText}>{feature}</Text>
+        {allPlans.map((plan) => {
+          const isCurrentPlan = (userMembership?.tier.id === plan.id) || (user?.subscription?.plan === plan.id);
+          const monthlyPrice = plan.price || 0;
+          const yearlyPrice = plan.id !== 'free' ? monthlyPrice * 10 : 0; // 2 months free
+          const displayPrice = billingPeriod === 'yearly' && plan.id !== 'free' ? yearlyPrice : monthlyPrice;
+          const period = plan.id === 'free' ? 'forever' : (billingPeriod === 'yearly' ? 'year' : 'month');
+          
+          return (
+            <TouchableOpacity
+              key={plan.id}
+              style={[
+                styles.planCard,
+                selectedPlan === plan.id && styles.selectedPlan,
+                plan.popular && styles.popularPlan
+              ]}
+              onPress={() => setSelectedPlan(plan.id)}
+              activeOpacity={0.8}
+            >
+              {plan.popular && (
+                <View style={styles.popularBadge}>
+                  <Star size={12} color={colors.text.primary} fill={colors.text.primary} />
+                  <Text style={styles.popularText}>Most Popular</Text>
                 </View>
-              ))}
+              )}
               
-              {plan.limitations && plan.limitations.map((limitation, index) => (
-                <View key={index} style={styles.limitation}>
-                  <Text style={styles.limitationBullet}>•</Text>
-                  <Text style={styles.limitationText}>{limitation}</Text>
+              <View style={styles.planHeader}>
+                <Text style={styles.planName}>{plan.name}</Text>
+                <View style={styles.priceContainer}>
+                  {plan.id !== 'free' && billingPeriod === 'yearly' ? (
+                    <>
+                      <Text style={styles.price}>
+                        ${(yearlyPrice / 12).toFixed(2)}
+                      </Text>
+                      <Text style={styles.period}>/month</Text>
+                      <Text style={styles.yearlyNote}>
+                        (${yearlyPrice}/year)
+                      </Text>
+                    </>
+                  ) : (
+                    <>
+                      <Text style={styles.price}>
+                        ${displayPrice}
+                      </Text>
+                      <Text style={styles.period}>/{period}</Text>
+                    </>
+                  )}
                 </View>
-              ))}
-            </View>
-            
-            {user?.subscription?.plan !== plan.id && (
-              <Button
-                title={
-                  selectedPlan === plan.id 
-                    ? (plan.id === 'free' ? 'Downgrade to Free' : 'Upgrade Now')
-                    : 'Select Plan'
-                }
-                onPress={() => {
-                  if (selectedPlan !== plan.id) {
-                    setSelectedPlan(plan.id as 'free' | 'premium' | 'medical');
-                  } else {
-                    handleUpgrade(plan.id);
-                  }
-                }}
-                variant={selectedPlan === plan.id ? 'primary' : 'secondary'}
-                style={styles.upgradeButton}
-                icon={selectedPlan === plan.id && plan.id !== 'free' ? <ArrowRight size={16} color={colors.text.primary} /> : undefined}
-              />
-            )}
-            
-            {user?.subscription?.plan === plan.id && (
-              <View style={styles.currentBadge}>
-                <Text style={styles.currentBadgeText}>Current Plan</Text>
               </View>
-            )}
-          </TouchableOpacity>
-        ))}
+              
+              <View style={styles.featuresContainer}>
+                {plan.features.map((feature, index) => (
+                  <View key={index} style={styles.feature}>
+                    <Check size={16} color={colors.status.success} />
+                    <Text style={styles.featureText}>{feature}</Text>
+                  </View>
+                ))}
+                
+                {plan.limitations && plan.limitations.map((limitation, index) => (
+                  <View key={index} style={styles.limitation}>
+                    <Text style={styles.limitationBullet}>•</Text>
+                    <Text style={styles.limitationText}>{limitation}</Text>
+                  </View>
+                ))}
+              </View>
+              
+              {!isCurrentPlan && (
+                <Button
+                  title={
+                    selectedPlan === plan.id 
+                      ? (plan.id === 'free' ? 'Downgrade to Free' : 'Upgrade Now')
+                      : 'Select Plan'
+                  }
+                  onPress={() => {
+                    if (selectedPlan !== plan.id) {
+                      setSelectedPlan(plan.id);
+                    } else {
+                      handleUpgrade(plan.id);
+                    }
+                  }}
+                  variant={selectedPlan === plan.id ? 'primary' : 'secondary'}
+                  style={styles.upgradeButton}
+                  icon={selectedPlan === plan.id && plan.id !== 'free' ? <ArrowRight size={16} color={colors.text.primary} /> : undefined}
+                />
+              )}
+              
+              {isCurrentPlan && (
+                <View style={styles.currentBadge}>
+                  <Text style={styles.currentBadgeText}>Current Plan</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          );
+        })}
       </View>
 
       <View style={styles.benefitsSection}>
