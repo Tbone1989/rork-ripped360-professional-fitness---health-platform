@@ -4,8 +4,6 @@ import { useRouter } from 'expo-router';
 import { 
   Crown, 
   Check, 
-  CreditCard, 
-  Calendar,
   ArrowRight,
   Star,
   Zap
@@ -14,7 +12,6 @@ import {
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { useUserStore } from '@/store/userStore';
 import { useBrandStore } from '@/store/brandStore';
 
@@ -57,7 +54,7 @@ export default function SubscriptionScreen() {
     router.push(`/profile/payment?plan=${planId}&billing=${billingPeriod}`);
   };
 
-  const currentPlan = allPlans.find(plan => plan.id === (userMembership?.tier.id || user?.subscription?.plan));
+
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -71,39 +68,7 @@ export default function SubscriptionScreen() {
         </Text>
       </View>
 
-      {currentPlan && (
-        <View style={styles.currentPlanSection}>
-          <Card style={styles.currentPlanCard}>
-            <View style={styles.currentPlanHeader}>
-              <Text style={styles.currentPlanTitle}>Current Plan</Text>
-              <Badge
-                label={currentPlan.name}
-                variant={currentPlan.id === 'elite' ? 'primary' : currentPlan.id === 'champion' ? 'success' : 'default'}
-              />
-            </View>
-            
-            {((userMembership && userMembership.status === 'active') || (user?.subscription && user.subscription.plan !== 'free')) && (
-              <View style={styles.subscriptionInfo}>
-                <View style={styles.subscriptionDetail}>
-                  <Calendar size={16} color={colors.text.secondary} />
-                  <Text style={styles.subscriptionText}>
-                    Renews on {new Date(
-                      userMembership?.endDate || user?.subscription?.endDate || new Date()
-                    ).toLocaleDateString()}
-                  </Text>
-                </View>
-                
-                <View style={styles.subscriptionDetail}>
-                  <CreditCard size={16} color={colors.text.secondary} />
-                  <Text style={styles.subscriptionText}>
-                    ${currentPlan?.price || 0}/month
-                  </Text>
-                </View>
-              </View>
-            )}
-          </Card>
-        </View>
-      )}
+
 
       <View style={styles.billingToggle}>
         <View style={styles.toggleContainer}>
@@ -307,37 +272,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginHorizontal: 20,
   },
-  currentPlanSection: {
-    padding: 16,
-    paddingTop: 0,
-  },
-  currentPlanCard: {
-    borderWidth: 1,
-    borderColor: colors.accent.primary,
-  },
-  currentPlanHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  currentPlanTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text.primary,
-  },
-  subscriptionInfo: {
-    gap: 8,
-  },
-  subscriptionDetail: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  subscriptionText: {
-    fontSize: 14,
-    color: colors.text.secondary,
-  },
+
   plansSection: {
     padding: 16,
     paddingTop: 0,
