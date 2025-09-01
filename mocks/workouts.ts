@@ -90,6 +90,7 @@ export const popularExercises: Exercise[] = [
     muscleGroups: ['Lats', 'Rhomboids', 'Rear Delts', 'Biceps'],
     equipment: ['Dumbbells', 'Bench'],
     difficulty: 'beginner',
+    category: 'Strength Training',
     videoUrl: 'https://example.com/videos/dumbbell-rows',
     thumbnailUrl: 'https://images.unsplash.com/photo-1571019613540-996a0b1d2c2e?q=80&w=500',
     instructions: [
