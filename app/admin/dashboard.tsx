@@ -169,6 +169,12 @@ export default function AdminDashboardScreen() {
       case 'testing':
         router.push('/admin/testing');
         break;
+      case 'volume-tracking':
+        router.push('/admin/volume-tracking');
+        break;
+      case 'user-issues':
+        router.push('/admin/user-issues');
+        break;
       default:
         break;
     }
@@ -387,6 +393,22 @@ export default function AdminDashboardScreen() {
           >
             <TestTube size={24} color={colors.status.warning} />
             <Text style={styles.actionText}>Testing</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => handleQuickAction('volume-tracking')}
+            activeOpacity={0.7}
+          >
+            <TrendingUp size={24} color={colors.accent.primary} />
+            <Text style={styles.actionText}>Volume</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => handleQuickAction('user-issues')}
+            activeOpacity={0.7}
+          >
+            <MessageSquare size={24} color={colors.status.error} />
+            <Text style={styles.actionText}>Issues</Text>
           </TouchableOpacity>
         </View>
       </View>

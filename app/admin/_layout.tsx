@@ -21,6 +21,8 @@ export default function AdminLayout() {
       <Stack.Screen name="reports" options={{ title: 'Reports' }} />
       <Stack.Screen name="settings" options={{ title: 'Admin Settings' }} />
       <Stack.Screen name="testing" options={{ title: 'Testing Suite' }} />
+      <Stack.Screen name="volume-tracking" options={{ title: 'User Volume Tracking' }} />
+      <Stack.Screen name="user-issues" options={{ title: 'User Issues & Requests' }} />
     </Stack>
   );
 }

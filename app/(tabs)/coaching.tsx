@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, Calendar, MessageCircle } from 'lucide-react-native';
+import { Search, Filter, Calendar, MessageCircle, ClipboardList } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -86,18 +86,41 @@ export default function CoachingScreen() {
         )}
 
         {activeTab === 'sessions' && (
-          <View style={styles.emptyState}>
-            <Calendar size={48} color={colors.text.tertiary} />
-            <Text style={styles.emptyStateTitle}>No Upcoming Sessions</Text>
-            <Text style={styles.emptyStateDescription}>
-              You don't have any coaching sessions scheduled. Book a session with one of our expert coaches.
-            </Text>
-            <Button
-              title="Find a Coach"
-              onPress={() => setActiveTab('coaches')}
-              style={styles.emptyStateButton}
-            />
-          </View>
+          <>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Quick Actions</Text>
+              <Card style={styles.quickActionsCard}>
+                <TouchableOpacity
+                  style={styles.quickActionItem}
+                  onPress={() => router.push('/questionnaire/client-checkin')}
+                  activeOpacity={0.8}
+                >
+                  <View style={styles.quickActionIcon}>
+                    <ClipboardList size={24} color={colors.accent.primary} />
+                  </View>
+                  <View style={styles.quickActionContent}>
+                    <Text style={styles.quickActionTitle}>Weekly Check-in</Text>
+                    <Text style={styles.quickActionDescription}>
+                      Complete your weekly progress check-in for your coach
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </Card>
+            </View>
+            
+            <View style={styles.emptyState}>
+              <Calendar size={48} color={colors.text.tertiary} />
+              <Text style={styles.emptyStateTitle}>No Upcoming Sessions</Text>
+              <Text style={styles.emptyStateDescription}>
+                You don't have any coaching sessions scheduled. Book a session with one of our expert coaches.
+              </Text>
+              <Button
+                title="Find a Coach"
+                onPress={() => setActiveTab('coaches')}
+                style={styles.emptyStateButton}
+              />
+            </View>
+          </>
         )}
 
         {activeTab === 'messages' && (
@@ -194,5 +217,36 @@ const styles = StyleSheet.create({
   },
   emptyStateButton: {
     marginTop: 8,
+  },
+  quickActionsCard: {
+    padding: 0,
+  },
+  quickActionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 16,
+  },
+  quickActionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: `${colors.accent.primary}20`,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  quickActionContent: {
+    flex: 1,
+  },
+  quickActionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  quickActionDescription: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    lineHeight: 20,
   },
 });

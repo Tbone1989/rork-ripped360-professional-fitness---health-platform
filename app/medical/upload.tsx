@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Platform, ActivityIndicator, Alert, Modal } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Upload, Camera, File, X, Check, Brain } from 'lucide-react-native';
+import { Upload, Camera, File, X, Check, Brain, Shield, AlertTriangle } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 
@@ -20,6 +20,8 @@ export default function UploadBloodworkScreen() {
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
+  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   const pickImage = async () => {
     if (Platform.OS !== 'web') {
@@ -77,6 +79,11 @@ export default function UploadBloodworkScreen() {
     
     if (images.length === 0) {
       Alert.alert('No Images', 'Please upload at least one image');
+      return;
+    }
+    
+    if (!disclaimerAccepted) {
+      setShowDisclaimer(true);
       return;
     }
     
@@ -243,6 +250,85 @@ export default function UploadBloodworkScreen() {
           </Text>
         )}
       </View>
+
+      <Modal
+        visible={showDisclaimer}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setShowDisclaimer(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalHeader}>
+            <View style={styles.disclaimerIconContainer}>
+              <Shield size={32} color={colors.accent.primary} />
+            </View>
+            <Text style={styles.modalTitle}>Medical Disclaimer</Text>
+            <TouchableOpacity onPress={() => setShowDisclaimer(false)} style={styles.closeButton}>
+              <X size={24} color={colors.text.secondary} />
+            </TouchableOpacity>
+          </View>
+          
+          <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <View style={styles.warningBox}>
+              <AlertTriangle size={20} color={colors.status.warning} />
+              <Text style={styles.warningText}>Important Legal Notice</Text>
+            </View>
+            
+            <Text style={styles.disclaimerText}>
+              By uploading your bloodwork results, you acknowledge and agree to the following:
+            </Text>
+            
+            <View style={styles.disclaimerPoints}>
+              <Text style={styles.disclaimerPoint}>
+                • <Text style={styles.bold}>Not Medical Advice:</Text> This app provides informational analysis only and does not constitute medical advice, diagnosis, or treatment recommendations.
+              </Text>
+              
+              <Text style={styles.disclaimerPoint}>
+                • <Text style={styles.bold}>Consult Healthcare Providers:</Text> Always consult with qualified healthcare professionals before making any medical decisions based on this analysis.
+              </Text>
+              
+              <Text style={styles.disclaimerPoint}>
+                • <Text style={styles.bold}>Data Security:</Text> Your medical data is encrypted and stored securely. We do not share your personal health information with third parties without your consent.
+              </Text>
+              
+              <Text style={styles.disclaimerPoint}>
+                • <Text style={styles.bold}>Accuracy Limitations:</Text> AI analysis may contain errors or inaccuracies. This tool is meant to supplement, not replace, professional medical evaluation.
+              </Text>
+              
+              <Text style={styles.disclaimerPoint}>
+                • <Text style={styles.bold}>Emergency Situations:</Text> If you have urgent health concerns, contact emergency services or your healthcare provider immediately.
+              </Text>
+              
+              <Text style={styles.disclaimerPoint}>
+                • <Text style={styles.bold}>Liability:</Text> Ripped360 and its affiliates are not liable for any health decisions made based on this analysis.
+              </Text>
+            </View>
+            
+            <Text style={styles.disclaimerFooter}>
+              By proceeding, you confirm that you understand these limitations and agree to use this service responsibly as part of your overall health management strategy.
+            </Text>
+          </ScrollView>
+          
+          <View style={styles.modalFooter}>
+            <Button
+              title="I Understand & Agree"
+              onPress={() => {
+                setDisclaimerAccepted(true);
+                setShowDisclaimer(false);
+                // Proceed with upload
+                setTimeout(() => handleUpload(), 100);
+              }}
+              style={styles.agreeButton}
+            />
+            <Button
+              title="Cancel"
+              variant="outline"
+              onPress={() => setShowDisclaimer(false)}
+              style={styles.cancelButton}
+            />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -385,5 +471,96 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 12,
+  },
+  modalContainer: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+  },
+  modalHeader: {
+    alignItems: 'center',
+    padding: 24,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+    position: 'relative',
+  },
+  disclaimerIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(229, 57, 53, 0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text.primary,
+    textAlign: 'center',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 24,
+    right: 24,
+    padding: 8,
+  },
+  modalContent: {
+    flex: 1,
+    padding: 24,
+  },
+  warningBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: `${colors.status.warning}15`,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    gap: 12,
+  },
+  warningText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.status.warning,
+  },
+  disclaimerText: {
+    fontSize: 16,
+    color: colors.text.primary,
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  disclaimerPoints: {
+    marginBottom: 20,
+  },
+  disclaimerPoint: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    lineHeight: 22,
+    marginBottom: 12,
+  },
+  bold: {
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  disclaimerFooter: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    lineHeight: 22,
+    fontStyle: 'italic',
+    textAlign: 'center',
+    backgroundColor: colors.background.secondary,
+    padding: 16,
+    borderRadius: 12,
+  },
+  modalFooter: {
+    padding: 24,
+    borderTopWidth: 1,
+    borderTopColor: colors.border.light,
+    gap: 12,
+  },
+  agreeButton: {
+    width: '100%',
+  },
+  cancelButton: {
+    width: '100%',
   },
 });

@@ -28,7 +28,8 @@ import {
   TestTube,
   Trophy,
   ShoppingBag,
-  ExternalLink
+  ExternalLink,
+  MessageSquare
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -191,6 +192,12 @@ export default function ProfileScreen() {
       title: 'Help & Support',
       onPress: () => router.push('/profile/support'),
       testID: 'menu-support',
+    },
+    {
+      icon: <MessageSquare size={20} color={colors.status.warning} />,
+      title: 'Report Issue',
+      onPress: () => router.push('/profile/report-issue'),
+      testID: 'menu-report-issue',
     },
     {
       icon: <Shield size={20} color={colors.text.secondary} />,
