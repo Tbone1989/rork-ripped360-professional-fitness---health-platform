@@ -48,12 +48,13 @@ export default function HomeScreen() {
             let json: any;
             try { json = JSON.parse(text); } catch { continue; }
             const arr = Array.isArray(json?.products) ? json.products : Array.isArray(json) ? json : [];
-            const parsed: ShopProduct[] = arr.slice(0, 12).map((p: any) => {
+            const parsed: ShopProduct[] = arr.slice(0, 12).map((p: any, index: number) => {
               const handle = p.handle ?? undefined;
               const url = handle ? `https://www.rippedcityinc.com/products/${handle}` : (typeof p.url === 'string' ? p.url : 'https://www.rippedcityinc.com');
               const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
               const price = typeof p.price === 'number' ? (p.price > 1000 ? p.price / 100 : p.price) : typeof p.price_min === 'number' ? p.price_min / 100 : typeof p.variants?.[0]?.price === 'string' ? Number(p.variants[0].price) : undefined;
-              return { id: String(p.id ?? p.handle ?? p.title ?? Math.random()), title: String(p.title ?? ''), url, image, price };
+              const id = String(p.id || p.handle || `fallback-${Date.now()}-${index}`);
+              return { id, title: String(p.title ?? ''), url, image, price };
             }).filter((p: ShopProduct) => !!p.title);
             if (parsed.length > 0) {
               setFallback(parsed);
@@ -70,8 +71,8 @@ export default function HomeScreen() {
   const featuredList: FeaturedItem[] = React.useMemo(() => {
     const source = Array.isArray(shopData) && shopData.length > 0 ? (shopData as any[]).slice(0, 3) : fallback.slice(0, 3);
     if (source.length > 0) {
-      return source.map((p: any) => ({
-        id: String(p.id ?? p.title ?? Math.random()),
+      return source.map((p: any, index: number) => ({
+        id: String(p.id || `featured-${Date.now()}-${index}`),
         name: String(p.title ?? 'Product'),
         image: String(p.image ?? 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=500'),
         price: typeof p.price === 'number' ? p.price : undefined,

@@ -54,8 +54,8 @@ export default function ShopScreen() {
 
   const parseProductsFromJson = useCallback((dataAny: any): ShopProduct[] => {
     const arr = Array.isArray(dataAny?.products) ? dataAny.products : Array.isArray(dataAny) ? dataAny : [];
-    return arr.slice(0, 250).map((p: any) => {
-      const id = String(p.id ?? p.handle ?? p.title ?? Math.random());
+    return arr.slice(0, 250).map((p: any, index: number) => {
+      const id = String(p.id || p.handle || `shop-${Date.now()}-${index}`);
       const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
       const price = typeof p.price === 'number' ? (p.price > 1000 ? p.price / 100 : p.price) : typeof p.price_min === 'number' ? p.price_min / 100 : typeof p.variants?.[0]?.price === 'string' ? Number(p.variants[0].price) : undefined;
       const handle = p.handle ?? undefined;
