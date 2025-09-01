@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { ArrowRight, Users, Award, Calendar } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
@@ -54,18 +54,17 @@ export default function CoachLoginScreen() {
     >
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <LinearGradient
-            colors={['#1E88E5', '#1565C0']}
-            style={styles.logoContainer}
-          >
-            <View style={styles.logoContent}>
-              <Text style={styles.logoMainText}>R</Text>
-              <View style={styles.logoSubContainer}>
-                <Text style={styles.logoSubText}>360</Text>
-                <View style={styles.logoDot} />
-              </View>
+          <View style={styles.logoWrapper}>
+            <View style={styles.logoContainer}>
+              <Image
+                source={{ uri: 'https://pub-e001eb4506b145aa938b5d3badbff6a5.r2.dev/attachments/6i6sp2yhczg09pyzjyomj' }}
+                style={styles.logoImage}
+                resizeMode="contain"
+                accessibilityLabel="RIPPED360 app icon"
+                testID="coach-logo"
+              />
             </View>
-          </LinearGradient>
+          </View>
           <Text style={styles.title}>Coach Portal</Text>
           <Text style={styles.subtitle}>
             Access your coaching dashboard and manage your clients
@@ -146,48 +145,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 32,
   },
+  logoWrapper: {
+    marginBottom: 24,
+  },
   logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 25,
+    width: 140,
+    height: 140,
+    borderRadius: 28,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    backgroundColor: '#000000',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
+    shadowRadius: 14,
+    elevation: 10,
+    overflow: 'hidden',
   },
-  logoContent: {
-    alignItems: 'center',
-  },
-  logoMainText: {
-    fontSize: 36,
-    fontWeight: '900',
-    color: colors.text.primary,
-    textShadowColor: 'rgba(0,0,0,0.3)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
-  },
-  logoSubContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: -4,
-  },
-  logoSubText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.text.primary,
-    opacity: 0.9,
-  },
-  logoDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#FFD700',
-    marginLeft: 2,
-    marginTop: -8,
+  logoImage: {
+    width: 140,
+    height: 140,
+    borderRadius: 28,
+    backgroundColor: '#000000',
   },
   title: {
     fontSize: 28,
