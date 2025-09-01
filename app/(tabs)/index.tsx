@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign } from 'lucide-react-native';
+import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign, Gift, Check } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { brandAssets } from '@/constants/brand';
@@ -126,6 +126,52 @@ export default function HomeScreen() {
             Built for athletes who demand more. Train harder, recover smarter, live the RCI standard.
           </Text>
         </View>
+
+        {/* Free Plan Benefits */}
+        {(!user?.subscription || user?.subscription?.plan === 'free') && (
+          <View style={styles.freePlanSection}>
+            <Card style={styles.freePlanCard}>
+              <View style={styles.freePlanHeader}>
+                <Gift size={24} color={colors.status.success} />
+                <Text style={styles.freePlanTitle}>Your Free Plan Includes</Text>
+              </View>
+              
+              <View style={styles.freePlanFeatures}>
+                <View style={styles.freePlanFeature}>
+                  <Check size={16} color={colors.status.success} />
+                  <Text style={styles.freePlanFeatureText}>Basic workout tracking</Text>
+                </View>
+                <View style={styles.freePlanFeature}>
+                  <Check size={16} color={colors.status.success} />
+                  <Text style={styles.freePlanFeatureText}>Exercise database access</Text>
+                </View>
+                <View style={styles.freePlanFeature}>
+                  <Check size={16} color={colors.status.success} />
+                  <Text style={styles.freePlanFeatureText}>Community support</Text>
+                </View>
+                <View style={styles.freePlanFeature}>
+                  <Check size={16} color={colors.status.success} />
+                  <Text style={styles.freePlanFeatureText}>Limited AI features</Text>
+                </View>
+              </View>
+              
+              <View style={styles.freePlanLimitations}>
+                <Text style={styles.limitationsTitle}>Free Plan Limits:</Text>
+                <Text style={styles.limitationText}>• Max 3 workouts per week</Text>
+                <Text style={styles.limitationText}>• Basic progress tracking</Text>
+                <Text style={styles.limitationText}>• No coaching access</Text>
+                <Text style={styles.limitationText}>• Limited medical features</Text>
+              </View>
+              
+              <Button
+                title="Upgrade for Full Access"
+                onPress={() => router.push('/profile/subscription')}
+                variant="primary"
+                style={styles.upgradeButton}
+              />
+            </Card>
+          </View>
+        )}
 
         <View style={styles.header}>
           <View>
@@ -695,5 +741,60 @@ const styles = StyleSheet.create({
   },
   aiWorkoutButton: {
     alignSelf: 'flex-start',
+  },
+  freePlanSection: {
+    padding: 16,
+    paddingTop: 0,
+  },
+  freePlanCard: {
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.status.success,
+    borderRadius: 12,
+  },
+  freePlanHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 16,
+  },
+  freePlanTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text.primary,
+  },
+  freePlanFeatures: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  freePlanFeature: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  freePlanFeatureText: {
+    fontSize: 14,
+    color: colors.text.primary,
+    fontWeight: '500',
+  },
+  freePlanLimitations: {
+    backgroundColor: colors.background.primary,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  limitationsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.secondary,
+    marginBottom: 8,
+  },
+  limitationText: {
+    fontSize: 13,
+    color: colors.text.tertiary,
+    lineHeight: 18,
+  },
+  upgradeButton: {
+    marginTop: 4,
   },
 });
