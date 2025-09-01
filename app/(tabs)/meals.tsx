@@ -345,12 +345,12 @@ export default function MealsScreen() {
                 {meal.foods.map((f, idx) => {
                   const info = foodDictionary[f];
                   return (
-                    <View key={idx} style={styles.foodRow} testID={`meal-${meal.id}-food-${idx}`}>
+                    <View key={`${meal.id}-food-${idx}-${f}`} style={styles.foodRow} testID={`meal-${meal.id}-food-${idx}`}>
                       <Text style={styles.foodName}>{f}</Text>
                       <Text style={styles.foodDoes}>{info?.doesForBody ?? 'General nutrition'}</Text>
                       <View style={styles.foodNutrientsRow}>
                         {(info?.nutrients ?? []).slice(0, 3).map((n, i) => (
-                          <View key={i} style={styles.nutrientPill}>
+                          <View key={`${meal.id}-${f}-nutrient-${i}-${n}`} style={styles.nutrientPill}>
                             <Text style={styles.nutrientText}>{n}</Text>
                           </View>
                         ))}
