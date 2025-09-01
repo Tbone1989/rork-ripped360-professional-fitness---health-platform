@@ -34,6 +34,7 @@ export default function CategoryDetailScreen() {
   );
   
   const filteredExercises = popularExercises.filter(exercise => 
+    exercise.category === category.name &&
     (selectedDifficulties.includes('all') || selectedDifficulties.includes(exercise.difficulty)) &&
     (searchQuery === '' || exercise.name.toLowerCase().includes(searchQuery.toLowerCase()))
   );

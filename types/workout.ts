@@ -5,6 +5,7 @@ export interface Exercise {
   muscleGroups: string[];
   equipment: string[];
   difficulty: 'beginner' | 'intermediate' | 'advanced';
+  category?: string;
   videoUrl?: string;
   thumbnailUrl?: string;
   instructions: string[];
