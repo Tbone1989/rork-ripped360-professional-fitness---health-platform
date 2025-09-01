@@ -50,7 +50,7 @@ const difficultyOptions = [
 
 export default function GenerateWorkoutScreen() {
   const router = useRouter();
-  const { user } = useUserStore((s) => ({ user: s.user }));
+  const user = useUserStore((s) => s.user);
   const isAdmin = user?.role === 'admin';
   const [goals, setGoals] = useState<string[]>(['strength']);
   const [equipment, setEquipment] = useState<string[]>([]);
