@@ -24,7 +24,7 @@ class SecurityService {
 
   private loginAttempts: Map<string, number> = new Map();
   private blockedUsers: Set<string> = new Set();
-  private sessionTimer: NodeJS.Timeout | null = null;
+  private sessionTimer: ReturnType<typeof setInterval> | null = null;
   private lastActivity: number = Date.now();
 
   constructor() {
@@ -227,6 +227,7 @@ class SecurityService {
   public cleanup() {
     if (this.sessionTimer) {
       clearInterval(this.sessionTimer);
+      this.sessionTimer = null;
     }
   }
 }
