@@ -53,7 +53,7 @@ export default function HomeScreen() {
               const url = handle ? `https://www.rippedcityinc.com/products/${handle}` : (typeof p.url === 'string' ? p.url : 'https://www.rippedcityinc.com');
               const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
               const price = typeof p.price === 'number' ? (p.price > 1000 ? p.price / 100 : p.price) : typeof p.price_min === 'number' ? p.price_min / 100 : typeof p.variants?.[0]?.price === 'string' ? Number(p.variants[0].price) : undefined;
-              const id = String(p.id || p.handle || `fallback-${Date.now()}-${index}`);
+              const id = String(p.id || p.handle || `fallback-${Date.now()}-${index}`) || `fallback-${Date.now()}-${index}`;
               return { id, title: String(p.title ?? ''), url, image, price };
             }).filter((p: ShopProduct) => !!p.title);
             if (parsed.length > 0) {
@@ -72,7 +72,7 @@ export default function HomeScreen() {
     const source = Array.isArray(shopData) && shopData.length > 0 ? (shopData as any[]).slice(0, 3) : fallback.slice(0, 3);
     if (source.length > 0) {
       return source.map((p: any, index: number) => ({
-        id: String(p.id || `featured-${Date.now()}-${index}`),
+        id: String(p.id || `featured-${Date.now()}-${index}`) || `featured-${Date.now()}-${index}`,
         name: String(p.title ?? 'Product'),
         image: String(p.image ?? 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=500'),
         price: typeof p.price === 'number' ? p.price : undefined,
@@ -230,9 +230,9 @@ export default function HomeScreen() {
           </View>
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
-            {featuredList.map((item) => (
+            {featuredList.map((item, index) => (
               <TouchableOpacity
-                key={item.id}
+                key={item.id || `featured-item-${index}`}
                 style={styles.featuredProduct}
                 onPress={() => (item.isExternal && item.url ? Linking.openURL(item.url) : router.push(`/shop/product/${item.id}`))}
                 testID={`featured-product-${item.id}`}

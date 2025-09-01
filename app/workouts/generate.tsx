@@ -307,10 +307,10 @@ export default function GenerateWorkoutScreen() {
               onChange={setEquipment}
               scrollable={false}
             />
-            {showEquipmentDetails && equipment.map(eq => {
+            {showEquipmentDetails && equipment.map((eq, index) => {
               const option = equipmentOptions.find(o => o.id === eq);
               return option ? (
-                <Text key={eq} style={styles.equipmentDescription}>
+                <Text key={`${eq}-${index}`} style={styles.equipmentDescription}>
                   • {option.label}: {option.description}
                 </Text>
               ) : null;
@@ -425,7 +425,7 @@ export default function GenerateWorkoutScreen() {
           <View style={styles.exercisesContainer}>
             {generatedWorkout.exercises.map((exercise: any, index: number) => (
               <TouchableOpacity 
-                key={index}
+                key={`exercise-${index}-${exercise.name || 'unnamed'}`}
                 style={styles.exerciseCard}
                 onPress={() => {}}
                 activeOpacity={0.8}
