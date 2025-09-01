@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
-import { Stack } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { 
   CheckCircle, 
   XCircle, 
@@ -40,14 +40,21 @@ interface ApiStatusResponse {
 }
 
 export default function ApiStatusScreen() {
+  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
   
   const { data: apiStatus, isLoading, refetch } = trpc.system.apiStatus.useQuery();
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
+    try {
+      await refetch();
+      console.log('✅ API status refreshed successfully');
+    } catch (error) {
+      console.error('❌ Failed to refresh API status:', error);
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   const getStatusIcon = (status: string) => {
@@ -223,8 +230,9 @@ export default function ApiStatusScreen() {
         <Button
           title="Test API Connections"
           onPress={() => {
-            console.log('Testing API connections...');
-            // In a real app, this would test actual API calls
+            console.log('🧪 Starting comprehensive API connection tests...');
+            // Navigate to the test APIs screen for detailed testing
+            router.push('/test-apis');
           }}
           icon={<Settings size={18} color={colors.text.primary} />}
           style={styles.testButton}

@@ -82,76 +82,117 @@ export default function TestApisScreen() {
   };
 
   const runAllTests = async () => {
+    console.log('🚀 Starting comprehensive API test suite...');
     setIsRunning(true);
     const results: TestResult[] = [];
+    const startTime = Date.now();
 
-    // Test 1: Workout Generation
-    setCurrentTest('Workout Generation (Rip360_Ninja)');
-    const workoutResult = await apiTester.testWorkoutGeneration();
-    updateTestStatus(workoutResult.name, workoutResult);
-    results.push(workoutResult);
+    try {
+      // Test 1: Workout Generation
+      console.log('🏋️ Testing Workout Generation API...');
+      setCurrentTest('Workout Generation (Rip360_Ninja)');
+      const workoutResult = await apiTester.testWorkoutGeneration();
+      updateTestStatus(workoutResult.name, workoutResult);
+      results.push(workoutResult);
+      console.log(`✅ Workout test completed: ${workoutResult.status}`);
 
-    // Test 2: Nutrition Lookup
-    setCurrentTest('Nutrition Lookup (Rip360_Nutrition)');
-    const nutritionResult = await apiTester.testNutritionLookup();
-    updateTestStatus(nutritionResult.name, nutritionResult);
-    results.push(nutritionResult);
+      // Test 2: Nutrition Lookup
+      console.log('🍎 Testing Nutrition Lookup API...');
+      setCurrentTest('Nutrition Lookup (Rip360_Nutrition)');
+      const nutritionResult = await apiTester.testNutritionLookup();
+      updateTestStatus(nutritionResult.name, nutritionResult);
+      results.push(nutritionResult);
+      console.log(`✅ Nutrition test completed: ${nutritionResult.status}`);
 
-    // Test 3: Food Barcode Scan
-    setCurrentTest('Food Barcode Scan (Rip360_Nutrition)');
-    const barcodeResult = await apiTester.testFoodBarcode();
-    updateTestStatus(barcodeResult.name, barcodeResult);
-    results.push(barcodeResult);
+      // Test 3: Food Barcode Scan
+      console.log('📱 Testing Food Barcode API...');
+      setCurrentTest('Food Barcode Scan (Rip360_Nutrition)');
+      const barcodeResult = await apiTester.testFoodBarcode();
+      updateTestStatus(barcodeResult.name, barcodeResult);
+      results.push(barcodeResult);
+      console.log(`✅ Barcode test completed: ${barcodeResult.status}`);
 
-    // Test 4: Supplement Check
-    setCurrentTest('Supplement Check (Rip360_Health FDA)');
-    const supplementResult = await apiTester.testSupplementSearch();
-    updateTestStatus(supplementResult.name, supplementResult);
-    results.push(supplementResult);
+      // Test 4: Supplement Check
+      console.log('💊 Testing Supplement Search API...');
+      setCurrentTest('Supplement Check (Rip360_Health FDA)');
+      const supplementResult = await apiTester.testSupplementSearch();
+      updateTestStatus(supplementResult.name, supplementResult);
+      results.push(supplementResult);
+      console.log(`✅ Supplement test completed: ${supplementResult.status}`);
 
-    // Test 5: Supplement Barcode
-    setCurrentTest('Supplement Barcode (Rip360_Health FDA)');
-    const suppBarcodeResult = await apiTester.testSupplementBarcode();
-    updateTestStatus(suppBarcodeResult.name, suppBarcodeResult);
-    results.push(suppBarcodeResult);
+      // Test 5: Supplement Barcode
+      console.log('🔍 Testing Supplement Barcode API...');
+      setCurrentTest('Supplement Barcode (Rip360_Health FDA)');
+      const suppBarcodeResult = await apiTester.testSupplementBarcode();
+      updateTestStatus(suppBarcodeResult.name, suppBarcodeResult);
+      results.push(suppBarcodeResult);
+      console.log(`✅ Supplement barcode test completed: ${suppBarcodeResult.status}`);
 
-    // Test 6: Bloodwork Analysis
-    setCurrentTest('Bloodwork Analysis (Rip360_Health FDA)');
-    const bloodworkResult = await apiTester.testBloodworkAnalysis();
-    updateTestStatus(bloodworkResult.name, bloodworkResult);
-    results.push(bloodworkResult);
+      // Test 6: Bloodwork Analysis
+      console.log('🩸 Testing Bloodwork Analysis API...');
+      setCurrentTest('Bloodwork Analysis (Rip360_Health FDA)');
+      const bloodworkResult = await apiTester.testBloodworkAnalysis();
+      updateTestStatus(bloodworkResult.name, bloodworkResult);
+      results.push(bloodworkResult);
+      console.log(`✅ Bloodwork test completed: ${bloodworkResult.status}`);
 
-    // Test 7: Exercise Search
-    setCurrentTest('Exercise Search (Rip360_Ninja)');
-    const exerciseResult = await apiTester.testExerciseSearch();
-    updateTestStatus(exerciseResult.name, exerciseResult);
-    results.push(exerciseResult);
+      // Test 7: Exercise Search
+      console.log('💪 Testing Exercise Search API...');
+      setCurrentTest('Exercise Search (Rip360_Ninja)');
+      const exerciseResult = await apiTester.testExerciseSearch();
+      updateTestStatus(exerciseResult.name, exerciseResult);
+      results.push(exerciseResult);
+      console.log(`✅ Exercise test completed: ${exerciseResult.status}`);
 
-    // Test 8: Meal Plan Generation
-    setCurrentTest('Meal Plan Generation (Rip360_Nutrition)');
-    const mealPlanResult = await apiTester.testMealPlanGeneration();
-    updateTestStatus(mealPlanResult.name, mealPlanResult);
-    results.push(mealPlanResult);
+      // Test 8: Meal Plan Generation
+      console.log('🍽️ Testing Meal Plan Generation API...');
+      setCurrentTest('Meal Plan Generation (Rip360_Nutrition)');
+      const mealPlanResult = await apiTester.testMealPlanGeneration();
+      updateTestStatus(mealPlanResult.name, mealPlanResult);
+      results.push(mealPlanResult);
+      console.log(`✅ Meal plan test completed: ${mealPlanResult.status}`);
 
-    // Cross-reference data accuracy
-    setCurrentTest('Cross-referencing data...');
-    const crossRef = await apiTester.crossReferenceData();
-    setCrossReferenceResult(crossRef);
+      // Cross-reference data accuracy
+      console.log('🔄 Cross-referencing data accuracy...');
+      setCurrentTest('Cross-referencing data...');
+      const crossRef = await apiTester.crossReferenceData();
+      setCrossReferenceResult(crossRef);
+      console.log('✅ Cross-reference analysis completed');
 
-    setCurrentTest(null);
-    setIsRunning(false);
+      setCurrentTest(null);
+      setIsRunning(false);
 
-    // Calculate overall statistics
-    const successCount = results.filter(r => r.status === 'success').length;
-    const totalTests = results.length;
-    const avgAccuracy = results.reduce((sum, r) => sum + (r.accuracy || 0), 0) / results.length;
-    const avgResponseTime = results.reduce((sum, r) => sum + (r.duration || 0), 0) / results.length;
-    
-    Alert.alert(
-      'Test Results Summary',
-      `${successCount}/${totalTests} tests passed\nAverage Accuracy: ${Math.round(avgAccuracy)}%\nAverage Response Time: ${Math.round(avgResponseTime)}ms\n\n✓ Successful APIs:\n${results.filter(r => r.status === 'success').map(r => `${r.name} (${r.accuracy}%)`).join('\n')}\n\n✗ Failed APIs:\n${results.filter(r => r.status === 'error').map(r => `${r.name}: ${r.error}`).join('\n')}`,
-      [{ text: 'OK' }]
-    );
+      // Calculate overall statistics
+      const totalTime = Date.now() - startTime;
+      const successCount = results.filter(r => r.status === 'success').length;
+      const totalTests = results.length;
+      const avgAccuracy = results.reduce((sum, r) => sum + (r.accuracy || 0), 0) / results.length;
+      const avgResponseTime = results.reduce((sum, r) => sum + (r.duration || 0), 0) / results.length;
+      
+      console.log('📊 Test Suite Summary:');
+      console.log(`   • Total Time: ${totalTime}ms`);
+      console.log(`   • Success Rate: ${successCount}/${totalTests} (${Math.round((successCount/totalTests)*100)}%)`);
+      console.log(`   • Average Accuracy: ${Math.round(avgAccuracy)}%`);
+      console.log(`   • Average Response Time: ${Math.round(avgResponseTime)}ms`);
+      
+      const successfulApis = results.filter(r => r.status === 'success');
+      const failedApis = results.filter(r => r.status === 'error');
+      
+      Alert.alert(
+        '🧪 API Test Results Summary',
+        `✅ ${successCount}/${totalTests} tests passed (${Math.round((successCount/totalTests)*100)}%)\n⏱️ Total time: ${Math.round(totalTime/1000)}s\n📊 Average Accuracy: ${Math.round(avgAccuracy)}%\n⚡ Average Response: ${Math.round(avgResponseTime)}ms\n\n${successfulApis.length > 0 ? `✅ Working APIs:\n${successfulApis.map(r => `• ${r.name.split('(')[0].trim()} (${r.accuracy}%)`).join('\n')}` : ''}\n\n${failedApis.length > 0 ? `❌ Failed APIs:\n${failedApis.map(r => `• ${r.name.split('(')[0].trim()}: ${r.error?.substring(0, 50)}...`).join('\n')}` : ''}`,
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      console.error('❌ Test suite failed:', error);
+      setCurrentTest(null);
+      setIsRunning(false);
+      Alert.alert(
+        'Test Suite Error',
+        `Failed to complete API tests: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const getStatusIcon = (status: TestResult['status']) => {
@@ -209,22 +250,45 @@ export default function TestApisScreen() {
       </View>
 
       <Card style={styles.infoCard}>
-        <Text style={styles.infoTitle}>Test Sequence</Text>
+        <Text style={styles.infoTitle}>🧪 Comprehensive API Test Sequence</Text>
         <View style={styles.infoItem}>
           <Text style={styles.infoNumber}>1.</Text>
-          <Text style={styles.infoText}>Workout generation → Rip360_Ninja</Text>
+          <Text style={styles.infoText}>🏋️ Workout generation → Rip360_Ninja</Text>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.infoNumber}>2.</Text>
-          <Text style={styles.infoText}>Nutrition lookup → Rip360_Nutrition</Text>
+          <Text style={styles.infoText}>🍎 Nutrition lookup → Rip360_Nutrition</Text>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.infoNumber}>3.</Text>
-          <Text style={styles.infoText}>Supplement check → Rip360_Health FDA</Text>
+          <Text style={styles.infoText}>📱 Food barcode scanning → Rip360_Nutrition</Text>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.infoNumber}>4.</Text>
-          <Text style={styles.infoText}>Cross-reference data accuracy</Text>
+          <Text style={styles.infoText}>💊 Supplement analysis → Rip360_Health FDA</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoNumber}>5.</Text>
+          <Text style={styles.infoText}>🩸 Bloodwork analysis → Rip360_Health FDA</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoNumber}>6.</Text>
+          <Text style={styles.infoText}>💪 Exercise database → Rip360_Ninja</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoNumber}>7.</Text>
+          <Text style={styles.infoText}>🍽️ Meal plan generation → Rip360_Nutrition</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.infoNumber}>8.</Text>
+          <Text style={styles.infoText}>🔄 Cross-reference data accuracy validation</Text>
+        </View>
+        
+        <View style={styles.testNote}>
+          <Text style={styles.testNoteText}>
+            💡 This will test real API connectivity, response times, and data accuracy. 
+            Make sure your API keys are configured in the .env file.
+          </Text>
         </View>
       </Card>
 
@@ -268,13 +332,19 @@ export default function TestApisScreen() {
 
       <View style={styles.actionContainer}>
         <Button
-          title={isRunning ? 'Running Tests...' : 'Run All Tests'}
+          title={isRunning ? 'Running Tests...' : '🚀 Run All API Tests'}
           onPress={runAllTests}
           loading={isRunning}
           disabled={isRunning}
           fullWidth
           icon={isRunning ? undefined : <Play size={18} color={colors.text.primary} />}
         />
+        
+        {!isRunning && (
+          <Text style={styles.actionHint}>
+            💡 This will test all {tests.length} API endpoints and provide detailed connectivity reports
+          </Text>
+        )}
       </View>
 
       <Card style={styles.apiKeysCard}>
@@ -537,5 +607,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 8,
     fontStyle: 'italic',
+  },
+  testNote: {
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: colors.background.tertiary,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.accent.primary,
+  },
+  testNoteText: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    lineHeight: 16,
+  },
+  actionHint: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginTop: 8,
+    lineHeight: 16,
   },
 });

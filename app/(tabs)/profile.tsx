@@ -205,6 +205,12 @@ export default function ProfileScreen() {
       onPress: () => router.push('/profile/privacy'),
       testID: 'menu-privacy',
     },
+    {
+      icon: <Zap size={20} color={colors.status.info} />,
+      title: 'API Status',
+      onPress: () => router.push('/api-status'),
+      testID: 'menu-api-status',
+    },
     ...(user?.role === 'admin'
       ? [{
         icon: <TestTube size={20} color={colors.status.info} />,
