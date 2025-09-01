@@ -1,15 +1,20 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert, Image } from 'react-native';
+import React, { useCallback, useMemo, useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowRight, Apple, Microscope, ShieldQuestion, Stethoscope, ShieldCheck } from 'lucide-react-native';
+import { ArrowRight, Apple, Users, ShieldQuestion, Stethoscope, ShieldCheck, Info, HelpCircle } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useUserStore } from '@/store/userStore';
+import { Tutorial } from '@/components/ui/Tutorial';
+import securityService from '@/services/securityService';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -19,6 +24,26 @@ export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  useEffect(() => {
+    // Initialize security features
+    securityService.blockAutoUpdates();
+    
+    // Check if user needs tutorial
+    checkFirstTimeUser();
+  }, []);
+
+  const checkFirstTimeUser = async () => {
+    try {
+      const hasSeenTutorial = await AsyncStorage.getItem('has_seen_login_tutorial');
+      if (!hasSeenTutorial) {
+        setShowTutorial(true);
+      }
+    } catch (error) {
+      console.log('Tutorial check failed:', error);
+    }
+  };
 
   const handleLogin = async () => {
     if (Platform.OS !== 'web') {
@@ -30,11 +55,20 @@ export default function LoginScreen() {
       return;
     }
 
+    // Security validation
+    const canLogin = await securityService.validateLogin(email);
+    if (!canLogin) {
+      return;
+    }
+
     try {
       setError('');
       await login(email, password);
+      securityService.recordLoginAttempt(email, true);
+      securityService.updateActivity();
       router.replace('/(tabs)');
     } catch (err) {
+      securityService.recordLoginAttempt(email, false);
       setError('Invalid email or password');
     }
   };
@@ -231,33 +265,126 @@ export default function LoginScreen() {
             <TouchableOpacity
               style={styles.roleButton}
               onPress={() => router.push('/(auth)/coach-login')}
+              onLongPress={() => {
+                Alert.alert(
+                  'Coach Portal',
+                  'Access for certified fitness coaches and personal trainers. Manage clients, create workout plans, and track progress. Requires coach certification and admin approval.',
+                  [{ text: 'OK' }]
+                );
+              }}
               testID="coach-login-link"
             >
-              <Microscope size={16} color={colors.text.secondary} />
+              <Users size={16} color={colors.text.secondary} />
               <Text style={styles.roleButtonText}>Coach</Text>
+              <TouchableOpacity
+                style={styles.infoIcon}
+                onPress={() => {
+                  Alert.alert(
+                    'Coach Portal',
+                    'Access for certified fitness coaches and personal trainers. Manage clients, create workout plans, and track progress. Requires coach certification and admin approval.',
+                    [{ text: 'OK' }]
+                  );
+                }}
+              >
+                <Info size={12} color={colors.text.secondary} />
+              </TouchableOpacity>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.roleButton}
               onPress={() => router.push('/(auth)/doctor-login')}
+              onLongPress={() => {
+                Alert.alert(
+                  'Medical Portal',
+                  'Access for licensed medical professionals. Review patient health data, provide medical guidance, and manage treatment plans. Requires medical license verification and admin approval.',
+                  [{ text: 'OK' }]
+                );
+              }}
               testID="doctor-login-link"
             >
               <Stethoscope size={16} color={colors.text.secondary} />
               <Text style={styles.roleButtonText}>Doctor</Text>
+              <TouchableOpacity
+                style={styles.infoIcon}
+                onPress={() => {
+                  Alert.alert(
+                    'Medical Portal',
+                    'Access for licensed medical professionals. Review patient health data, provide medical guidance, and manage treatment plans. Requires medical license verification and admin approval.',
+                    [{ text: 'OK' }]
+                  );
+                }}
+              >
+                <Info size={12} color={colors.text.secondary} />
+              </TouchableOpacity>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.roleButton}
               onPress={() => router.push('/(auth)/admin-login')}
+              onLongPress={() => {
+                Alert.alert(
+                  'Admin Portal',
+                  'System administration access. Manage users, grant permissions, monitor system health, and configure platform settings. Restricted to authorized administrators only.',
+                  [{ text: 'OK' }]
+                );
+              }}
               testID="admin-login-link"
             >
               <ShieldCheck size={16} color={colors.text.secondary} />
               <Text style={styles.roleButtonText}>Admin</Text>
+              <TouchableOpacity
+                style={styles.infoIcon}
+                onPress={() => {
+                  Alert.alert(
+                    'Admin Portal',
+                    'System administration access. Manage users, grant permissions, monitor system health, and configure platform settings. Restricted to authorized administrators only.',
+                    [{ text: 'OK' }]
+                  );
+                }}
+              >
+                <Info size={12} color={colors.text.secondary} />
+              </TouchableOpacity>
             </TouchableOpacity>
           </View>
         </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      <Tutorial
+        visible={showTutorial}
+        onClose={() => {
+          setShowTutorial(false);
+          AsyncStorage.setItem('has_seen_login_tutorial', 'true');
+        }}
+        tutorialKey="login"
+        steps={[
+          {
+            title: 'Welcome to RIPPED360',
+            description: 'Your comprehensive fitness and health platform. Let\'s get you started with a quick tour.',
+            icon: <HelpCircle size={48} color={colors.accent.primary} />,
+          },
+          {
+            title: 'Sign In Options',
+            description: 'You can sign in using your email and password, or use your Google or Apple account for quick access.',
+            icon: <ShieldQuestion size={48} color={colors.accent.primary} />,
+          },
+          {
+            title: 'Different User Roles',
+            description: 'Choose the appropriate portal based on your role: Regular users use the main login, while Coaches, Doctors, and Admins have dedicated portals with special access requirements.',
+            icon: <Users size={48} color={colors.accent.primary} />,
+          },
+          {
+            title: 'Security & Privacy',
+            description: 'Your data is protected with HIPAA-compliant security. We use encryption, secure authentication, and block screen recording to keep your information safe.',
+            icon: <ShieldCheck size={48} color={colors.status.success} />,
+          },
+          {
+            title: 'Need Help?',
+            description: 'Tap the info icons next to each role button to learn more about access requirements. Contact support if you need assistance.',
+            icon: <Info size={48} color={colors.accent.primary} />,
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 }
@@ -349,6 +476,9 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     marginBottom: 24,
+    maxWidth: Platform.OS === 'web' ? Math.min(screenWidth * 0.9, 400) : screenWidth,
+    width: '100%',
+    alignSelf: 'center',
   },
   loginButton: {
     marginTop: 16,
@@ -395,10 +525,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 12,
+    paddingHorizontal: 8,
     backgroundColor: colors.background.secondary,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: colors.border.light,
+    position: 'relative',
+  },
+  infoIcon: {
+    position: 'absolute',
+    top: 4,
+    right: 4,
+    padding: 2,
   },
   roleButtonText: {
     color: colors.text.secondary,

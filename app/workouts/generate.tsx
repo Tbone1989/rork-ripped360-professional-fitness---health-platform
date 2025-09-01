@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Zap, ChevronRight, Clock, Dumbbell, BarChart, Sparkles, TestTube, Users, BookOpen } from 'lucide-react-native';
+import { Zap, ChevronRight, Clock, Dumbbell, BarChart, Sparkles, TestTube, Users, BookOpen, Info, Settings } from 'lucide-react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
@@ -19,11 +20,17 @@ const goalOptions = [
 ];
 
 const equipmentOptions = [
-  { id: 'full-gym', label: 'Full Gym' },
-  { id: 'home', label: 'Home' },
-  { id: 'minimal', label: 'Minimal' },
-  { id: 'bodyweight', label: 'Bodyweight Only' },
-  { id: 'bands', label: 'Resistance Bands' },
+  { id: 'full-gym', label: 'Full Gym', description: 'Barbells, dumbbells, machines, cables' },
+  { id: 'home', label: 'Home Gym', description: 'Dumbbells, bench, pull-up bar' },
+  { id: 'minimal', label: 'Minimal', description: 'Basic dumbbells or kettlebells' },
+  { id: 'bodyweight', label: 'Bodyweight Only', description: 'No equipment needed' },
+  { id: 'bands', label: 'Resistance Bands', description: 'Bands and anchors only' },
+  { id: 'barbell', label: 'Barbell', description: 'Barbell and plates' },
+  { id: 'dumbbells', label: 'Dumbbells', description: 'Dumbbells only' },
+  { id: 'kettlebells', label: 'Kettlebells', description: 'Kettlebells only' },
+  { id: 'cables', label: 'Cable Machine', description: 'Cable station' },
+  { id: 'trx', label: 'TRX/Suspension', description: 'Suspension trainer' },
+  { id: 'outdoor', label: 'Outdoor/Park', description: 'Park equipment, bars' },
 ];
 
 const durationOptions = [
@@ -43,10 +50,50 @@ const difficultyOptions = [
 export default function GenerateWorkoutScreen() {
   const router = useRouter();
   const [goals, setGoals] = useState<string[]>(['strength']);
-  const [equipment, setEquipment] = useState<string[]>(['full-gym']);
+  const [equipment, setEquipment] = useState<string[]>([]);
   const [duration, setDuration] = useState<string[]>(['45']);
   const [difficulty, setDifficulty] = useState<string[]>(['intermediate']);
   const [additionalInfo, setAdditionalInfo] = useState('');
+  const [showEquipmentDetails, setShowEquipmentDetails] = useState(false);
+  const [savedEquipment, setSavedEquipment] = useState<string[]>([]);
+
+  useEffect(() => {
+    loadSavedEquipment();
+  }, []);
+
+  const loadSavedEquipment = async () => {
+    try {
+      const saved = await AsyncStorage.getItem('user_equipment');
+      if (saved) {
+        const equipment = JSON.parse(saved);
+        setEquipment(equipment);
+        setSavedEquipment(equipment);
+      }
+    } catch (error) {
+      console.log('Failed to load saved equipment:', error);
+    }
+  };
+
+  const saveEquipmentPreferences = async () => {
+    try {
+      await AsyncStorage.setItem('user_equipment', JSON.stringify(equipment));
+      setSavedEquipment(equipment);
+      Alert.alert('Success', 'Your equipment preferences have been saved');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save equipment preferences');
+    }
+  };
+
+  const showEquipmentInfo = () => {
+    Alert.alert(
+      'Equipment Selection',
+      'Select all equipment you have access to. The AI will generate workouts using only the equipment you select. You can save your preferences for future use.',
+      [
+        { text: 'Got it', style: 'default' },
+        { text: 'Save Current Selection', onPress: saveEquipmentPreferences }
+      ]
+    );
+  };
   
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedWorkout, setGeneratedWorkout] = useState<any>(null);
@@ -55,6 +102,11 @@ export default function GenerateWorkoutScreen() {
   const generateWorkoutMutation = trpc.fitness.generate.useMutation();
 
   const handleGenerate = async () => {
+    if (equipment.length === 0) {
+      Alert.alert('Equipment Required', 'Please select at least one type of equipment to generate a workout');
+      return;
+    }
+
     setIsGenerating(true);
     setApiTestResult(null);
     
@@ -63,7 +115,8 @@ export default function GenerateWorkoutScreen() {
         type: goals[0] || 'strength',
         muscle: goals,
         difficulty: difficulty[0] || 'intermediate',
-        duration: parseInt(duration[0]) || 45
+        duration: parseInt(duration[0]) || 45,
+        equipment: equipment
       };
       
       console.log('🔄 Starting workout generation with preferences:', preferences);
@@ -221,13 +274,42 @@ export default function GenerateWorkoutScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Available equipment</Text>
+            <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitle}>Available equipment</Text>
+              <View style={styles.equipmentActions}>
+                <TouchableOpacity onPress={showEquipmentInfo} style={styles.infoButton}>
+                  <Info size={18} color={colors.text.secondary} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={saveEquipmentPreferences} style={styles.equipmentSaveButton}>
+                  <Settings size={18} color={colors.accent.primary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            {equipment.length === 0 && (
+              <View style={styles.equipmentWarning}>
+                <Info size={16} color={colors.status.warning} />
+                <Text style={styles.equipmentWarningText}>
+                  Please select at least one equipment type
+                </Text>
+              </View>
+            )}
             <ChipGroup
-              options={equipmentOptions}
+              options={equipmentOptions.map(opt => ({
+                ...opt,
+                label: `${opt.label}${savedEquipment.includes(opt.id) ? ' ✓' : ''}`
+              }))}
               selectedIds={equipment}
               onChange={setEquipment}
               scrollable={false}
             />
+            {showEquipmentDetails && equipment.map(eq => {
+              const option = equipmentOptions.find(o => o.id === eq);
+              return option ? (
+                <Text key={eq} style={styles.equipmentDescription}>
+                  • {option.label}: {option.description}
+                </Text>
+              ) : null;
+            })}
           </View>
 
           <View style={styles.section}>
@@ -420,9 +502,45 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     color: colors.text.primary,
     marginBottom: 12,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  equipmentActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  infoButton: {
+    padding: 4,
+  },
+  equipmentSaveButton: {
+    padding: 4,
+  },
+  equipmentWarning: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: 'rgba(255, 152, 0, 0.1)',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  equipmentWarningText: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.status.warning,
+  },
+  equipmentDescription: {
+    fontSize: 12,
+    color: colors.text.tertiary,
+    marginTop: 4,
+    marginLeft: 8,
   },
   buttonContainer: {
     padding: 16,
