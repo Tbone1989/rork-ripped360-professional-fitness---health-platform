@@ -157,8 +157,10 @@ export default function GenerateWorkoutScreen() {
           errorMessage = 'Backend server offline - using fallback data';
         } else if (errorMessage.includes('Failed to fetch')) {
           errorMessage = 'Network connection failed - using fallback data';
-        } else if (errorMessage.includes('<!DOCTYPE')) {
+        } else if (errorMessage.includes('<!DOCTYPE') || errorMessage.includes('Unexpected token')) {
           errorMessage = 'Backend routing error - using fallback data';
+        } else if (errorMessage.includes('TRPCClientError')) {
+          errorMessage = 'API connection failed - using fallback data';
         }
       }
       
