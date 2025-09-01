@@ -34,7 +34,8 @@ const freePlan = {
     'Basic progress tracking',
     'No coaching access',
     'Limited medical features'
-  ]
+  ],
+  popular: false
 };
 
 export default function SubscriptionScreen() {
@@ -151,12 +152,12 @@ export default function SubscriptionScreen() {
               style={[
                 styles.planCard,
                 selectedPlan === plan.id && styles.selectedPlan,
-                plan.popular && styles.popularPlan
+                ('popular' in plan && plan.popular) && styles.popularPlan
               ]}
               onPress={() => setSelectedPlan(plan.id)}
               activeOpacity={0.8}
             >
-              {plan.popular && (
+              {('popular' in plan && plan.popular) && (
                 <View style={styles.popularBadge}>
                   <Star size={12} color={colors.text.primary} fill={colors.text.primary} />
                   <Text style={styles.popularText}>Most Popular</Text>
@@ -195,7 +196,7 @@ export default function SubscriptionScreen() {
                   </View>
                 ))}
                 
-                {plan.limitations && plan.limitations.map((limitation, index) => (
+                {('limitations' in plan && plan.limitations) && plan.limitations.map((limitation: string, index: number) => (
                   <View key={index} style={styles.limitation}>
                     <Text style={styles.limitationBullet}>•</Text>
                     <Text style={styles.limitationText}>{limitation}</Text>
