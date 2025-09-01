@@ -18,12 +18,20 @@ export default function ExerciseDetailScreen() {
   const exercise = popularExercises.find(ex => ex.id === id) || popularExercises[0];
 
   const handleStartExercise = () => {
+    console.log('handleStartExercise called for exercise:', exercise.name);
     Alert.alert(
       'Start Exercise',
-      'This would start the exercise with video guidance and timer.',
+      `Ready to start ${exercise.name}? This will begin the exercise session with video guidance and timer.`,
       [
         { text: 'Cancel', style: 'cancel' },
-        { text: 'Start', onPress: () => console.log('Starting exercise...') },
+        { 
+          text: 'Start', 
+          onPress: () => {
+            console.log('Starting exercise:', exercise.name);
+            // Here you would navigate to an exercise session screen
+            // router.push(`/exercise/${exercise.id}/session`);
+          }
+        },
       ]
     );
   };

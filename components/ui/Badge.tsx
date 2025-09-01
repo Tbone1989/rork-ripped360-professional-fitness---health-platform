@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, View, Text, ViewStyle, TextStyle } from 'react-native';
 import { colors } from '@/constants/colors';
 
-export type BadgeVariant = 'default' | 'primary' | 'success' | 'warning' | 'error' | 'info';
+export type BadgeVariant = 'default' | 'primary' | 'secondary' | 'outline' | 'success' | 'warning' | 'error' | 'info';
 export type BadgeSize = 'small' | 'medium' | 'large';
 
 interface BadgeProps {
@@ -26,6 +26,10 @@ export const Badge: React.FC<BadgeProps> = ({
     switch (variant) {
       case 'primary':
         return colors.accent.primary;
+      case 'secondary':
+        return colors.background.secondary;
+      case 'outline':
+        return 'transparent';
       case 'success':
         return colors.status.success;
       case 'warning':
@@ -45,6 +49,10 @@ export const Badge: React.FC<BadgeProps> = ({
         return '#000000';
       case 'default':
         return colors.text.secondary;
+      case 'secondary':
+        return colors.text.primary;
+      case 'outline':
+        return colors.accent.primary;
       default:
         return colors.text.primary;
     }
@@ -79,6 +87,10 @@ export const Badge: React.FC<BadgeProps> = ({
         {
           backgroundColor: getBackgroundColor(),
           ...getPadding(),
+          ...(variant === 'outline' && {
+            borderWidth: 1,
+            borderColor: colors.accent.primary,
+          }),
         },
         style,
       ]}

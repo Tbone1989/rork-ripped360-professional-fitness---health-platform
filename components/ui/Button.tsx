@@ -22,6 +22,8 @@ interface ButtonProps {
   disabled?: boolean;
   loading?: boolean;
   icon?: React.ReactNode;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   style?: ViewStyle;
   textStyle?: TextStyle;
   fullWidth?: boolean;
@@ -36,6 +38,8 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
   loading = false,
   icon,
+  leftIcon,
+  rightIcon,
   style,
   textStyle,
   fullWidth = false,
@@ -109,8 +113,9 @@ export const Button: React.FC<ButtonProps> = ({
           />
         ) : (
           <>
-            {icon && <View style={styles.iconContainer}>{icon}</View>}
+            {(leftIcon || icon) && <View style={styles.iconContainer}>{leftIcon || icon}</View>}
             <Text style={getTextStyle()}>{title}</Text>
+            {rightIcon && <View style={styles.iconContainer}>{rightIcon}</View>}
           </>
         )}
       </>
