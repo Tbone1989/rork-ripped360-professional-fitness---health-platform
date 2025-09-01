@@ -7,9 +7,12 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { apiService } from '@/services/api';
+import { useUserStore } from '@/store/userStore';
 
 const Scanner = () => {
   const router = useRouter();
+  const { user } = useUserStore((s) => ({ user: s.user }));
+  const isAdmin = user?.role === 'admin';
   const [scanned, setScanned] = useState<boolean>(false);
   const [flashEnabled, setFlashEnabled] = useState<boolean>(false);
   const [facing, setFacing] = useState<'back' | 'front'>('back');
@@ -143,7 +146,9 @@ const Scanner = () => {
 
           <View style={styles.bottomControls}>
             <Button title="Enter Manually" variant="outline" onPress={() => router.push('/meals/add')} style={styles.manualButton} testID="enter-manually" />
-            <Button title="Test Nutrition API" variant="outline" onPress={() => router.push('/test-apis')} style={[styles.manualButton, { marginTop: 8 }]} icon={<TestTube size={16} color={colors.text.primary} />} testID="test-nutrition-api" />
+            {isAdmin && (
+              <Button title="Test Nutrition API" variant="outline" onPress={() => router.push('/test-apis')} style={[styles.manualButton, { marginTop: 8 }]} icon={<TestTube size={16} color={colors.text.primary} />} testID="test-nutrition-api" />
+            )}
           </View>
         </View>
       </CameraView>

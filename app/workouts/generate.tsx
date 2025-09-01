@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { ChipGroup } from '@/components/ui/ChipGroup';
 import { trpc } from '@/lib/trpc';
+import { useUserStore } from '@/store/userStore';
 
 const goalOptions = [
   { id: 'strength', label: 'Strength' },
@@ -49,6 +50,8 @@ const difficultyOptions = [
 
 export default function GenerateWorkoutScreen() {
   const router = useRouter();
+  const { user } = useUserStore((s) => ({ user: s.user }));
+  const isAdmin = user?.role === 'admin';
   const [goals, setGoals] = useState<string[]>(['strength']);
   const [equipment, setEquipment] = useState<string[]>([]);
   const [duration, setDuration] = useState<string[]>(['45']);
@@ -384,13 +387,15 @@ export default function GenerateWorkoutScreen() {
               />
             </View>
             
-            <Button
-              title="Open Full API Test Suite"
-              variant="outline"
-              onPress={() => router.push('/test-apis')}
-              style={styles.testButton}
-              icon={<TestTube size={18} color={colors.accent.primary} />}
-            />
+            {isAdmin && (
+              <Button
+                title="Open Full API Test Suite"
+                variant="outline"
+                onPress={() => router.push('/test-apis')}
+                style={styles.testButton}
+                icon={<TestTube size={18} color={colors.accent.primary} />}
+              />
+            )}
           </View>
         </>
       ) : (
