@@ -21,11 +21,18 @@ export const Card: React.FC<CardProps> = ({
   footerStyle,
   testID,
 }) => {
+  const renderContent = (node: React.ReactNode) => {
+    if (typeof node === 'string' || typeof node === 'number') {
+      return <Text style={styles.contentText}>{node}</Text>;
+    }
+    return node;
+  };
+
   return (
     <View style={[styles.container, style]} testID={testID}>
       {title && <Text style={[styles.title, titleStyle]}>{title}</Text>}
-      <View style={styles.content}>{children}</View>
-      {footer && <View style={[styles.footer, footerStyle]}>{footer}</View>}
+      <View style={styles.content}>{renderContent(children)}</View>
+      {footer && <View style={[styles.footer, footerStyle]}>{renderContent(footer)}</View>}
     </View>
   );
 };
@@ -50,6 +57,10 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 16,
+  },
+  contentText: {
+    fontSize: 14,
+    color: colors.text.primary,
   },
   footer: {
     padding: 16,
