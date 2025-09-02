@@ -27,6 +27,7 @@ import {
   Camera,
   User,
   TestTube,
+  Wifi,
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -174,6 +175,9 @@ export default function AdminDashboardScreen() {
         break;
       case 'user-issues':
         router.push('/admin/user-issues');
+        break;
+      case 'api-status':
+        router.push('/admin/api-status');
         break;
       default:
         break;
@@ -409,6 +413,14 @@ export default function AdminDashboardScreen() {
           >
             <MessageSquare size={24} color={colors.status.error} />
             <Text style={styles.actionText}>Issues</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => handleQuickAction('api-status')}
+            activeOpacity={0.7}
+          >
+            <Wifi size={24} color={colors.accent.primary} />
+            <Text style={styles.actionText}>API Status</Text>
           </TouchableOpacity>
         </View>
       </View>
