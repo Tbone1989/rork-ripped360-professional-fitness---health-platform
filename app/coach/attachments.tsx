@@ -67,7 +67,6 @@ export default function CoachAttachmentsScreen() {
         )}
       />
 
-
       {selectedClientId == null ? (
         <View style={styles.emptyWrap}>
           <Text style={styles.emptyText} testID="attachments-prompt">Select a {viewerRole === 'medical' ? 'patient' : 'client'} to view attachments.</Text>
