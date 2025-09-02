@@ -29,7 +29,8 @@ import {
   Trophy,
   ShoppingBag,
   ExternalLink,
-  MessageSquare
+  MessageSquare,
+  Smartphone
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
 
@@ -162,6 +163,12 @@ export default function ProfileScreen() {
       onPress: () => router.push('/profile/attachments'),
       testID: 'menu-attachments',
     }] as const : []),
+    {
+      icon: <Smartphone size={20} color={colors.text.secondary} />,
+      title: 'Connected Devices',
+      onPress: () => router.push('/profile/devices'),
+      testID: 'menu-devices',
+    },
     {
       icon: <Trophy size={20} color={colors.status.warning} />,
       title: 'Contest Prep',
