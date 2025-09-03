@@ -23,6 +23,7 @@ export interface PersonalInfo {
   activityLevel: 'sedentary' | 'lightly-active' | 'moderately-active' | 'very-active' | 'extremely-active';
   occupation: string;
   stressLevel: 1 | 2 | 3 | 4 | 5; // 1 = very low, 5 = very high
+  profileImageUrl?: string;
 }
 
 export interface HealthHistory {
@@ -98,6 +99,10 @@ export interface LifestyleInfo {
   cookingSkills: 'minimal' | 'basic' | 'good' | 'excellent';
   dietaryRestrictions: string[];
   foodAllergies: string[];
+  trainingFocus?: string; // e.g., hypertrophy, strength, endurance
+  preferredTrainingDays?: string[];
+  preferredTrainingTimes?: string[]; // e.g., morning, afternoon, evening
+  experienceYears?: number;
 }
 
 export interface FitnessGoals {

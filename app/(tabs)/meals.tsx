@@ -401,6 +401,14 @@ export default function MealsScreen() {
           style={styles.groceryButton}
           testID="btn-open-meal-guides"
         />
+        <Button
+          title="Healthy Recipes"
+          variant="outline"
+          onPress={() => router.push('/meals/recipes')}
+          icon={<UtensilsCrossed size={18} color={colors.accent.primary} />}
+          style={styles.groceryButton}
+          testID="btn-open-recipes"
+        />
       </Card>
 
       {/* Grocery Price Finder */}
