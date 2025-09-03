@@ -8,16 +8,18 @@ import {
   ScrollView,
   Dimensions,
   Platform,
+  Image,
 } from 'react-native';
 import { ChevronLeft, ChevronRight, X, CheckCircle } from 'lucide-react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { colors } from '@/constants/colors';
-import { Button } from '@/components/ui/Button';
+
 
 interface TutorialStep {
   title: string;
   description: string;
   icon?: React.ReactNode;
+  iconUri?: string;
   action?: () => void;
 }
 
@@ -40,17 +42,19 @@ export const Tutorial: React.FC<TutorialProps> = ({
   const [hasSeenTutorial, setHasSeenTutorial] = useState(false);
 
   useEffect(() => {
-    checkTutorialStatus();
+    let isMounted = true;
+    (async () => {
+      try {
+        const seen = await AsyncStorage.getItem(`tutorial_${tutorialKey}`);
+        if (isMounted) setHasSeenTutorial(seen === 'true');
+      } catch (error) {
+        console.error('Failed to check tutorial status:', error);
+      }
+    })();
+    return () => {
+      isMounted = false;
+    };
   }, [tutorialKey]);
-
-  const checkTutorialStatus = async () => {
-    try {
-      const seen = await AsyncStorage.getItem(`tutorial_${tutorialKey}`);
-      setHasSeenTutorial(seen === 'true');
-    } catch (error) {
-      console.error('Failed to check tutorial status:', error);
-    }
-  };
 
   const markTutorialAsSeen = async () => {
     try {
@@ -87,9 +91,11 @@ export const Tutorial: React.FC<TutorialProps> = ({
     setCurrentStep(0);
   };
 
-  if (hasSeenTutorial && !visible) return null;
+
 
   const currentStepData = steps[currentStep];
+
+
 
   return (
     <Modal
@@ -105,11 +111,28 @@ export const Tutorial: React.FC<TutorialProps> = ({
           </TouchableOpacity>
 
           <ScrollView contentContainerStyle={styles.content}>
-            {currentStepData.icon && (
-              <View style={styles.iconContainer}>
-                {currentStepData.icon}
-              </View>
-            )}
+            <View style={styles.iconContainer} accessibilityRole="image" accessibilityLabel="App logo" testID="tutorial-logo-container">
+              {currentStepData?.icon ? (
+                currentStepData.icon
+              ) : currentStepData?.iconUri ? (
+                <Image
+                  source={{ uri: currentStepData.iconUri }}
+                  style={styles.logo}
+                  accessibilityLabel="Tutorial logo"
+                  testID="tutorial-logo"
+                  onError={(e) => {
+                    console.warn('Tutorial icon failed to load, falling back to app icon', e?.nativeEvent);
+                  }}
+                />
+              ) : (
+                <Image
+                  source={require('../../assets/images/icon.png')}
+                  style={styles.logo}
+                  accessibilityLabel="Ripped360 logo"
+                  testID="tutorial-logo"
+                />
+              )}
+            </View>
 
             <Text style={styles.title}>{currentStepData.title}</Text>
             <Text style={styles.description}>{currentStepData.description}</Text>
@@ -195,6 +218,11 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginBottom: 20,
+  },
+  logo: {
+    width: 88,
+    height: 88,
+    borderRadius: 20,
   },
   title: {
     fontSize: 24,
