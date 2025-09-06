@@ -132,9 +132,8 @@ class NotificationService {
         sound: true,
       },
       trigger: {
-        type: 'date' as const,
         date: new Date(time.getTime() - 15 * 60 * 1000), // 15 minutes before
-      },
+      } as any,
     });
 
     return identifier;
@@ -154,9 +153,8 @@ class NotificationService {
         sound: true,
       },
       trigger: {
-        type: 'date' as const,
         date: time,
-      },
+      } as any,
     });
 
     return identifier;
@@ -176,9 +174,8 @@ class NotificationService {
         sound: true,
       },
       trigger: {
-        type: 'date' as const,
         date: time,
-      },
+      } as any,
     });
 
     return identifier;
@@ -203,9 +200,8 @@ class NotificationService {
         sound: true,
       },
       trigger: {
-        type: 'date' as const,
         date: new Date(time.getTime() - 10 * 60 * 1000), // 10 minutes before
-      },
+      } as any,
     });
 
     return identifier;
@@ -225,9 +221,8 @@ class NotificationService {
         sound: true,
       },
       trigger: {
-        type: 'date' as const,
         date: time,
-      },
+      } as any,
     });
 
     return identifier;
@@ -256,11 +251,10 @@ class NotificationService {
             sound: false, // Silent for frequent reminders
           },
           trigger: {
-            type: 'calendar' as const,
             hour,
             minute: 0,
             repeats: true,
-          },
+          } as any,
         });
         reminders.push(identifier);
       }
@@ -283,12 +277,11 @@ class NotificationService {
         sound: true,
       },
       trigger: {
-        type: 'calendar' as const,
         weekday: dayOfWeek,
         hour,
         minute: 0,
         repeats: true,
-      },
+      } as any,
     });
 
     return identifier;
