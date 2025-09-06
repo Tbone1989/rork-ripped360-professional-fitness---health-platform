@@ -7,12 +7,14 @@ interface WorkoutState {
   currentWorkout: Workout | null;
   workoutHistory: WorkoutProgress[];
   favoriteWorkouts: string[];
+  enrolledPlans: string[];
   isLoading: boolean;
   
   setCurrentWorkout: (workout: Workout | null) => void;
   addWorkoutToHistory: (progress: WorkoutProgress) => void;
   toggleFavoriteWorkout: (workoutId: string) => void;
   clearWorkoutHistory: () => void;
+  enrollInPlan: (planId: string) => void;
 }
 
 export const useWorkoutStore = create<WorkoutState>()(
@@ -21,6 +23,7 @@ export const useWorkoutStore = create<WorkoutState>()(
       currentWorkout: null,
       workoutHistory: [],
       favoriteWorkouts: [],
+      enrolledPlans: [],
       isLoading: false,
       
       setCurrentWorkout: (workout) => {
@@ -47,6 +50,17 @@ export const useWorkoutStore = create<WorkoutState>()(
       
       clearWorkoutHistory: () => {
         set({ workoutHistory: [] });
+      },
+      
+      enrollInPlan: (planId: string) => {
+        set((state) => {
+          if (!state.enrolledPlans.includes(planId)) {
+            return {
+              enrolledPlans: [...state.enrolledPlans, planId],
+            };
+          }
+          return state;
+        });
       },
     }),
     {

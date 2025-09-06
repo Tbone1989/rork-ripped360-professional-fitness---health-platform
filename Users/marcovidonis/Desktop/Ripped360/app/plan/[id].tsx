@@ -7,11 +7,11 @@ import {
   TouchableOpacity,
   Alert,
   ImageBackground,
-  SafeAreaView,
+
   Platform,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { Play, Calendar, Clock, Users, Star } from 'lucide-react-native';
+import { Play, Calendar, Clock } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 import { useWorkoutStore } from '@/store/workoutStore';
 import { useUserStore } from '@/store/userStore';
@@ -79,7 +79,8 @@ const mockPlans: Record<string, WorkoutPlan> = {
 export default function PlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [enrolling, setEnrolling] = useState(false);
-  const { enrollInPlan, enrolledPlans } = useWorkoutStore();
+  const enrollInPlan = useWorkoutStore((state) => state.enrollInPlan);
+  const enrolledPlans = useWorkoutStore((state) => state.enrolledPlans);
   const { user } = useUserStore();
   
   const plan = mockPlans[id] || mockPlans['strength-foundations'];
@@ -112,6 +113,7 @@ export default function PlanDetailScreen() {
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
+      // Add to enrolled plans
       enrollInPlan(plan.id);
       
       Alert.alert(
@@ -137,7 +139,7 @@ export default function PlanDetailScreen() {
       case 'beginner': return '#4CAF50';
       case 'intermediate': return '#FF9800';
       case 'advanced': return '#F44336';
-      default: return colors.primary;
+      default: return colors.accent.primary;
     }
   };
 
@@ -316,7 +318,7 @@ const styles = StyleSheet.create({
   overviewValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: colors.accent.primary,
   },
   overviewLabel: {
     fontSize: 14,
@@ -340,7 +342,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   enrollButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
