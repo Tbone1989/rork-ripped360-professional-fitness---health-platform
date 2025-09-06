@@ -4,11 +4,13 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
-import { View } from "react-native";
+import { View, Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
 import { trpc, trpcClient } from "@/lib/trpc";
+import notificationService from "@/services/notificationService";
+import calendarService from "@/services/calendarService";
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
@@ -64,6 +66,22 @@ function RootLayoutNav() {
         options={{ 
           title: "Exercise Details",
           presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="exercise/[id]/session" 
+        options={{ 
+          title: "Exercise Session",
+          presentation: "fullScreenModal",
+          headerShown: false,
+        }} 
+      />
+      <Stack.Screen 
+        name="workout/[id]/session" 
+        options={{ 
+          title: "Workout Session",
+          presentation: "fullScreenModal",
+          headerShown: false,
         }} 
       />
       <Stack.Screen 
@@ -149,7 +167,34 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   useEffect(() => {
-    SplashScreen.hideAsync();
+    // Initialize services
+    const initializeServices = async () => {
+      try {
+        // Initialize notifications (mobile only)
+        if (Platform.OS !== 'web') {
+          await notificationService.initialize();
+        }
+        
+        // Initialize calendar service
+        await calendarService.initialize();
+        
+        console.log('[RootLayout] Services initialized');
+      } catch (error) {
+        console.error('[RootLayout] Error initializing services:', error);
+      } finally {
+        // Hide splash screen after initialization
+        await SplashScreen.hideAsync();
+      }
+    };
+
+    initializeServices();
+
+    // Cleanup on unmount
+    return () => {
+      if (Platform.OS !== 'web') {
+        notificationService.cleanup();
+      }
+    };
   }, []);
 
   console.log('[RootLayout] Mounted');

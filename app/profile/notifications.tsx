@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, Switch, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, ScrollView, Switch, Alert, Platform } from 'react-native';
 import { Stack } from 'expo-router';
 import { Bell, Dumbbell, Users, Heart, Calendar, MessageSquare } from 'lucide-react-native';
 
@@ -7,25 +7,73 @@ import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { useUserStore } from '@/store/userStore';
+import notificationService from '@/services/notificationService';
 
 export default function NotificationsScreen() {
   const { user, updatePreferences } = useUserStore();
   const [notifications, setNotifications] = useState({
     workoutReminders: user?.preferences.notifications.workoutReminders ?? true,
+    mealReminders: true,
+    supplementReminders: true,
+    coachingSessionReminders: true,
+    contestPrepReminders: true,
+    hydrationReminders: true,
+    checkInReminders: true,
     coachMessages: user?.preferences.notifications.coachMessages ?? true,
     progressUpdates: user?.preferences.notifications.progressUpdates ?? true,
     medicalAlerts: user?.preferences.notifications.medicalAlerts ?? true,
-    socialUpdates: true,
-    weeklyReports: true,
-    achievementAlerts: true,
-    appointmentReminders: true,
   });
 
-  const handleToggle = (key: keyof typeof notifications) => {
+  useEffect(() => {
+    // Load notification preferences from service
+    const loadPreferences = async () => {
+      if (Platform.OS !== 'web') {
+        const prefs = await notificationService.getPreferences();
+        setNotifications(prev => ({
+          ...prev,
+          workoutReminders: prefs.workoutReminders,
+          mealReminders: prefs.mealReminders,
+          supplementReminders: prefs.supplementReminders,
+          coachingSessionReminders: prefs.coachingSessionReminders,
+          contestPrepReminders: prefs.contestPrepReminders,
+          hydrationReminders: prefs.hydrationReminders,
+          checkInReminders: prefs.checkInReminders,
+        }));
+      }
+    };
+    loadPreferences();
+  }, []);
+
+  const handleToggle = async (key: keyof typeof notifications) => {
     const newNotifications = { ...notifications, [key]: !notifications[key] };
     setNotifications(newNotifications);
     
-    // Update user preferences
+    // Update notification service preferences
+    if (Platform.OS !== 'web') {
+      await notificationService.updatePreferences({
+        [key]: newNotifications[key]
+      });
+
+      // Schedule or cancel specific notifications based on the toggle
+      if (key === 'hydrationReminders') {
+        if (newNotifications[key]) {
+          await notificationService.scheduleHydrationReminder();
+        } else {
+          // Cancel hydration reminders
+          const scheduled = await notificationService.getScheduledNotifications();
+          for (const notification of scheduled) {
+            if (notification.content.data?.type === 'hydration') {
+              await notificationService.cancelNotification(notification.identifier);
+            }
+          }
+        }
+      } else if (key === 'checkInReminders' && newNotifications[key]) {
+        // Schedule weekly check-in for Sunday at 10 AM
+        await notificationService.scheduleWeeklyCheckIn(0, 10);
+      }
+    }
+    
+    // Update user preferences in store
     updatePreferences({
       notifications: {
         workoutReminders: newNotifications.workoutReminders,
@@ -79,25 +127,25 @@ export default function NotificationsScreen() {
         <NotificationItem
           icon={<Dumbbell size={20} color={colors.accent.primary} />}
           title="Workout Reminders"
-          description="Get reminded about your scheduled workouts"
+          description="Get reminded 15 minutes before scheduled workouts"
           value={notifications.workoutReminders}
           onToggle={() => handleToggle('workoutReminders')}
         />
         
         <NotificationItem
           icon={<Calendar size={20} color={colors.status.info} />}
-          title="Progress Updates"
-          description="Weekly and monthly progress summaries"
-          value={notifications.progressUpdates}
-          onToggle={() => handleToggle('progressUpdates')}
+          title="Weekly Check-ins"
+          description="Sunday reminders to log progress and measurements"
+          value={notifications.checkInReminders}
+          onToggle={() => handleToggle('checkInReminders')}
         />
         
         <NotificationItem
           icon={<Bell size={20} color={colors.status.warning} />}
-          title="Achievement Alerts"
-          description="Celebrate your milestones and achievements"
-          value={notifications.achievementAlerts}
-          onToggle={() => handleToggle('achievementAlerts')}
+          title="Contest Prep Reminders"
+          description="Daily tasks and protocol reminders during prep"
+          value={notifications.contestPrepReminders}
+          onToggle={() => handleToggle('contestPrepReminders')}
         />
       </Card>
 
@@ -107,18 +155,47 @@ export default function NotificationsScreen() {
         
         <NotificationItem
           icon={<Users size={20} color={colors.accent.secondary} />}
-          title="Coach Messages"
-          description="Messages from your personal coaches"
-          value={notifications.coachMessages}
-          onToggle={() => handleToggle('coachMessages')}
+          title="Coaching Sessions"
+          description="10 minute reminders before sessions"
+          value={notifications.coachingSessionReminders}
+          onToggle={() => handleToggle('coachingSessionReminders')}
         />
         
         <NotificationItem
           icon={<MessageSquare size={20} color={colors.status.info} />}
-          title="Appointment Reminders"
-          description="Upcoming coaching sessions and consultations"
-          value={notifications.appointmentReminders}
-          onToggle={() => handleToggle('appointmentReminders')}
+          title="Coach Messages"
+          description="Instant notifications for coach messages"
+          value={notifications.coachMessages}
+          onToggle={() => handleToggle('coachMessages')}
+        />
+      </Card>
+
+      {/* Nutrition & Supplements */}
+      <Card style={styles.section}>
+        <Text style={styles.sectionTitle}>Nutrition & Supplements</Text>
+        
+        <NotificationItem
+          icon={<Bell size={20} color={colors.status.success} />}
+          title="Meal Reminders"
+          description="Stay on track with meal timing"
+          value={notifications.mealReminders}
+          onToggle={() => handleToggle('mealReminders')}
+        />
+        
+        <NotificationItem
+          icon={<Heart size={20} color={colors.status.warning} />}
+          title="Supplement Reminders"
+          description="Never miss your supplement schedule"
+          value={notifications.supplementReminders}
+          onToggle={() => handleToggle('supplementReminders')}
+        />
+        
+        <NotificationItem
+          icon={<Calendar size={20} color={colors.status.info} />}
+          title="Hydration Reminders"
+          description="Hourly water intake reminders (8am-10pm)"
+          value={notifications.hydrationReminders}
+          onToggle={() => handleToggle('hydrationReminders')}
         />
       </Card>
 
@@ -136,23 +213,10 @@ export default function NotificationsScreen() {
         
         <NotificationItem
           icon={<Calendar size={20} color={colors.status.success} />}
-          title="Weekly Reports"
-          description="Health and fitness summary reports"
-          value={notifications.weeklyReports}
-          onToggle={() => handleToggle('weeklyReports')}
-        />
-      </Card>
-
-      {/* Social & Community */}
-      <Card style={styles.section}>
-        <Text style={styles.sectionTitle}>Social & Community</Text>
-        
-        <NotificationItem
-          icon={<Users size={20} color={colors.accent.primary} />}
-          title="Social Updates"
-          description="Updates from friends and community"
-          value={notifications.socialUpdates}
-          onToggle={() => handleToggle('socialUpdates')}
+          title="Progress Updates"
+          description="Weekly and monthly progress summaries"
+          value={notifications.progressUpdates}
+          onToggle={() => handleToggle('progressUpdates')}
         />
       </Card>
 
@@ -164,13 +228,15 @@ export default function NotificationsScreen() {
           onPress={() => {
             const allEnabled = {
               workoutReminders: true,
+              mealReminders: true,
+              supplementReminders: true,
+              coachingSessionReminders: true,
+              contestPrepReminders: true,
+              hydrationReminders: true,
+              checkInReminders: true,
               coachMessages: true,
               progressUpdates: true,
               medicalAlerts: true,
-              socialUpdates: true,
-              weeklyReports: true,
-              achievementAlerts: true,
-              appointmentReminders: true,
             };
             setNotifications(allEnabled);
             updatePreferences({
@@ -192,13 +258,15 @@ export default function NotificationsScreen() {
           onPress={() => {
             const allDisabled = {
               workoutReminders: false,
+              mealReminders: false,
+              supplementReminders: false,
+              coachingSessionReminders: false,
+              contestPrepReminders: false,
+              hydrationReminders: false,
+              checkInReminders: false,
               coachMessages: false,
               progressUpdates: false,
               medicalAlerts: false,
-              socialUpdates: false,
-              weeklyReports: false,
-              achievementAlerts: false,
-              appointmentReminders: false,
             };
             setNotifications(allDisabled);
             updatePreferences({
