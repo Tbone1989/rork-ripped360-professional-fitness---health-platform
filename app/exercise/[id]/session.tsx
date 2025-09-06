@@ -34,7 +34,7 @@ export default function ExerciseSessionScreen() {
   const [timer, setTimer] = useState(0);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   const exercise = popularExercises.find(ex => ex.id === id) || popularExercises[0];
