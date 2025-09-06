@@ -28,6 +28,7 @@ import {
   User,
   TestTube,
   Wifi,
+  DollarSign,
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -178,6 +179,9 @@ export default function AdminDashboardScreen() {
         break;
       case 'api-status':
         router.push('/admin/api-status');
+        break;
+      case 'sales':
+        router.push('/admin/sales');
         break;
       default:
         break;
@@ -421,6 +425,14 @@ export default function AdminDashboardScreen() {
           >
             <Wifi size={24} color={colors.accent.primary} />
             <Text style={styles.actionText}>API Status</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => handleQuickAction('sales')}
+            activeOpacity={0.7}
+          >
+            <DollarSign size={24} color={colors.status.success} />
+            <Text style={styles.actionText}>Sales</Text>
           </TouchableOpacity>
         </View>
       </View>

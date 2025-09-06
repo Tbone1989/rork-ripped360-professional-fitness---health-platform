@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { popularExercises } from '@/mocks/workouts';
+import MuscleGroupVisualizer from '@/components/workout/MuscleGroupVisualizer';
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -122,20 +123,18 @@ export default function ExerciseDetailScreen() {
           </View>
         </Card>
 
-        {/* Target Muscles */}
+        {/* Target Muscles with Visualizer */}
         <Card style={styles.section}>
           <View style={styles.sectionHeader}>
             <Target size={20} color={colors.accent.primary} />
             <Text style={styles.sectionTitle}>Target Muscles</Text>
           </View>
-          <View style={styles.muscleContainer}>
-            {exercise.muscleGroups.map((muscle, index) => (
-              <View key={index} style={styles.muscleItem}>
-                <View style={styles.muscleDot} />
-                <Text style={styles.muscleText}>{muscle}</Text>
-              </View>
-            ))}
-          </View>
+          <MuscleGroupVisualizer
+            targetedMuscles={exercise.muscleGroups}
+            primaryMuscles={exercise.muscleGroups.slice(0, 2)}
+            secondaryMuscles={exercise.muscleGroups.slice(2)}
+            showLabels={true}
+          />
         </Card>
 
         {/* Instructions */}
