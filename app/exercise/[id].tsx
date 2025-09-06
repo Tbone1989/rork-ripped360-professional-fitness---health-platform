@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { Play, Heart, Share, Target, Dumbbell, AlertCircle } from 'lucide-react-native';
 
@@ -13,6 +13,7 @@ import MuscleGroupVisualizer from '@/components/workout/MuscleGroupVisualizer';
 
 export default function ExerciseDetailScreen() {
   const { id } = useLocalSearchParams();
+  const router = useRouter();
   const [isFavorited, setIsFavorited] = useState(false);
   
   // In a real app, you would fetch the exercise data based on the ID
@@ -20,21 +21,8 @@ export default function ExerciseDetailScreen() {
 
   const handleStartExercise = () => {
     console.log('handleStartExercise called for exercise:', exercise.name);
-    Alert.alert(
-      'Start Exercise',
-      `Ready to start ${exercise.name}? This will begin the exercise session with video guidance and timer.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Start', 
-          onPress: () => {
-            console.log('Starting exercise:', exercise.name);
-            // Here you would navigate to an exercise session screen
-            // router.push(`/exercise/${exercise.id}/session`);
-          }
-        },
-      ]
-    );
+    // Navigate directly to exercise session
+    router.push(`/exercise/${exercise.id}/session`);
   };
 
   const handleShare = () => {

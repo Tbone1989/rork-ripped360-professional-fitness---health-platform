@@ -69,14 +69,8 @@ export default function WorkoutDetailScreen() {
   }
 
   const handleStartWorkout = () => {
-    Alert.alert(
-      'Start Workout',
-      'This would start the workout session with a timer and exercise tracking.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Start', onPress: () => console.log('Starting workout...') },
-      ]
-    );
+    // Navigate to workout session
+    router.push(`/workout/${id}/session`);
   };
 
   const handleShare = () => {
