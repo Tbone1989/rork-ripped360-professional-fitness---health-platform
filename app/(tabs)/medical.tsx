@@ -73,7 +73,7 @@ export default function MedicalScreen() {
                   title="AI Analysis"
                   icon={<Brain size={18} color={colors.text.primary} />}
                   onPress={() => router.push('/medical/ai-analysis')}
-                  style={[styles.actionButton, styles.actionButtonHalf]}
+                  style={[styles.actionButton, styles.actionButtonHalf, styles.noGlow]}
                   testID="btn-ai-analysis"
                 />
               </View>
@@ -239,6 +239,10 @@ const styles = StyleSheet.create({
   },
   actionButtonHalf: {
     flex: 1,
+  },
+  noGlow: {
+    shadowOpacity: 0,
+    elevation: 0,
   },
 
   section: {

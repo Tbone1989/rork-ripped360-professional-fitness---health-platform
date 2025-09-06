@@ -128,10 +128,12 @@ export default function PlanDetailScreen() {
             onPress: () => {
               setIsEnrolled(true);
               // Navigate to the first workout after enrollment
-              const firstWorkout = plan.weeks[0]?.workouts[0];
-              if (firstWorkout) {
-                router.push(`/workout/${firstWorkout.id}`);
-              }
+              setTimeout(() => {
+                const firstWorkout = plan.weeks[0]?.workouts[0];
+                if (firstWorkout) {
+                  router.push(`/workout/${firstWorkout.id}`);
+                }
+              }, 100);
             }
           },
         ]
