@@ -110,14 +110,13 @@ export default function PlanDetailScreen() {
 
   const handleEnroll = () => {
     if (isEnrolled) {
-      Alert.alert(
-        'Continue Plan',
-        'You are already enrolled in this plan. Continue where you left off?',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Continue', onPress: () => console.log('Continuing plan...') },
-        ]
-      );
+      // Navigate to the first workout of the plan
+      const firstWorkout = plan.weeks[0]?.workouts[0];
+      if (firstWorkout) {
+        router.push(`/workout/${firstWorkout.id}`);
+      } else {
+        Alert.alert('No Workouts', 'This plan has no workouts available yet.');
+      }
     } else {
       Alert.alert(
         'Enroll in Plan',
@@ -128,7 +127,11 @@ export default function PlanDetailScreen() {
             text: 'Enroll', 
             onPress: () => {
               setIsEnrolled(true);
-              console.log('Enrolled in plan...');
+              // Navigate to the first workout after enrollment
+              const firstWorkout = plan.weeks[0]?.workouts[0];
+              if (firstWorkout) {
+                router.push(`/workout/${firstWorkout.id}`);
+              }
             }
           },
         ]

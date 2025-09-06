@@ -73,17 +73,8 @@ export default function MedicalScreen() {
                   title="AI Analysis"
                   icon={<Brain size={18} color={colors.text.primary} />}
                   onPress={() => router.push('/medical/ai-analysis')}
-                  style={[styles.actionButton, styles.actionButtonHalf, styles.aiButton]}
+                  style={[styles.actionButton, styles.actionButtonHalf]}
                   testID="btn-ai-analysis"
-                />
-              </View>
-              <View style={styles.actionButtonsSecondary}>
-                <Button
-                  title="Holistic Care"
-                  icon={<Leaf size={18} color={colors.text.primary} />}
-                  onPress={() => router.push('/medical/holistic')}
-                  style={[styles.actionButton]}
-                  testID="btn-holistic-care"
                 />
               </View>
             </View>
@@ -99,6 +90,16 @@ export default function MedicalScreen() {
 
         {activeTab === 'supplements' && (
           <>
+            <View style={styles.actionSection}>
+              <Button
+                title="Holistic Care"
+                icon={<Leaf size={18} color={colors.text.primary} />}
+                onPress={() => router.push('/medical/holistic')}
+                style={[styles.actionButton]}
+                testID="btn-holistic-care"
+                fullWidth
+              />
+            </View>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Popular Supplements</Text>
               {popularSupplements.map((supplement) => (
@@ -232,20 +233,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 10,
   },
-  actionButtonsSecondary: {
-    marginTop: 10,
-    flexDirection: 'row',
-    gap: 10,
-  },
+
   actionButton: {
     alignSelf: 'flex-start',
   },
   actionButtonHalf: {
     flex: 1,
   },
-  aiButton: {
-    backgroundColor: '#3498db',
-  },
+
   section: {
     padding: 16,
   },
