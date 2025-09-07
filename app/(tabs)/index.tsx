@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign, Gift, Check } from 'lucide-react-native';
+import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign, Gift, Check, RefreshCw } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { brandAssets } from '@/constants/brand';
@@ -17,7 +17,7 @@ import { useShopStore } from '@/store/shopStore';
 import { featuredWorkoutPlans } from '@/mocks/workouts';
 import { workoutCategories } from '@/mocks/workouts';
 import { featuredCoaches } from '@/mocks/coaches';
-import { featuredProducts } from '@/mocks/products';
+import { products, featuredProducts } from '@/mocks/products';
 import { trpc } from '@/lib/trpc';
 
 type ShopProduct = { id: string; title: string; url: string; image?: string; price?: number };
@@ -30,6 +30,37 @@ export default function HomeScreen() {
 
   const [fallback, setFallback] = React.useState<ShopProduct[]>([]);
   const [fallbackTried, setFallbackTried] = React.useState<boolean>(false);
+  const [rotatedProducts, setRotatedProducts] = React.useState<any[]>([]);
+  const [lastRotation, setLastRotation] = React.useState<number>(Date.now());
+
+  // Shuffle array utility function
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Rotate products every 30 seconds or when manually refreshed
+  const rotateProducts = React.useCallback(() => {
+    const allProducts = [...products];
+    const shuffled = shuffleArray(allProducts);
+    setRotatedProducts(shuffled);
+    setLastRotation(Date.now());
+  }, []);
+
+  // Auto-rotate products every 30 seconds
+  React.useEffect(() => {
+    rotateProducts(); // Initial rotation
+    
+    const interval = setInterval(() => {
+      rotateProducts();
+    }, 30000); // 30 seconds
+
+    return () => clearInterval(interval);
+  }, [rotateProducts]);
 
   React.useEffect(() => {
     const fetchFallback = async () => {
@@ -69,7 +100,7 @@ export default function HomeScreen() {
 
   type FeaturedItem = { id: string; name: string; image: string; price?: number; rating?: number; isExternal: boolean; url?: string };
   const featuredList: FeaturedItem[] = React.useMemo(() => {
-    const source = Array.isArray(shopData) && shopData.length > 0 ? (shopData as any[]).slice(0, 3) : fallback.slice(0, 3);
+    const source = Array.isArray(shopData) && shopData.length > 0 ? (shopData as any[]).slice(0, 5) : fallback.slice(0, 5);
     if (source.length > 0) {
       return source.map((p: any, index: number) => ({
         id: String(p.id || `featured-${Date.now()}-${index}`) || `featured-${Date.now()}-${index}`,
@@ -80,7 +111,9 @@ export default function HomeScreen() {
         url: typeof p.url === 'string' ? p.url : undefined,
       }));
     }
-    return featuredProducts.slice(0, 3).map((p) => ({
+    // Use rotated products for variety, fallback to featured if rotation not ready
+    const sourceProducts = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : featuredProducts.slice(0, 5);
+    return sourceProducts.map((p) => ({
       id: p.id,
       name: p.name,
       image: p.images[0],
@@ -88,7 +121,7 @@ export default function HomeScreen() {
       rating: p.rating,
       isExternal: false,
     }));
-  }, [shopData, fallback]);
+  }, [shopData, fallback, rotatedProducts]);
 
   return (
     <View style={styles.container}>
@@ -221,18 +254,28 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Gear</Text>
-            <Button
-              title="Shop All"
-              variant="ghost"
-              size="small"
-              onPress={() => router.push('/shop')}
-            />
+            <View style={styles.headerActions}>
+              <TouchableOpacity
+                onPress={rotateProducts}
+                style={styles.rotateButton}
+                testID="rotate-products"
+                accessibilityLabel="Refresh product selection"
+              >
+                <RefreshCw size={16} color={colors.text.secondary} />
+              </TouchableOpacity>
+              <Button
+                title="Shop All"
+                variant="ghost"
+                size="small"
+                onPress={() => router.push('/shop')}
+              />
+            </View>
           </View>
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
             {featuredList.map((item, index) => (
               <TouchableOpacity
-                key={item.id || `featured-item-${index}`}
+                key={`${item.id}-${lastRotation}-${index}`}
                 style={styles.featuredProduct}
                 onPress={() => (item.isExternal && item.url ? Linking.openURL(item.url) : router.push(`/shop/product/${item.id}`))}
                 testID={`featured-product-${item.id}`}
@@ -258,6 +301,11 @@ export default function HomeScreen() {
               </View>
             )}
           </ScrollView>
+          
+          {/* Rotation indicator */}
+          <View style={styles.rotationIndicator}>
+            <Text style={styles.rotationText}>Products refresh every 30s • Tap refresh for new selection</Text>
+          </View>
         </View>
 
         <View style={styles.section}>
@@ -697,6 +745,27 @@ const styles = StyleSheet.create({
   },
   aiWorkoutButton: {
     alignSelf: 'flex-start',
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  rotateButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  rotationIndicator: {
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  rotationText: {
+    fontSize: 12,
+    color: colors.text.tertiary,
+    fontStyle: 'italic',
   },
 
 });
