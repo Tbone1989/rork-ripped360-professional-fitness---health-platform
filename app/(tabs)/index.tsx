@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, Animated } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, Animated, AppState } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign } from 'lucide-react-native';
 
@@ -33,6 +33,7 @@ export default function HomeScreen() {
   const [rotatedProducts, setRotatedProducts] = React.useState<any[]>([]);
   const [lastRotation, setLastRotation] = React.useState<number>(Date.now());
   const fadeAnim = React.useRef(new Animated.Value(1)).current;
+  const appState = React.useRef(AppState.currentState);
 
   // Shuffle array utility function
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -44,41 +45,62 @@ export default function HomeScreen() {
     return shuffled;
   };
 
-  // Rotate products with fade animation and more variety
-  const rotateProducts = React.useCallback(() => {
-    // Fade out
+  // Rotate products with fade animation and strong variety across sources
+  const rotateProducts = React.useCallback(() => { console.log('[Home] rotateProducts fired at', new Date().toISOString());
     Animated.timing(fadeAnim, {
       toValue: 0.3,
-      duration: 300,
+      duration: 280,
       useNativeDriver: true,
     }).start(() => {
-      // Combine all available products for maximum variety
-      const allProducts = [...products, ...featuredProducts];
-      const shuffled = shuffleArray(allProducts);
-      // Take different slices each time to ensure variety
-      const startIndex = Math.floor(Math.random() * Math.max(1, allProducts.length - 8));
-      const rotated = shuffled.slice(startIndex, startIndex + 8);
+      const mockPool = [...products, ...featuredProducts];
+
+      const externalSource = (Array.isArray(shopData) && shopData.length > 0 ? (shopData as any[]) : fallback);
+      const externalPool = externalSource.map((p: any, index: number) => ({
+        id: String(p.id || p.handle || `ext-${index}`),
+        name: String(p.title ?? 'Product'),
+        images: [String(p.image ?? 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=500')],
+        price: typeof p.price === 'number' ? p.price : undefined,
+        rating: undefined,
+        url: typeof p.url === 'string' ? p.url : undefined,
+        isExternal: true,
+      }));
+
+      const pool = [...mockPool, ...externalPool];
+      const shuffled = shuffleArray(pool);
+      const take = Math.min(12, shuffled.length);
+      const rotated = shuffled.slice(0, take);
       setRotatedProducts(rotated);
       setLastRotation(Date.now());
-      
-      // Fade back in
+
       Animated.timing(fadeAnim, {
         toValue: 1,
-        duration: 300,
+        duration: 280,
         useNativeDriver: true,
       }).start();
     });
-  }, [fadeAnim]);
+  }, [fadeAnim, shopData, fallback]);
 
-  // Auto-rotate products every 10 seconds with more variety
+  // Auto-rotate products every 12s and when app returns to foreground
   React.useEffect(() => {
-    rotateProducts(); // Initial rotation
-    
+    rotateProducts();
+
     const interval = setInterval(() => {
       rotateProducts();
-    }, 10000); // 10 seconds for more frequent updates
+    }, 12000);
 
-    return () => clearInterval(interval);
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const prev = appState.current;
+      appState.current = nextState;
+      if (prev.match(/inactive|background/) && nextState === 'active') {
+        console.log('[Home] App became active, rotating products');
+        rotateProducts();
+      }
+    });
+
+    return () => {
+      clearInterval(interval);
+      subscription.remove();
+    };
   }, [rotateProducts]);
 
   React.useEffect(() => {
@@ -119,28 +141,18 @@ export default function HomeScreen() {
 
   type FeaturedItem = { id: string; name: string; image: string; price?: number; rating?: number; isExternal: boolean; url?: string };
   const featuredList: FeaturedItem[] = React.useMemo(() => {
-    const source = Array.isArray(shopData) && shopData.length > 0 ? (shopData as any[]).slice(0, 5) : fallback.slice(0, 5);
-    if (source.length > 0) {
-      return source.map((p: any, index: number) => ({
-        id: String(p.id || `featured-${Date.now()}-${index}`) || `featured-${Date.now()}-${index}`,
-        name: String(p.title ?? 'Product'),
-        image: String(p.image ?? 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=500'),
-        price: typeof p.price === 'number' ? p.price : undefined,
-        isExternal: true,
-        url: typeof p.url === 'string' ? p.url : undefined,
-      }));
-    }
-    // Use rotated products for variety, ensure we show different items each time
-    const sourceProducts = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : shuffleArray([...products, ...featuredProducts]).slice(0, 5);
-    return sourceProducts.map((p) => ({
-      id: p.id,
-      name: p.name,
-      image: p.images[0],
-      price: p.price,
-      rating: p.rating,
-      isExternal: false,
-    }));
-  }, [shopData, fallback, rotatedProducts]);
+    const source = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : shuffleArray([...products, ...featuredProducts]).slice(0, 5);
+    return source.map((p: any, index: number) => {
+      const isExternal = typeof p.url === 'string';
+      const id = String(p.id ?? `feat-${index}`);
+      const name = String((p.name ?? p.title) ?? 'Product');
+      const image = String((p.images?.[0] ?? p.image) ?? 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?q=80&w=500');
+      const price = typeof p.price === 'number' ? p.price : undefined;
+      const rating = typeof p.rating === 'number' ? p.rating : undefined;
+      const url = isExternal ? p.url : undefined;
+      return { id, name, image, price, rating, isExternal, url };
+    });
+  }, [rotatedProducts, lastRotation]);
 
   return (
     <View style={styles.container}>
