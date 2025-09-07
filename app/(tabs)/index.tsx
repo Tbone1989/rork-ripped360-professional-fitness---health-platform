@@ -254,22 +254,12 @@ export default function HomeScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Featured Gear</Text>
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                onPress={rotateProducts}
-                style={styles.rotateButton}
-                testID="rotate-products"
-                accessibilityLabel="Refresh product selection"
-              >
-                <RefreshCw size={16} color={colors.text.secondary} />
-              </TouchableOpacity>
-              <Button
-                title="Shop All"
-                variant="ghost"
-                size="small"
-                onPress={() => router.push('/shop')}
-              />
-            </View>
+            <Button
+              title="Shop All"
+              variant="ghost"
+              size="small"
+              onPress={() => router.push('/shop')}
+            />
           </View>
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
