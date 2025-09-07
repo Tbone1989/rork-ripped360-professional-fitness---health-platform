@@ -161,6 +161,13 @@ function RootLayoutNav() {
           presentation: "modal",
         }} 
       />
+      <Stack.Screen 
+        name="test-trpc-debug" 
+        options={{ 
+          title: "tRPC Debug",
+          presentation: "card",
+        }} 
+      />
     </Stack>
   );
 }

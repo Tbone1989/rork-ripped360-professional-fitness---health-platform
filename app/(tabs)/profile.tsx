@@ -215,7 +215,7 @@ export default function ProfileScreen() {
     {
       icon: <Zap size={20} color={colors.status.info} />,
       title: 'API Status',
-      onPress: () => router.push('/api-status'),
+      onPress: () => router.push('/admin/api-status'),
       testID: 'menu-api-status',
     },
     ...(user?.role === 'admin'
@@ -225,8 +225,14 @@ export default function ProfileScreen() {
         onPress: () => router.push('/test-apis'),
         isSpecial: true as const,
         testID: 'menu-api-tests',
+      }, {
+        icon: <Zap size={20} color={colors.status.error} />,
+        title: 'tRPC Debug',
+        onPress: () => router.push('/test-trpc-debug'),
+        isSpecial: true as const,
+        testID: 'menu-trpc-debug',
       }] as const
-      : []),
+      : [])
 
   ];
 

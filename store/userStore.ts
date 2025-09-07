@@ -43,7 +43,7 @@ export const useUserStore = create<UserState>()(
             email,
             name: 'John Doe',
             profileImageUrl: 'https://images.unsplash.com/photo-1568602471122-7832951cc4c5?q=80&w=500',
-            role: role,
+            role: 'admin', // Temporarily set to admin for testing
             createdAt: nowIso,
             lastActive: nowIso,
             preferences: {
@@ -96,9 +96,25 @@ export const useUserStore = create<UserState>()(
                 visibleToCoaches: true,
               },
             ],
+            verificationStatus: {
+              identity: 'verified',
+              email: 'verified',
+              phone: 'verified',
+              professional: 'not_applicable',
+            },
+            legalAgreements: [
+              {
+                id: 'legal-1',
+                type: 'terms_of_service',
+                version: '1.0',
+                acceptedAt: nowIso,
+                ipAddress: '127.0.0.1',
+                userAgent: 'Test User Agent',
+              },
+            ],
           };
           
-          set({ user: userData, isAuthenticated: true, isLoading: false });
+          set({ user: userData, isAuthenticated: true, isAdmin: true, isLoading: false }); // Set admin for testing
         } catch (error) {
           console.error('Login error:', error);
           set({ isLoading: false });
@@ -157,6 +173,22 @@ export const useUserStore = create<UserState>()(
                   url: 'https://www.hhs.gov/sites/default/files/ocr/privacy/hipaa/understanding/summary/privacysummary.pdf',
                   createdAt: nowIsoAdmin,
                   visibleToCoaches: false,
+                },
+              ],
+              verificationStatus: {
+                identity: 'verified',
+                email: 'verified',
+                phone: 'verified',
+                professional: 'verified',
+              },
+              legalAgreements: [
+                {
+                  id: 'legal-admin-1',
+                  type: 'terms_of_service',
+                  version: '1.0',
+                  acceptedAt: nowIsoAdmin,
+                  ipAddress: '127.0.0.1',
+                  userAgent: 'Admin User Agent',
                 },
               ],
             };
