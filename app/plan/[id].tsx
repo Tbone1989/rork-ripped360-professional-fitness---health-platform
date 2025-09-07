@@ -14,6 +14,7 @@ import { Play, Calendar, Clock } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 import { useWorkoutStore } from '@/store/workoutStore';
 import { useUserStore } from '@/store/userStore';
+import { featuredWorkoutPlans } from '@/mocks/workouts';
 
 interface WorkoutPlan {
   id: string;
@@ -81,7 +82,34 @@ export default function PlanDetailScreen() {
   const { enrollInPlan, enrolledPlans } = useWorkoutStore();
   const { user } = useUserStore();
   
-  const plan = mockPlans[id] || mockPlans['strength-foundations'];
+  // Try to find the plan by ID, fallback to featuredWorkoutPlans if not found in mockPlans
+  let plan = mockPlans[id];
+  if (!plan) {
+    // Check if it's a featured workout plan ID
+    const featuredPlan = featuredWorkoutPlans.find(p => p.id === id);
+    if (featuredPlan) {
+      plan = {
+        id: featuredPlan.id,
+        title: featuredPlan.name,
+        description: featuredPlan.description,
+        duration: featuredPlan.duration,
+        workoutsPerWeek: featuredPlan.id === '1' ? 4 : featuredPlan.id === '2' ? 5 : featuredPlan.id === '3' ? 3 : featuredPlan.id === '4' ? 4 : 3,
+        totalWeeks: parseInt(featuredPlan.duration.split(' ')[0]) || 8,
+        difficulty: featuredPlan.difficulty as 'beginner' | 'intermediate' | 'advanced',
+        rating: 4.8,
+        enrolled: featuredPlan.id === '1' ? 2800 : featuredPlan.id === '2' ? 3200 : featuredPlan.id === '3' ? 5100 : featuredPlan.id === '4' ? 2100 : 1800,
+        minutesPerWorkout: featuredPlan.id === '1' ? 60 : featuredPlan.id === '2' ? 75 : featuredPlan.id === '3' ? 35 : featuredPlan.id === '4' ? 40 : 30,
+        equipment: featuredPlan.id === '1' ? ['Barbell', 'Dumbbells', 'Bench', 'Squat Rack'] : 
+                   featuredPlan.id === '2' ? ['Barbell', 'Dumbbells', 'Pull-up Bar', 'Kettlebell'] :
+                   featuredPlan.id === '3' ? ['Bodyweight'] :
+                   featuredPlan.id === '4' ? ['Treadmill', 'Bike', 'Bodyweight'] :
+                   ['Yoga Mat', 'Blocks'],
+        imageUrl: featuredPlan.imageUrl,
+      };
+    } else {
+      plan = mockPlans['strength-foundations'];
+    }
+  }
   const isEnrolled = enrolledPlans.includes(plan.id);
 
   const handleEnroll = async () => {

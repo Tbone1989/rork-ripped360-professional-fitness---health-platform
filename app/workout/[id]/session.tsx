@@ -30,7 +30,7 @@ import { popularExercises, featuredWorkoutPlans, individualWorkouts } from '@/mo
 // Get workout data
 const getWorkoutById = (id: string) => {
   // Check if it's a plan-based workout (e.g., "strength-foundations-day-1")
-  const isPlanWorkout = id.includes('-day-') || id.includes('strength-foundations') || id.includes('hiit-shred') || id.includes('beginner-basics');
+  const isPlanWorkout = id.includes('-day-');
   
   if (isPlanWorkout) {
     // Extract the base plan ID
@@ -85,29 +85,34 @@ const getWorkoutById = (id: string) => {
     return planWorkouts[basePlanId] || planWorkouts['strength-foundations'];
   }
   
-  // Check individual workouts
+  // Check individual workouts first
   const individualWorkout = individualWorkouts.find(workout => workout.id === id);
   if (individualWorkout) {
     return individualWorkout;
   }
   
-  // Check featured workout plans
+  // Then check workout plans and convert them to workout format
   const baseWorkout = featuredWorkoutPlans.find(plan => plan.id === id);
   if (!baseWorkout) return null;
   
+  // Create extended workout data based on the plan
   const workoutData = {
     ...baseWorkout,
-    duration: baseWorkout.id === '1' ? 45 : baseWorkout.id === '2' ? 60 : 35,
-    exercises: popularExercises.slice(0, baseWorkout.id === '1' ? 4 : baseWorkout.id === '2' ? 6 : 3),
+    duration: baseWorkout.id === '1' ? 45 : baseWorkout.id === '2' ? 60 : baseWorkout.id === '3' ? 35 : baseWorkout.id === '4' ? 40 : 30,
+    exercises: popularExercises.slice(0, baseWorkout.id === '1' ? 6 : baseWorkout.id === '2' ? 8 : baseWorkout.id === '3' ? 4 : baseWorkout.id === '4' ? 5 : 6),
     equipment: baseWorkout.id === '1' ? ['Barbell', 'Dumbbells', 'Bench'] : 
                baseWorkout.id === '2' ? ['Barbell', 'Dumbbells', 'Pull-up Bar', 'Kettlebell'] :
-               ['Bodyweight'],
+               baseWorkout.id === '3' ? ['Bodyweight'] :
+               baseWorkout.id === '4' ? ['Treadmill', 'Bike', 'Bodyweight'] :
+               ['Yoga Mat', 'Blocks'],
     targetMuscles: baseWorkout.id === '1' ? ['Chest', 'Back', 'Shoulders', 'Arms'] :
                    baseWorkout.id === '2' ? ['Full Body', 'Core', 'Cardio'] :
-                   ['Full Body', 'Core'],
-    calories: baseWorkout.id === '1' ? 320 : baseWorkout.id === '2' ? 450 : 280,
+                   baseWorkout.id === '3' ? ['Full Body', 'Core'] :
+                   baseWorkout.id === '4' ? ['Cardio', 'Legs', 'Core'] :
+                   ['Flexibility', 'Balance', 'Core'],
+    calories: baseWorkout.id === '1' ? 320 : baseWorkout.id === '2' ? 450 : baseWorkout.id === '3' ? 280 : baseWorkout.id === '4' ? 380 : 200,
     rating: 4.8,
-    completions: baseWorkout.id === '1' ? 1247 : baseWorkout.id === '2' ? 892 : 1534,
+    completions: baseWorkout.id === '1' ? 1247 : baseWorkout.id === '2' ? 892 : baseWorkout.id === '3' ? 1534 : baseWorkout.id === '4' ? 967 : 1203,
   };
   
   return workoutData;

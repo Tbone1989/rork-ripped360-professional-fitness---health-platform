@@ -26,17 +26,21 @@ const getWorkoutById = (id: string) => {
   // Create extended workout data based on the plan
   const workoutData = {
     ...baseWorkout,
-    duration: baseWorkout.id === '1' ? 45 : baseWorkout.id === '2' ? 60 : 35,
-    exercises: popularExercises.slice(0, baseWorkout.id === '1' ? 4 : baseWorkout.id === '2' ? 6 : 3),
+    duration: baseWorkout.id === '1' ? 45 : baseWorkout.id === '2' ? 60 : baseWorkout.id === '3' ? 35 : baseWorkout.id === '4' ? 40 : 30,
+    exercises: popularExercises.slice(0, baseWorkout.id === '1' ? 6 : baseWorkout.id === '2' ? 8 : baseWorkout.id === '3' ? 4 : baseWorkout.id === '4' ? 5 : 6),
     equipment: baseWorkout.id === '1' ? ['Barbell', 'Dumbbells', 'Bench'] : 
                baseWorkout.id === '2' ? ['Barbell', 'Dumbbells', 'Pull-up Bar', 'Kettlebell'] :
-               ['Bodyweight'],
+               baseWorkout.id === '3' ? ['Bodyweight'] :
+               baseWorkout.id === '4' ? ['Treadmill', 'Bike', 'Bodyweight'] :
+               ['Yoga Mat', 'Blocks'],
     targetMuscles: baseWorkout.id === '1' ? ['Chest', 'Back', 'Shoulders', 'Arms'] :
                    baseWorkout.id === '2' ? ['Full Body', 'Core', 'Cardio'] :
-                   ['Full Body', 'Core'],
-    calories: baseWorkout.id === '1' ? 320 : baseWorkout.id === '2' ? 450 : 280,
+                   baseWorkout.id === '3' ? ['Full Body', 'Core'] :
+                   baseWorkout.id === '4' ? ['Cardio', 'Legs', 'Core'] :
+                   ['Flexibility', 'Balance', 'Core'],
+    calories: baseWorkout.id === '1' ? 320 : baseWorkout.id === '2' ? 450 : baseWorkout.id === '3' ? 280 : baseWorkout.id === '4' ? 380 : 200,
     rating: 4.8,
-    completions: baseWorkout.id === '1' ? 1247 : baseWorkout.id === '2' ? 892 : 1534,
+    completions: baseWorkout.id === '1' ? 1247 : baseWorkout.id === '2' ? 892 : baseWorkout.id === '3' ? 1534 : baseWorkout.id === '4' ? 967 : 1203,
   };
   
   return workoutData;
