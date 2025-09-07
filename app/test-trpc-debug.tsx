@@ -79,6 +79,44 @@ export default function TRPCDebugScreen() {
     setIsLoading(false);
   };
 
+  // Test backend health check
+  const testBackendHealth = async () => {
+    setIsLoading(true);
+    addResult('🔄 Testing backend health check...');
+    
+    const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL || '';
+    const healthUrls = [
+      `${baseUrl}/api`,
+      `${baseUrl}/`,
+      '/api',
+      '/'
+    ];
+    
+    for (const url of healthUrls) {
+      try {
+        addResult(`🔄 Health check: ${url}`);
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        const text = await response.text();
+        addResult(`📡 Health Response ${response.status}: ${text.substring(0, 200)}`);
+        
+        if (response.ok) {
+          addResult(`✅ Backend health check successful for: ${url}`);
+          break;
+        }
+      } catch (error: any) {
+        addResult(`❌ Health check failed for ${url}: ${error.message}`);
+      }
+    }
+    
+    setIsLoading(false);
+  };
+
   // Test direct fetch to backend
   const testDirectFetch = async () => {
     setIsLoading(true);
@@ -153,6 +191,13 @@ export default function TRPCDebugScreen() {
           <Button
             title="Test API Status"
             onPress={testApiStatus}
+            disabled={isLoading}
+            style={styles.testButton}
+          />
+          
+          <Button
+            title="Test Backend Health"
+            onPress={testBackendHealth}
             disabled={isLoading}
             style={styles.testButton}
           />

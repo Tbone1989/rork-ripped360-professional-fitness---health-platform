@@ -257,7 +257,7 @@ export default function CommunityScreen() {
             
             <TouchableOpacity 
               style={styles.postAction}
-              onPress={() => router.push(`/community/post/${post.id}`)}
+              onPress={() => router.push(`/community/post/${post.id}` as any)}
             >
               <MessageCircle size={20} color={colors.text.secondary} />
               <Text style={styles.postActionText}>{post.comments}</Text>
@@ -276,7 +276,7 @@ export default function CommunityScreen() {
           title="Create Challenge"
           variant="outline"
           size="small"
-          onPress={() => router.push('/community/create-challenge')}
+          onPress={() => router.push('/community/create-challenge' as any)}
         />
       </View>
 
@@ -413,7 +413,7 @@ export default function CommunityScreen() {
         options={{ 
           title: 'Community',
           headerRight: () => (
-            <TouchableOpacity onPress={() => router.push('/community/notifications')}>
+            <TouchableOpacity onPress={() => router.push('/community/notifications' as any)}>
               <MessageCircle size={24} color={colors.accent.primary} />
             </TouchableOpacity>
           )
