@@ -29,11 +29,69 @@ import { popularExercises, featuredWorkoutPlans, individualWorkouts } from '@/mo
 
 // Get workout data
 const getWorkoutById = (id: string) => {
+  // Check if it's a plan-based workout (e.g., "strength-foundations-day-1")
+  const isPlanWorkout = id.includes('-day-') || id.includes('strength-foundations') || id.includes('hiit-shred') || id.includes('beginner-basics');
+  
+  if (isPlanWorkout) {
+    // Extract the base plan ID
+    const basePlanId = id.split('-day-')[0];
+    
+    // Create workout data based on the plan
+    const planWorkouts: Record<string, any> = {
+      'strength-foundations': {
+        id: id,
+        name: 'Strength Foundations - Day 1',
+        description: 'Build strength with compound movements',
+        duration: 60,
+        exercises: popularExercises.slice(0, 5),
+        equipment: ['Barbell', 'Dumbbells', 'Bench'],
+        targetMuscles: ['Chest', 'Back', 'Shoulders'],
+        category: 'Strength',
+        difficulty: 'intermediate',
+        createdBy: 'Coach Mike',
+        rating: 4.9,
+        completions: 2800,
+      },
+      'hiit-shred': {
+        id: id,
+        name: 'HIIT Shred - Day 1',
+        description: 'High intensity interval training',
+        duration: 45,
+        exercises: popularExercises.slice(1, 5),
+        equipment: ['Kettlebells', 'Jump Rope'],
+        targetMuscles: ['Full Body', 'Core'],
+        category: 'HIIT',
+        difficulty: 'advanced',
+        createdBy: 'Coach Sarah',
+        rating: 4.7,
+        completions: 3200,
+      },
+      'beginner-basics': {
+        id: id,
+        name: 'Beginner Basics - Day 1',
+        description: 'Perfect for fitness newcomers',
+        duration: 30,
+        exercises: popularExercises.slice(0, 3),
+        equipment: ['Dumbbells', 'Resistance Bands'],
+        targetMuscles: ['Full Body'],
+        category: 'Beginner',
+        difficulty: 'beginner',
+        createdBy: 'Coach Emma',
+        rating: 4.8,
+        completions: 5100,
+      },
+    };
+    
+    return planWorkouts[basePlanId] || planWorkouts['strength-foundations'];
+  }
+  
+  // Check individual workouts
   const individualWorkout = individualWorkouts.find(workout => workout.id === id);
   if (individualWorkout) {
     return individualWorkout;
   }
   
+  // Check featured workout plans
   const baseWorkout = featuredWorkoutPlans.find(plan => plan.id === id);
   if (!baseWorkout) return null;
   
@@ -67,32 +125,19 @@ export default function WorkoutSessionScreen() {
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   const workout = getWorkoutById(id as string);
-  
-  if (!workout) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorTitle}>Workout Not Found</Text>
-          <Button
-            title="Back to Workouts"
-            onPress={() => router.back()}
-          />
-        </View>
-      </View>
-    );
-  }
-
-  const currentExercise = workout.exercises[currentExerciseIndex];
-  const progress = (completedExercises.length / workout.exercises.length) * 100;
+  const currentExercise = workout?.exercises[currentExerciseIndex];
+  const progress = workout ? (completedExercises.length / workout.exercises.length) * 100 : 0;
 
   useEffect(() => {
-    // Animate progress bar
-    Animated.timing(progressAnim, {
-      toValue: progress,
-      duration: 500,
-      useNativeDriver: false,
-    }).start();
-  }, [progress, progressAnim]);
+    if (workout) {
+      // Animate progress bar
+      Animated.timing(progressAnim, {
+        toValue: progress,
+        duration: 500,
+        useNativeDriver: false,
+      }).start();
+    }
+  }, [progress, progressAnim, workout]);
 
   useEffect(() => {
     if (isPlaying) {
@@ -112,6 +157,20 @@ export default function WorkoutSessionScreen() {
       }
     };
   }, [isPlaying]);
+  
+  if (!workout) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Workout Not Found</Text>
+          <Button
+            title="Back to Workouts"
+            onPress={() => router.back()}
+          />
+        </View>
+      </View>
+    );
+  }
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -174,7 +233,9 @@ export default function WorkoutSessionScreen() {
   };
 
   const handleViewExerciseDetails = () => {
-    router.push(`/exercise/${currentExercise.id}`);
+    if (currentExercise) {
+      router.push(`/exercise/${currentExercise.id}`);
+    }
   };
 
   return (
@@ -214,29 +275,31 @@ export default function WorkoutSessionScreen() {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {/* Current Exercise */}
-        <Card style={styles.currentExerciseCard}>
-          <Image
-            source={{ uri: currentExercise.thumbnailUrl }}
-            style={styles.exerciseImage}
-            contentFit="cover"
-          />
-          <View style={styles.exerciseInfo}>
-            <Text style={styles.exerciseName}>{currentExercise.name}</Text>
-            <Text style={styles.exerciseDescription} numberOfLines={2}>
-              {currentExercise.description}
-            </Text>
-            <View style={styles.exerciseMeta}>
-              <Badge
-                label={currentExercise.difficulty}
-                size="small"
-                variant="secondary"
-              />
-              <Text style={styles.muscleGroups}>
-                {currentExercise.muscleGroups.slice(0, 2).join(', ')}
+        {currentExercise && (
+          <Card style={styles.currentExerciseCard}>
+            <Image
+              source={{ uri: currentExercise.thumbnailUrl }}
+              style={styles.exerciseImage}
+              contentFit="cover"
+            />
+            <View style={styles.exerciseInfo}>
+              <Text style={styles.exerciseName}>{currentExercise.name}</Text>
+              <Text style={styles.exerciseDescription} numberOfLines={2}>
+                {currentExercise.description}
               </Text>
+              <View style={styles.exerciseMeta}>
+                <Badge
+                  label={currentExercise.difficulty}
+                  size="small"
+                  variant="secondary"
+                />
+                <Text style={styles.muscleGroups}>
+                  {currentExercise.muscleGroups.slice(0, 2).join(', ')}
+                </Text>
+              </View>
             </View>
-          </View>
-        </Card>
+          </Card>
+        )}
 
         {/* Timer Section */}
         <View style={styles.timerSection}>
@@ -297,7 +360,7 @@ export default function WorkoutSessionScreen() {
         {/* Exercise List */}
         <Card style={styles.exerciseListCard}>
           <Text style={styles.listTitle}>Workout Exercises</Text>
-          {workout.exercises.map((exercise, index) => (
+          {workout.exercises.map((exercise: any, index: number) => (
             <TouchableOpacity
               key={exercise.id}
               style={[
@@ -359,7 +422,7 @@ const styles = StyleSheet.create({
   },
   workoutName: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: colors.text.primary,
     marginBottom: 4,
   },
@@ -407,7 +470,7 @@ const styles = StyleSheet.create({
   },
   exerciseName: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: colors.text.primary,
   },
   exerciseDescription: {
@@ -444,7 +507,7 @@ const styles = StyleSheet.create({
   },
   timerValue: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: colors.accent.primary,
   },
   controls: {
@@ -481,7 +544,7 @@ const styles = StyleSheet.create({
   },
   listTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     color: colors.text.primary,
     marginBottom: 12,
   },
@@ -510,7 +573,7 @@ const styles = StyleSheet.create({
   },
   exerciseNumberText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     color: colors.text.primary,
   },
   exerciseListName: {
@@ -533,7 +596,7 @@ const styles = StyleSheet.create({
   },
   errorTitle: {
     fontSize: 20,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: colors.text.primary,
     marginBottom: 24,
     textAlign: 'center',

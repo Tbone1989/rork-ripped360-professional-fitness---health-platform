@@ -78,8 +78,7 @@ const mockPlans: Record<string, WorkoutPlan> = {
 export default function PlanDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [enrolling, setEnrolling] = useState(false);
-  const enrollInPlan = useWorkoutStore((state) => state.enrollInPlan);
-  const enrolledPlans = useWorkoutStore((state) => state.enrolledPlans);
+  const { enrollInPlan, enrolledPlans } = useWorkoutStore();
   const { user } = useUserStore();
   
   const plan = mockPlans[id] || mockPlans['strength-foundations'];
@@ -98,12 +97,9 @@ export default function PlanDetailScreen() {
       return;
     }
 
+    // If already enrolled, navigate to workout session
     if (isEnrolled) {
-      Alert.alert(
-        'Already Enrolled',
-        'You are already enrolled in this plan. Check your workouts tab to continue.',
-        [{ text: 'OK', onPress: () => router.push('/(tabs)/workouts') }]
-      );
+      router.push(`/workout/${plan.id}`);
       return;
     }
 
