@@ -99,12 +99,9 @@ export default function PlanDetailScreen() {
       return;
     }
 
+    // If already enrolled, navigate to workouts
     if (isEnrolled) {
-      Alert.alert(
-        'Already Enrolled',
-        'You are already enrolled in this plan. Check your workouts tab to continue.',
-        [{ text: 'OK', onPress: () => router.push('/(tabs)/workouts') }]
-      );
+      router.push('/(tabs)/workouts');
       return;
     }
 
@@ -139,7 +136,7 @@ export default function PlanDetailScreen() {
       case 'beginner': return '#4CAF50';
       case 'intermediate': return '#FF9800';
       case 'advanced': return '#F44336';
-      default: return colors.accent.primary;
+      default: return colors.accent?.primary || '#FF6B6B';
     }
   };
 
@@ -318,7 +315,7 @@ const styles = StyleSheet.create({
   overviewValue: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: colors.accent.primary,
+    color: colors.accent?.primary || '#FF6B6B',
   },
   overviewLabel: {
     fontSize: 14,
@@ -342,7 +339,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   enrollButton: {
-    backgroundColor: colors.accent.primary,
+    backgroundColor: colors.accent?.primary || '#FF6B6B',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
