@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback } from 'react';
+import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -10,13 +10,13 @@ import {
   Dimensions,
   Linking,
   ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Search, ShoppingCart, ExternalLink, ScanLine } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
-import { Badge } from '@/components/ui/Badge';
 import { trpc } from '@/lib/trpc';
 import { useShopStore } from '@/store/shopStore';
 
@@ -29,6 +29,93 @@ type ShopProduct = {
   url: string;
   image?: string;
   price?: number;
+};
+
+const ProductCard = ({ item }: { item: ShopProduct }) => {
+  const rotateAnim = useRef(new Animated.Value(0)).current;
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(rotateAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(rotateAnim, {
+          toValue: 0,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [rotateAnim]);
+
+  const rotateInterpolate = rotateAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
+
+  return (
+    <View style={styles.productCard}>
+      <TouchableOpacity 
+        style={styles.productImageContainer}
+        onPressIn={() => setIsHovered(true)}
+        onPressOut={() => setIsHovered(false)}
+        activeOpacity={1}
+      >
+        <Animated.View
+          style={[
+            styles.animatedImageContainer,
+            {
+              transform: [
+                { rotateY: rotateInterpolate },
+                { scale: isHovered ? 1.05 : 1 },
+              ],
+            },
+          ]}
+        >
+          {item.image ? (
+            <Image source={{ uri: item.image }} style={styles.productImage} />
+          ) : (
+            <View style={[styles.productImage, styles.imagePlaceholder]}>
+              <Text style={styles.imagePlaceholderText}>No Image</Text>
+            </View>
+          )}
+        </Animated.View>
+      </TouchableOpacity>
+      <View style={styles.productInfo}>
+        <Text style={styles.productName} numberOfLines={2}>
+          {item.title}
+        </Text>
+        <View style={styles.priceContainer}>
+          {typeof item.price === 'number' ? (
+            <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+          ) : (
+            <Text style={styles.priceUnavailable}>Price on site</Text>
+          )}
+        </View>
+        <View style={styles.productActions}>
+          <Button
+            title="View Details"
+            onPress={() => router.push(`/shop/product/${item.id}`)}
+            style={[styles.viewButton, { flex: 1, marginRight: 8 }]}
+            variant="outline"
+          />
+          <Button
+            title="Site"
+            onPress={() => Linking.openURL(item.url)}
+            style={[styles.viewButton, { paddingHorizontal: 12 }]}
+            variant="outline"
+            icon={<ExternalLink size={16} color={colors.accent.primary} />}
+          />
+        </View>
+      </View>
+    </View>
+  );
 };
 
 export default function ShopScreen() {
@@ -107,44 +194,7 @@ export default function ShopScreen() {
   }, [sourceList, searchQuery]);
 
   const renderProduct = ({ item }: { item: ShopProduct }) => (
-    <View style={styles.productCard}>
-      <View style={styles.productImageContainer}>
-        {item.image ? (
-          <Image source={{ uri: item.image }} style={styles.productImage} />
-        ) : (
-          <View style={[styles.productImage, styles.imagePlaceholder]}>
-            <Text style={styles.imagePlaceholderText}>No Image</Text>
-          </View>
-        )}
-      </View>
-      <View style={styles.productInfo}>
-        <Text style={styles.productName} numberOfLines={2}>
-          {item.title}
-        </Text>
-        <View style={styles.priceContainer}>
-          {typeof item.price === 'number' ? (
-            <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-          ) : (
-            <Text style={styles.priceUnavailable}>Price on site</Text>
-          )}
-        </View>
-        <View style={styles.productActions}>
-          <Button
-            title="View Details"
-            onPress={() => router.push(`/shop/product/${item.id}`)}
-            style={[styles.viewButton, { flex: 1, marginRight: 8 }]}
-            variant="outline"
-          />
-          <Button
-            title="Site"
-            onPress={() => Linking.openURL(item.url)}
-            style={[styles.viewButton, { paddingHorizontal: 12 }]}
-            variant="outline"
-            icon={<ExternalLink size={16} color={colors.accent.primary} />}
-          />
-        </View>
-      </View>
-    </View>
+    <ProductCard item={item} />
   );
 
   return (
@@ -320,6 +370,11 @@ const styles = StyleSheet.create({
   },
   productImageContainer: {
     position: 'relative',
+    perspective: 1000,
+  },
+  animatedImageContainer: {
+    width: '100%',
+    backfaceVisibility: 'hidden',
   },
   productImage: {
     width: '100%',
