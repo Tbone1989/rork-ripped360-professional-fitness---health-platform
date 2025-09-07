@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,6 @@ import {
   Dimensions,
   Linking,
   ActivityIndicator,
-  Animated,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Search, ShoppingCart, ExternalLink, ScanLine } from 'lucide-react-native';
@@ -32,52 +31,13 @@ type ShopProduct = {
 };
 
 const ProductCard = ({ item }: { item: ShopProduct }) => {
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-  const [isHovered, setIsHovered] = useState(false);
-
-  useEffect(() => {
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(rotateAnim, {
-          toValue: 1,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-        Animated.timing(rotateAnim, {
-          toValue: 0,
-          duration: 3000,
-          useNativeDriver: true,
-        }),
-      ])
-    );
-    animation.start();
-    return () => animation.stop();
-  }, [rotateAnim]);
-
-  const rotateInterpolate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
   return (
     <View style={styles.productCard}>
       <TouchableOpacity 
         style={styles.productImageContainer}
-        onPressIn={() => setIsHovered(true)}
-        onPressOut={() => setIsHovered(false)}
-        activeOpacity={1}
+        activeOpacity={0.8}
       >
-        <Animated.View
-          style={[
-            styles.animatedImageContainer,
-            {
-              transform: [
-                { rotateY: rotateInterpolate },
-                { scale: isHovered ? 1.05 : 1 },
-              ],
-            },
-          ]}
-        >
+        <View style={styles.imageContainer}>
           {item.image ? (
             <Image source={{ uri: item.image }} style={styles.productImage} />
           ) : (
@@ -85,7 +45,7 @@ const ProductCard = ({ item }: { item: ShopProduct }) => {
               <Text style={styles.imagePlaceholderText}>No Image</Text>
             </View>
           )}
-        </Animated.View>
+        </View>
       </TouchableOpacity>
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
@@ -370,11 +330,9 @@ const styles = StyleSheet.create({
   },
   productImageContainer: {
     position: 'relative',
-    perspective: 1000,
   },
-  animatedImageContainer: {
+  imageContainer: {
     width: '100%',
-    backfaceVisibility: 'hidden',
   },
   productImage: {
     width: '100%',
