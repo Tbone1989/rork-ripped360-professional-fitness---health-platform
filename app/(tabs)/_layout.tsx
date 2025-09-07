@@ -93,6 +93,15 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
+          name="community"
+          options={{
+            title: "Community",
+            tabBarIcon: ({ color, focused }) => (
+              <Users testID="tab-icon-community" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
           name="contest"
           options={{
             title: "Contest",

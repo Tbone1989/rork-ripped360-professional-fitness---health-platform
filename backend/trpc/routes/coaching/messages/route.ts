@@ -73,7 +73,7 @@ export const sendMessageRoute = publicProcedure
   .input(
     z.object({
       conversationId: z.string(),
-      receiverId: z.string,
+      receiverId: z.string(),
       content: z.string(),
       attachmentUrls: z.array(z.string()).optional(),
     })
