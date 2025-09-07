@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, Animated } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
 import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign, Gift, Check, RefreshCw } from 'lucide-react-native';
 
@@ -32,6 +32,7 @@ export default function HomeScreen() {
   const [fallbackTried, setFallbackTried] = React.useState<boolean>(false);
   const [rotatedProducts, setRotatedProducts] = React.useState<any[]>([]);
   const [lastRotation, setLastRotation] = React.useState<number>(Date.now());
+  const fadeAnim = React.useRef(new Animated.Value(1)).current;
 
   // Shuffle array utility function
   const shuffleArray = <T,>(array: T[]): T[] => {
@@ -43,21 +44,36 @@ export default function HomeScreen() {
     return shuffled;
   };
 
-  // Rotate products every 30 seconds or when manually refreshed
+  // Rotate products with fade animation
   const rotateProducts = React.useCallback(() => {
-    const allProducts = [...products];
-    const shuffled = shuffleArray(allProducts);
-    setRotatedProducts(shuffled);
-    setLastRotation(Date.now());
-  }, []);
+    // Fade out
+    Animated.timing(fadeAnim, {
+      toValue: 0.3,
+      duration: 300,
+      useNativeDriver: true,
+    }).start(() => {
+      // Update products
+      const allProducts = [...products];
+      const shuffled = shuffleArray(allProducts);
+      setRotatedProducts(shuffled);
+      setLastRotation(Date.now());
+      
+      // Fade back in
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    });
+  }, [fadeAnim]);
 
-  // Auto-rotate products every 30 seconds
+  // Auto-rotate products every 15 seconds for more visible movement
   React.useEffect(() => {
     rotateProducts(); // Initial rotation
     
     const interval = setInterval(() => {
       rotateProducts();
-    }, 30000); // 30 seconds
+    }, 15000); // 15 seconds for more frequent updates
 
     return () => clearInterval(interval);
   }, [rotateProducts]);
@@ -112,7 +128,7 @@ export default function HomeScreen() {
       }));
     }
     // Use rotated products for variety, fallback to featured if rotation not ready
-    const sourceProducts = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : featuredProducts.slice(0, 5);
+    const sourceProducts = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : shuffleArray(featuredProducts).slice(0, 5);
     return sourceProducts.map((p) => ({
       id: p.id,
       name: p.name,
@@ -262,39 +278,44 @@ export default function HomeScreen() {
             />
           </View>
           
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
-            {featuredList.map((item, index) => (
-              <TouchableOpacity
-                key={`${item.id}-${lastRotation}-${index}`}
-                style={styles.featuredProduct}
-                onPress={() => (item.isExternal && item.url ? Linking.openURL(item.url) : router.push(`/shop/product/${item.id}`))}
-                testID={`featured-product-${item.id}`}
-                accessibilityRole="button"
-                accessibilityLabel={`Open ${item.name}`}
-              >
-                <Image source={{ uri: item.image }} style={styles.featuredImage} />
-                <Text style={styles.featuredName} numberOfLines={2}>{item.name}</Text>
-                {typeof item.rating === 'number' && (
-                  <View style={styles.featuredRating}>
-                    <Star size={12} color={colors.status.warning} fill={colors.status.warning} />
-                    <Text style={styles.ratingText}>{item.rating}</Text>
-                  </View>
-                )}
-                {typeof item.price === 'number' && (
-                  <Text style={styles.featuredPrice}>${item.price}</Text>
-                )}
-              </TouchableOpacity>
-            ))}
-            {featuredList.length === 0 && (
-              <View style={{ paddingHorizontal: 16, justifyContent: 'center' }}>
-                <Text style={{ color: colors.text.secondary }}>No featured items yet. Tap Shop All to browse.</Text>
-              </View>
-            )}
-          </ScrollView>
+          <Animated.View style={{ opacity: fadeAnim }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
+              {featuredList.map((item, index) => (
+                <TouchableOpacity
+                  key={`${item.id}-${lastRotation}-${index}`}
+                  style={styles.featuredProduct}
+                  onPress={() => (item.isExternal && item.url ? Linking.openURL(item.url) : router.push(`/shop/product/${item.id}`))}
+                  testID={`featured-product-${item.id}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Open ${item.name}`}
+                >
+                  <Image source={{ uri: item.image }} style={styles.featuredImage} />
+                  <Text style={styles.featuredName} numberOfLines={2}>{item.name}</Text>
+                  {typeof item.rating === 'number' && (
+                    <View style={styles.featuredRating}>
+                      <Star size={12} color={colors.status.warning} fill={colors.status.warning} />
+                      <Text style={styles.ratingText}>{item.rating}</Text>
+                    </View>
+                  )}
+                  {typeof item.price === 'number' && (
+                    <Text style={styles.featuredPrice}>${item.price}</Text>
+                  )}
+                </TouchableOpacity>
+              ))}
+              {featuredList.length === 0 && (
+                <View style={{ paddingHorizontal: 16, justifyContent: 'center' }}>
+                  <Text style={{ color: colors.text.secondary }}>No featured items yet. Tap Shop All to browse.</Text>
+                </View>
+              )}
+            </ScrollView>
+          </Animated.View>
           
-          {/* Rotation indicator */}
+          {/* Rotation indicator with animation */}
           <View style={styles.rotationIndicator}>
-            <Text style={styles.rotationText}>Products refresh every 30s • Tap refresh for new selection</Text>
+            <View style={styles.rotationStatus}>
+              <RefreshCw size={12} color={colors.accent.primary} style={styles.rotatingIcon} />
+              <Text style={styles.rotationText}>Products shuffle every 15s • Fresh selection</Text>
+            </View>
           </View>
         </View>
 
@@ -751,6 +772,14 @@ const styles = StyleSheet.create({
   rotationIndicator: {
     marginTop: 8,
     alignItems: 'center',
+  },
+  rotationStatus: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  rotatingIcon: {
+    opacity: 0.7,
   },
   rotationText: {
     fontSize: 12,
