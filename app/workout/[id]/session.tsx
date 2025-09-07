@@ -121,7 +121,7 @@ export default function WorkoutSessionScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [exerciseTimer, setExerciseTimer] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const progressAnim = useRef(new Animated.Value(0)).current;
 
   const workout = getWorkoutById(id as string);
@@ -144,7 +144,7 @@ export default function WorkoutSessionScreen() {
       intervalRef.current = setInterval(() => {
         setWorkoutTimer(prev => prev + 1);
         setExerciseTimer(prev => prev + 1);
-      }, 1000);
+      }, 1000) as NodeJS.Timeout;
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, Zap } from 'lucide-react-native';
+import { Filter, Zap } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -11,9 +11,7 @@ import { ChipGroup } from '@/components/ui/ChipGroup';
 import { WorkoutCard } from '@/components/workout/WorkoutCard';
 import { CategoryCard } from '@/components/workout/CategoryCard';
 import { ExerciseCard } from '@/components/workout/ExerciseCard';
-import { featuredWorkoutPlans } from '@/mocks/workouts';
-import { workoutCategories } from '@/mocks/workouts';
-import { popularExercises } from '@/mocks/workouts';
+import { featuredWorkoutPlans, workoutCategories, popularExercises } from '@/mocks/workouts';
 
 const tabs = [
   { key: 'workouts', label: 'Workouts' },
@@ -78,7 +76,11 @@ export default function WorkoutsScreen() {
                 contentContainerStyle={styles.categoriesContainer}
               >
                 {workoutCategories.map((category) => (
-                  <CategoryCard key={category.id} category={category} />
+                  <CategoryCard 
+                    key={category.id} 
+                    category={category}
+                    onPress={() => router.push(`/category/${category.id}`)}
+                  />
                 ))}
               </ScrollView>
             </View>
@@ -86,7 +88,12 @@ export default function WorkoutsScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Featured Workouts</Text>
               {featuredWorkoutPlans.map((plan) => (
-                <WorkoutCard key={plan.id} item={plan} type="plan" />
+                <WorkoutCard 
+                  key={plan.id} 
+                  item={plan} 
+                  type="plan"
+                  onPress={() => router.push(`/plan/${plan.id}`)}
+                />
               ))}
             </View>
             
@@ -123,7 +130,11 @@ export default function WorkoutsScreen() {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Popular Exercises</Text>
               {popularExercises.map((exercise) => (
-                <ExerciseCard key={exercise.id} exercise={exercise} />
+                <ExerciseCard 
+                  key={exercise.id} 
+                  exercise={exercise}
+                  onPress={() => router.push(`/exercise/${exercise.id}`)}
+                />
               ))}
             </View>
           </>
@@ -133,7 +144,7 @@ export default function WorkoutsScreen() {
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateTitle}>No Saved Workouts</Text>
             <Text style={styles.emptyStateDescription}>
-              You haven't saved any workouts yet. Start by exploring our featured workouts or create your own.
+              You haven&apos;t saved any workouts yet. Start by exploring our featured workouts or create your own.
             </Text>
             <Button
               title="Browse Workouts"

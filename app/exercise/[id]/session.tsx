@@ -34,7 +34,7 @@ export default function ExerciseSessionScreen() {
   const [timer, setTimer] = useState(0);
   const [restTimer, setRestTimer] = useState(0);
   const [isResting, setIsResting] = useState(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   const exercise = popularExercises.find(ex => ex.id === id) || popularExercises[0];
@@ -67,7 +67,7 @@ export default function ExerciseSessionScreen() {
     if (isPlaying && !isResting) {
       intervalRef.current = setInterval(() => {
         setTimer(prev => prev + 1);
-      }, 1000);
+      }, 1000) as NodeJS.Timeout;
     } else if (isResting) {
       intervalRef.current = setInterval(() => {
         setRestTimer(prev => {
@@ -78,7 +78,7 @@ export default function ExerciseSessionScreen() {
           }
           return prev - 1;
         });
-      }, 1000);
+      }, 1000) as NodeJS.Timeout;
     } else {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
