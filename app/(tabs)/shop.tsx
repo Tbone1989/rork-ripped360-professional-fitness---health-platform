@@ -11,13 +11,14 @@ import {
   Linking,
   ActivityIndicator,
 } from 'react-native';
-import { Stack } from 'expo-router';
-import { Search, ShoppingCart, ExternalLink } from 'lucide-react-native';
+import { Stack, router } from 'expo-router';
+import { Search, ShoppingCart, ExternalLink, ScanLine } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { trpc } from '@/lib/trpc';
+import { useShopStore } from '@/store/shopStore';
 
 const { width } = Dimensions.get('window');
 const PRODUCT_WIDTH = (width - 48) / 2;
@@ -36,6 +37,7 @@ export default function ShopScreen() {
   const [fallback, setFallback] = useState<ShopProduct[]>([]);
   const [isFallbackLoading, setIsFallbackLoading] = useState<boolean>(false);
   const [fallbackTried, setFallbackTried] = useState<boolean>(false);
+  const { cartItems } = useShopStore();
 
   const tryFetchJson = useCallback(async (url: string) => {
     try {
@@ -126,13 +128,21 @@ export default function ShopScreen() {
             <Text style={styles.priceUnavailable}>Price on site</Text>
           )}
         </View>
-        <Button
-          title="View on Site"
-          onPress={() => Linking.openURL(item.url)}
-          style={styles.viewButton}
-          variant="outline"
-          icon={<ExternalLink size={16} color={colors.accent.primary} />}
-        />
+        <View style={styles.productActions}>
+          <Button
+            title="View Details"
+            onPress={() => router.push(`/shop/product/${item.id}`)}
+            style={[styles.viewButton, { flex: 1, marginRight: 8 }]}
+            variant="outline"
+          />
+          <Button
+            title="Site"
+            onPress={() => Linking.openURL(item.url)}
+            style={[styles.viewButton, { paddingHorizontal: 12 }]}
+            variant="outline"
+            icon={<ExternalLink size={16} color={colors.accent.primary} />}
+          />
+        </View>
       </View>
     </View>
   );
@@ -142,6 +152,27 @@ export default function ShopScreen() {
       <Stack.Screen
         options={{
           title: 'Ripped City Store',
+          headerRight: () => (
+            <View style={styles.headerButtons}>
+              <TouchableOpacity 
+                style={styles.scanButton}
+                onPress={() => router.push('/shop/scan')}
+              >
+                <ScanLine size={20} color={colors.text.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.cartButton}
+                onPress={() => router.push('/shop/cart')}
+              >
+                <ShoppingCart size={20} color={colors.text.primary} />
+                {cartItems.length > 0 && (
+                  <View style={styles.cartBadge}>
+                    <Text style={styles.cartBadgeText}>{cartItems.length}</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            </View>
+          ),
         }}
       />
 
@@ -320,6 +351,11 @@ const styles = StyleSheet.create({
   productInfo: {
     padding: 12,
   },
+  productActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
   productName: {
     fontSize: 14,
     fontWeight: '600',
@@ -371,8 +407,7 @@ const styles = StyleSheet.create({
   headerButtons: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginRight: 16,
+    gap: 12,
   },
   scanButton: {
     width: 36,
@@ -384,6 +419,12 @@ const styles = StyleSheet.create({
   },
   cartButton: {
     position: 'relative',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: colors.background.secondary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   cartBadge: {
     position: 'absolute',
@@ -392,7 +433,13 @@ const styles = StyleSheet.create({
     minWidth: 20,
     height: 20,
     borderRadius: 10,
+    backgroundColor: colors.accent.primary,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  cartBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.text.primary,
   },
 });

@@ -14,8 +14,8 @@ import { Star, Heart, ShoppingCart, Share, ArrowLeft } from 'lucide-react-native
 
 import { colors } from '@/constants/colors';
 import { useShopStore } from '@/store/shopStore';
-import { products } from '@/mocks/products';
-import { reviews } from '@/mocks/products';
+import { products, reviews } from '@/mocks/products';
+import { trpc } from '@/lib/trpc';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -27,8 +27,30 @@ export default function ProductDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { addToCart } = useShopStore();
   
-  const product = products.find(p => p.id === id);
-  const productReviews = reviews.filter(r => r.productId === id);
+  // Try to find product in mock data first
+  let product = products.find(p => p.id === id);
+  let productReviews = reviews.filter(r => r.productId === id);
+  
+  // If not found in mocks, create a mock product for API products
+  if (!product && id) {
+    product = {
+      id: id,
+      name: 'Ripped City Product',
+      description: 'Premium product from Ripped City Inc. Visit our website for full details and specifications.',
+      price: 29.99,
+      category: 'clothing' as const,
+      images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=500'],
+      inStock: true,
+      stockCount: 50,
+      rating: 4.5,
+      reviewCount: 25,
+      tags: ['ripped city', 'premium'],
+      featured: false,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    productReviews = [];
+  }
   
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState<string | undefined>();
@@ -51,6 +73,8 @@ export default function ProductDetailScreen() {
   }
   
   const handleAddToCart = () => {
+    if (!product) return;
+    
     if (product.sizes && !selectedSize) {
       Alert.alert('Size Required', 'Please select a size before adding to cart.');
       return;
@@ -62,7 +86,10 @@ export default function ProductDetailScreen() {
     }
     
     addToCart(product, quantity, selectedSize, selectedColor);
-    Alert.alert('Added to Cart', `${product.name} has been added to your cart.`);
+    Alert.alert('Added to Cart', `${product.name} has been added to your cart.`, [
+      { text: 'Continue Shopping', style: 'cancel' },
+      { text: 'View Cart', onPress: () => router.push('/shop/cart') }
+    ]);
   };
   
   const handleShare = () => {
@@ -161,7 +188,7 @@ export default function ProductDetailScreen() {
           <Text style={styles.description}>{product.description}</Text>
           
           {/* Size Selection */}
-          {product.sizes && (
+          {product.sizes && product.sizes.length > 0 && (
             <View style={styles.optionContainer}>
               <Text style={styles.optionTitle}>Size</Text>
               <ChipGroup
@@ -175,7 +202,7 @@ export default function ProductDetailScreen() {
           )}
           
           {/* Color Selection */}
-          {product.colors && (
+          {product.colors && product.colors.length > 0 && (
             <View style={styles.optionContainer}>
               <Text style={styles.optionTitle}>Color</Text>
               <ChipGroup
