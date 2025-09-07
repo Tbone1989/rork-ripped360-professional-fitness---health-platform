@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,304 +6,633 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl,
   Alert,
+  RefreshControl,
   Platform,
 } from 'react-native';
-
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
-import { CheckCircle, XCircle, AlertCircle, RefreshCw, Wifi, WifiOff } from 'lucide-react-native';
-
+import { CheckCircle, XCircle, AlertCircle, RefreshCw, Wifi, WifiOff, Server, Database, Shield } from 'lucide-react-native';
+import { trpc, trpcClient } from '@/lib/trpc';
+import { colors } from '@/constants/colors';
 
 interface ApiTestResult {
   name: string;
   endpoint: string;
-  status: 'testing' | 'success' | 'error' | 'warning';
+  category: string;
+  status: 'success' | 'error' | 'warning' | 'testing' | 'pending';
   message: string;
   responseTime?: number;
-  details?: any;
+  data?: any;
+  error?: any;
+}
+
+interface ApiCategory {
+  name: string;
+  icon: any;
+  endpoints: ApiTest[];
+}
+
+interface ApiTest {
+  name: string;
+  endpoint: string;
+  category: string;
+  test: () => Promise<Partial<ApiTestResult>>;
 }
 
 export default function ApiTestScreen() {
   const [testResults, setTestResults] = useState<ApiTestResult[]>([]);
   const [isTestingAll, setIsTestingAll] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const [isConnected, setIsConnected] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'checking'>('checking');
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['System']));
+  const [baseUrl, setBaseUrl] = useState('');
 
-  const [backendStatus, setBackendStatus] = useState<'checking' | 'online' | 'offline'>('checking');
-
-  // Check network connectivity using fetch
+  // Get the actual base URL being used
   useEffect(() => {
-    const checkConnection = async () => {
-      try {
-        const response = await fetch('https://www.google.com/favicon.ico', {
-          method: 'HEAD',
-          mode: 'no-cors',
-        });
-        setIsConnected(true);
-      } catch (error) {
-        setIsConnected(false);
-      }
-    };
-    
-    checkConnection();
-    const interval = setInterval(checkConnection, 30000); // Check every 30 seconds
-    return () => clearInterval(interval);
+    const url = process.env.EXPO_PUBLIC_RORK_API_BASE_URL || 'https://rork.com/api/p/as5h45pls18cy2nuagueu';
+    setBaseUrl(url);
   }, []);
 
-  // Test backend connection
-  const testBackendConnection = async () => {
-    setBackendStatus('checking');
-    try {
-      const baseUrl = process.env.EXPO_PUBLIC_RORK_API_BASE_URL || '';
-      const endpoints = [
-        '/api/trpc',
-        `${baseUrl}/api/trpc`,
-        'https://rork.com/api/p/as5h45pls18cy2nuagueu/api/trpc'
-      ].filter(Boolean);
+  const apiCategories: ApiCategory[] = [
+    {
+      name: 'System',
+      icon: Server,
+      endpoints: [
+        {
+          name: 'API Status',
+          endpoint: 'system.apiStatus',
+          category: 'System',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.system.apiStatus.query();
+              setConnectionStatus('connected');
+              return {
+                status: 'success' as const,
+                message: `✅ Backend healthy - ${response?.apis?.length || 0} APIs configured`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              setConnectionStatus('disconnected');
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Backend unreachable'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Test Endpoint',
+          endpoint: 'example.hi',
+          category: 'System',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.example.hi.query();
+              return {
+                status: 'success' as const,
+                message: '✅ Test endpoint working',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+      ],
+    },
+    {
+      name: 'Shop',
+      icon: Database,
+      endpoints: [
+        {
+          name: 'Products List',
+          endpoint: 'shop.products',
+          category: 'Shop',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.shop.products.query({ limit: 10 });
+              const count = Array.isArray(response) ? response.length : 0;
+              return {
+                status: count > 0 ? 'success' as const : 'warning' as const,
+                message: count > 0 ? `✅ Fetched ${count} products` : '⚠️ No products found',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed to fetch products'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+      ],
+    },
+    {
+      name: 'Coaching',
+      icon: Shield,
+      endpoints: [
+        {
+          name: 'Coaches List',
+          endpoint: 'coaching.list',
+          category: 'Coaching',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.coaching.list.query();
+              const count = Array.isArray(response) ? response.length : 0;
+              return {
+                status: 'success' as const,
+                message: `✅ Found ${count} coaches`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Client List',
+          endpoint: 'coaching.clients',
+          category: 'Coaching',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.coaching.clients.query();
+              return {
+                status: 'success' as const,
+                message: `✅ Retrieved client data`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Sessions',
+          endpoint: 'coaching.sessions.list',
+          category: 'Coaching',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.coaching.sessions.list.query();
+              return {
+                status: 'success' as const,
+                message: `✅ Sessions endpoint working`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Conversations',
+          endpoint: 'coaching.messages.conversations',
+          category: 'Coaching',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.coaching.messages.conversations.query();
+              return {
+                status: 'success' as const,
+                message: `✅ Messages endpoint working`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+      ],
+    },
+    {
+      name: 'Fitness',
+      icon: Database,
+      endpoints: [
+        {
+          name: 'Exercises',
+          endpoint: 'fitness.exercises',
+          category: 'Fitness',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.fitness.exercises.query({ muscle: 'chest' });
+              const count = Array.isArray(response) ? response.length : 0;
+              return {
+                status: 'success' as const,
+                message: `✅ Found ${count} chest exercises`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Generate Workout',
+          endpoint: 'fitness.generate',
+          category: 'Fitness',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.fitness.generate.mutate({
+                goals: ['strength'],
+                level: 'intermediate',
+                duration: 45,
+              });
+              return {
+                status: 'success' as const,
+                message: `✅ Generated workout plan`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'warning' as const,
+                message: `⚠️ ${error.message || 'Generation unavailable'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+      ],
+    },
+    {
+      name: 'Nutrition',
+      icon: Database,
+      endpoints: [
+        {
+          name: 'Food Search',
+          endpoint: 'nutrition.search',
+          category: 'Nutrition',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.nutrition.search.query({ query: 'apple' });
+              const count = response?.foods?.length || 0;
+              return {
+                status: count > 0 ? 'success' as const : 'warning' as const,
+                message: count > 0 ? `✅ Found ${count} food items` : '⚠️ No results',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Barcode Scan',
+          endpoint: 'nutrition.barcode',
+          category: 'Nutrition',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.nutrition.barcode.query({ barcode: '012345678905' });
+              return {
+                status: response ? 'success' as const : 'warning' as const,
+                message: response ? '✅ Barcode API working' : '⚠️ Product not found',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'warning' as const,
+                message: `⚠️ ${error.message || 'Barcode API unavailable'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Meal Plan',
+          endpoint: 'nutrition.mealPlan',
+          category: 'Nutrition',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.nutrition.mealPlan.mutate({
+                calories: 2000,
+                diet: 'balanced',
+                meals: 3,
+              });
+              return {
+                status: 'success' as const,
+                message: '✅ Generated meal plan',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'warning' as const,
+                message: `⚠️ ${error.message || 'Generation unavailable'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+      ],
+    },
+    {
+      name: 'Health',
+      icon: Shield,
+      endpoints: [
+        {
+          name: 'Bloodwork',
+          endpoint: 'health.bloodwork',
+          category: 'Health',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.health.bloodwork.query();
+              return {
+                status: 'success' as const,
+                message: '✅ Bloodwork data retrieved',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Supplements Search',
+          endpoint: 'health.supplements.search',
+          category: 'Health',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.health.supplements.search.query({ query: 'vitamin d' });
+              return {
+                status: 'success' as const,
+                message: `✅ Supplements search working`,
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Digestive Health',
+          endpoint: 'health.digestive',
+          category: 'Health',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.health.digestive.query();
+              return {
+                status: 'success' as const,
+                message: '✅ Digestive health data retrieved',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Detox Protocol',
+          endpoint: 'health.detox',
+          category: 'Health',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.health.detox.query();
+              return {
+                status: 'success' as const,
+                message: '✅ Detox protocol retrieved',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+        {
+          name: 'Health Issues',
+          endpoint: 'health.issues',
+          category: 'Health',
+          test: async () => {
+            const start = Date.now();
+            try {
+              const response = await trpcClient.health.issues.query();
+              return {
+                status: 'success' as const,
+                message: '✅ Health issues data retrieved',
+                responseTime: Date.now() - start,
+                data: response,
+              };
+            } catch (error: any) {
+              return {
+                status: 'error' as const,
+                message: `❌ ${error.message || 'Failed'}`,
+                responseTime: Date.now() - start,
+                error,
+              };
+            }
+          },
+        },
+      ],
+    },
+  ];
 
-      for (const endpoint of endpoints) {
-        try {
-          const response = await fetch(endpoint, {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
-          });
-          
-          if (response.ok || response.status === 405) { // 405 means endpoint exists but doesn't accept GET
-            setBackendStatus('online');
-            console.log('✅ Backend online at:', endpoint);
-            return;
-          }
-        } catch (e) {
-          console.log('Testing endpoint failed:', endpoint, e);
-        }
-      }
-      setBackendStatus('offline');
-    } catch (error) {
-      console.error('Backend connection test failed:', error);
-      setBackendStatus('offline');
-    }
-  };
+  const allTests = apiCategories.flatMap(cat => cat.endpoints);
 
-  // Test individual APIs
-  const testApi = async (api: {
-    name: string;
-    endpoint: string;
-    testFn: () => Promise<any>;
-  }): Promise<ApiTestResult> => {
-    const startTime = Date.now();
-    try {
-      const result = await api.testFn();
-      const responseTime = Date.now() - startTime;
-      
-      return {
-        name: api.name,
-        endpoint: api.endpoint,
-        status: 'success',
-        message: `Connected successfully (${responseTime}ms)`,
-        responseTime,
-        details: result,
-      };
-    } catch (error: any) {
-      const responseTime = Date.now() - startTime;
-      
-      // Check if it's a placeholder key
-      if (error.message?.includes('placeholder') || error.message?.includes('_active')) {
-        return {
-          name: api.name,
-          endpoint: api.endpoint,
-          status: 'warning',
-          message: 'Using placeholder API key - configure real key in .env',
-          responseTime,
-          details: error.message,
-        };
-      }
-      
-      return {
-        name: api.name,
-        endpoint: api.endpoint,
-        status: 'error',
-        message: error.message || 'Connection failed',
-        responseTime,
-        details: error,
-      };
-    }
+  const runTest = async (test: ApiTest): Promise<ApiTestResult> => {
+    const result = await test.test();
+    return {
+      name: test.name,
+      endpoint: test.endpoint,
+      category: test.category,
+      status: 'success',
+      message: '',
+      ...result,
+    } as ApiTestResult;
   };
 
   const runAllTests = async () => {
     setIsTestingAll(true);
     setTestResults([]);
-
-    // First test backend connection
-    await testBackendConnection();
-
-    const apis = [
-      {
-        name: 'RORK Backend API',
-        endpoint: 'https://rork.com/api/p/as5h45pls18cy2nuagueu',
-        testFn: async () => {
-          const response = await fetch('https://rork.com/api/p/as5h45pls18cy2nuagueu/api/trpc/system.apiStatus', {
-            method: 'GET',
-            headers: { 'Accept': 'application/json' },
-          });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          return await response.json();
-        },
-      },
-      {
-        name: 'tRPC System Status',
-        endpoint: '/api/trpc/system.apiStatus',
-        testFn: async () => {
-          // Use trpcClient directly for testing
-          const { trpcClient } = await import('@/lib/trpc');
-          return await trpcClient.system.apiStatus.query();
-        },
-      },
-      {
-        name: 'Shop Products API',
-        endpoint: '/api/trpc/shop.products',
-        testFn: async () => {
-          const { trpcClient } = await import('@/lib/trpc');
-          return await trpcClient.shop.products.query();
-        },
-      },
-      {
-        name: 'RippedCity Website',
-        endpoint: 'https://www.rippedcityinc.com',
-        testFn: async () => {
-          const response = await fetch('https://www.rippedcityinc.com/products.json?limit=10', {
-            headers: {
-              'User-Agent': 'Rip360-Mobile-App/1.0',
-              'Accept': 'application/json',
-            },
-          });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          const data = await response.json();
-          return { productCount: data.products?.length || 0 };
-        },
-      },
-      {
-        name: 'Fitness Exercises API',
-        endpoint: '/api/trpc/fitness.exercises',
-        testFn: async () => {
-          const { trpcClient } = await import('@/lib/trpc');
-          return await trpcClient.fitness.exercises.query({ muscle: 'chest' });
-        },
-      },
-      {
-        name: 'Nutrition Search API',
-        endpoint: '/api/trpc/nutrition.search',
-        testFn: async () => {
-          const { trpcClient } = await import('@/lib/trpc');
-          return await trpcClient.nutrition.search.query({ query: 'apple' });
-        },
-      },
-      {
-        name: 'Health Supplements API',
-        endpoint: '/api/trpc/health.supplements.search',
-        testFn: async () => {
-          const { trpcClient } = await import('@/lib/trpc');
-          return await trpcClient.health.supplements.search.query({ query: 'vitamin c' });
-        },
-      },
-      {
-        name: 'Coaching List API',
-        endpoint: '/api/trpc/coaching.list',
-        testFn: async () => {
-          const { trpcClient } = await import('@/lib/trpc');
-          return await trpcClient.coaching.list.query({});
-        },
-      },
-      {
-        name: 'AI Text Generation',
-        endpoint: 'https://toolkit.rork.com/text/llm/',
-        testFn: async () => {
-          const response = await fetch('https://toolkit.rork.com/text/llm/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              messages: [{ role: 'user', content: 'Test connection' }]
-            }),
-          });
-          if (!response.ok) throw new Error(`HTTP ${response.status}`);
-          return await response.json();
-        },
-      },
-      {
-        name: 'AI Image Generation',
-        endpoint: 'https://toolkit.rork.com/images/generate/',
-        testFn: async () => {
-          // Just test if endpoint responds, don't actually generate
-          const response = await fetch('https://toolkit.rork.com/images/generate/', {
-            method: 'OPTIONS',
-          });
-          return { status: response.status, available: response.status !== 404 };
-        },
-      },
-    ];
-
-    const results: ApiTestResult[] = [];
     
-    for (const api of apis) {
-      const result = await testApi(api);
-      results.push(result);
-      setTestResults([...results]);
-      
-      // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 100));
+    // Initialize all tests as pending
+    const pendingResults = allTests.map(test => ({
+      name: test.name,
+      endpoint: test.endpoint,
+      category: test.category,
+      status: 'pending' as const,
+      message: 'Waiting...',
+    }));
+    setTestResults(pendingResults);
+
+    // Run tests sequentially by category
+    const results: ApiTestResult[] = [];
+    for (const category of apiCategories) {
+      for (const test of category.endpoints) {
+        // Update to testing status
+        const updatedPending = [...results, 
+          { name: test.name, endpoint: test.endpoint, category: test.category, status: 'testing' as const, message: 'Testing...' },
+          ...pendingResults.slice(results.length + 1)
+        ];
+        setTestResults(updatedPending);
+        
+        // Run the test
+        const result = await runTest(test);
+        results.push(result);
+        
+        // Update with result
+        setTestResults([...results, ...pendingResults.slice(results.length)]);
+      }
     }
 
     setIsTestingAll(false);
   };
 
-  const onRefresh = async () => {
+  const runCategoryTests = async (category: string) => {
+    const categoryTests = allTests.filter(t => t.category === category);
+    
+    for (const test of categoryTests) {
+      const updatedResults = [...testResults];
+      const index = updatedResults.findIndex(r => r.endpoint === test.endpoint);
+      
+      if (index >= 0) {
+        updatedResults[index] = { ...updatedResults[index], status: 'testing', message: 'Testing...' };
+        setTestResults(updatedResults);
+        
+        const result = await runTest(test);
+        updatedResults[index] = result;
+        setTestResults(updatedResults);
+      }
+    }
+  };
+
+  const toggleCategory = (category: string) => {
+    const newExpanded = new Set(expandedCategories);
+    if (newExpanded.has(category)) {
+      newExpanded.delete(category);
+    } else {
+      newExpanded.add(category);
+    }
+    setExpandedCategories(newExpanded);
+  };
+
+  const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await runAllTests();
     setRefreshing(false);
-  };
+  }, []);
 
   useEffect(() => {
-    testBackendConnection();
+    // Check connection status first
+    setConnectionStatus('checking');
     runAllTests();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []);
 
   const getStatusIcon = (status: ApiTestResult['status']) => {
     switch (status) {
       case 'success':
-        return <CheckCircle size={20} color="#10b981" />;
+        return <CheckCircle size={20} color={colors.success} />;
       case 'error':
-        return <XCircle size={20} color="#ef4444" />;
+        return <XCircle size={20} color={colors.error} />;
       case 'warning':
-        return <AlertCircle size={20} color="#f59e0b" />;
-      default:
-        return <ActivityIndicator size="small" />;
-    }
-  };
-
-  const getStatusColor = (status: ApiTestResult['status']) => {
-    switch (status) {
-      case 'success':
-        return '#10b981';
-      case 'error':
-        return '#ef4444';
-      case 'warning':
-        return '#f59e0b';
-      default:
-        return '#6b7280';
+        return <AlertCircle size={20} color={colors.warning} />;
+      case 'testing':
+        return <ActivityIndicator size="small" color={colors.primary} />;
+      case 'pending':
+        return <View style={styles.pendingIcon} />;
     }
   };
 
   const successCount = testResults.filter(r => r.status === 'success').length;
   const errorCount = testResults.filter(r => r.status === 'error').length;
   const warningCount = testResults.filter(r => r.status === 'warning').length;
+  const totalTests = allTests.length;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <Stack.Screen
         options={{
-          title: 'API Connection Test',
-          headerStyle: { backgroundColor: '#1f2937' },
-          headerTintColor: '#fff',
+          title: 'RORK API Testing',
+          headerStyle: { backgroundColor: colors.background },
+          headerTintColor: colors.text,
         }}
       />
 
@@ -313,152 +642,204 @@ export default function ApiTestScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        {/* Network Status */}
-        <View style={[styles.statusCard, { backgroundColor: isConnected ? '#10b981' : '#ef4444' }]}>
+        {/* Connection Status Card */}
+        <View style={[styles.statusCard, { 
+          borderColor: connectionStatus === 'connected' ? colors.success : 
+                       connectionStatus === 'disconnected' ? colors.error : colors.warning 
+        }]}>
           <View style={styles.statusHeader}>
-            {isConnected ? (
-              <Wifi size={24} color="#fff" />
+            {connectionStatus === 'connected' ? (
+              <Wifi size={24} color={colors.success} />
+            ) : connectionStatus === 'disconnected' ? (
+              <WifiOff size={24} color={colors.error} />
             ) : (
-              <WifiOff size={24} color="#fff" />
+              <ActivityIndicator size="small" color={colors.primary} />
             )}
-            <Text style={styles.statusTitle}>
-              Network: {isConnected ? 'Connected' : 'Disconnected'}
+            <Text style={[styles.statusTitle, { 
+              color: connectionStatus === 'connected' ? colors.success : 
+                     connectionStatus === 'disconnected' ? colors.error : colors.warning 
+            }]}>
+              {connectionStatus === 'connected' ? 'RORK Backend Connected' : 
+               connectionStatus === 'disconnected' ? 'RORK Backend Disconnected' : 
+               'Checking RORK Connection...'}
             </Text>
           </View>
-        </View>
-
-        {/* Backend Status */}
-        <View style={[
-          styles.statusCard,
-          { backgroundColor: backendStatus === 'online' ? '#10b981' : backendStatus === 'offline' ? '#ef4444' : '#f59e0b' }
-        ]}>
-          <View style={styles.statusHeader}>
-            {backendStatus === 'checking' ? (
-              <ActivityIndicator color="#fff" />
-            ) : backendStatus === 'online' ? (
-              <CheckCircle size={24} color="#fff" />
-            ) : (
-              <XCircle size={24} color="#fff" />
-            )}
-            <Text style={styles.statusTitle}>
-              Backend: {backendStatus === 'checking' ? 'Checking...' : backendStatus === 'online' ? 'Online' : 'Offline'}
-            </Text>
-          </View>
-          {backendStatus === 'offline' && (
-            <Text style={styles.statusSubtitle}>
-              Check EXPO_PUBLIC_RORK_API_BASE_URL in .env
+          <Text style={styles.statusSubtitle} numberOfLines={1}>
+            {baseUrl}
+          </Text>
+          {connectionStatus === 'disconnected' && (
+            <Text style={styles.errorHint}>
+              Verify your RORK project is running and accessible
             </Text>
           )}
         </View>
 
         {/* Test Summary */}
-        {testResults.length > 0 && (
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Test Summary</Text>
-            <View style={styles.summaryStats}>
-              <View style={styles.statItem}>
-                <Text style={[styles.statNumber, { color: '#10b981' }]}>{successCount}</Text>
-                <Text style={styles.statLabel}>Success</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statNumber, { color: '#f59e0b' }]}>{warningCount}</Text>
-                <Text style={styles.statLabel}>Warning</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Text style={[styles.statNumber, { color: '#ef4444' }]}>{errorCount}</Text>
-                <Text style={styles.statLabel}>Failed</Text>
-              </View>
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>API Test Results</Text>
+          <View style={styles.summaryStats}>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.success }]}>{successCount}</Text>
+              <Text style={styles.statLabel}>Passed</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.error }]}>{errorCount}</Text>
+              <Text style={styles.statLabel}>Failed</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.warning }]}>{warningCount}</Text>
+              <Text style={styles.statLabel}>Warnings</Text>
+            </View>
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: colors.textSecondary }]}>{totalTests}</Text>
+              <Text style={styles.statLabel}>Total</Text>
             </View>
           </View>
-        )}
-
-        {/* Test Results */}
-        <View style={styles.resultsSection}>
-          <Text style={styles.sectionTitle}>API Test Results</Text>
-          
-          {testResults.map((result, index) => (
-            <View key={index} style={styles.resultCard}>
-              <View style={styles.resultHeader}>
-                {getStatusIcon(result.status)}
-                <Text style={styles.resultName}>{result.name}</Text>
-              </View>
-              
-              <Text style={styles.resultEndpoint}>{result.endpoint}</Text>
-              
-              <Text style={[styles.resultMessage, { color: getStatusColor(result.status) }]}>
-                {result.message}
-              </Text>
-              
-              {result.responseTime && (
-                <Text style={styles.responseTime}>
-                  Response time: {result.responseTime}ms
-                </Text>
-              )}
-              
-              {result.status === 'error' && result.details && (
-                <TouchableOpacity
-                  onPress={() => Alert.alert('Error Details', JSON.stringify(result.details, null, 2))}
-                >
-                  <Text style={styles.viewDetails}>View Details</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          ))}
+          <View style={styles.progressBar}>
+            <View style={[styles.progressFill, { 
+              width: `${(successCount / totalTests) * 100}%`,
+              backgroundColor: colors.success 
+            }]} />
+          </View>
         </View>
 
-        {/* Test Button */}
-        {!isTestingAll && (
-          <TouchableOpacity style={styles.testButton} onPress={runAllTests}>
-            <RefreshCw size={20} color="#fff" />
-            <Text style={styles.testButtonText}>Run All Tests</Text>
-          </TouchableOpacity>
-        )}
+        {/* Run All Tests Button */}
+        <TouchableOpacity
+          style={[styles.runAllButton, isTestingAll && styles.runAllButtonDisabled]}
+          onPress={runAllTests}
+          disabled={isTestingAll}
+        >
+          {isTestingAll ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <RefreshCw size={20} color="white" />
+          )}
+          <Text style={styles.runAllButtonText}>
+            {isTestingAll ? `Testing ${testResults.filter(r => r.status === 'testing').length + 1}/${totalTests}...` : 'Test All RORK Endpoints'}
+          </Text>
+        </TouchableOpacity>
 
-        {isTestingAll && (
-          <View style={styles.testingIndicator}>
-            <ActivityIndicator size="large" color="#3b82f6" />
-            <Text style={styles.testingText}>Running API tests...</Text>
+        {/* Test Results by Category */}
+        {apiCategories.map((category) => {
+          const categoryResults = testResults.filter(r => r.category === category.name);
+          const categorySuccess = categoryResults.filter(r => r.status === 'success').length;
+          const categoryError = categoryResults.filter(r => r.status === 'error').length;
+          const isExpanded = expandedCategories.has(category.name);
+          const Icon = category.icon;
+
+          return (
+            <View key={category.name} style={styles.categoryContainer}>
+              <TouchableOpacity
+                style={styles.categoryHeader}
+                onPress={() => toggleCategory(category.name)}
+              >
+                <View style={styles.categoryInfo}>
+                  <Icon size={20} color={colors.primary} />
+                  <Text style={styles.categoryTitle}>{category.name}</Text>
+                  <View style={styles.categoryBadges}>
+                    {categorySuccess > 0 && (
+                      <View style={[styles.badge, { backgroundColor: colors.success + '20' }]}>
+                        <Text style={[styles.badgeText, { color: colors.success }]}>{categorySuccess}</Text>
+                      </View>
+                    )}
+                    {categoryError > 0 && (
+                      <View style={[styles.badge, { backgroundColor: colors.error + '20' }]}>
+                        <Text style={[styles.badgeText, { color: colors.error }]}>{categoryError}</Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={styles.testCategoryButton}
+                  onPress={(e) => {
+                    e.stopPropagation();
+                    runCategoryTests(category.name);
+                  }}
+                >
+                  <Text style={styles.testCategoryText}>Test</Text>
+                </TouchableOpacity>
+              </TouchableOpacity>
+
+              {isExpanded && (
+                <View style={styles.endpointsList}>
+                  {category.endpoints.map((endpoint) => {
+                    const result = testResults.find(r => r.endpoint === endpoint.endpoint);
+                    if (!result) return null;
+
+                    return (
+                      <TouchableOpacity
+                        key={endpoint.endpoint}
+                        style={styles.endpointCard}
+                        onPress={() => runTest(endpoint).then(r => {
+                          setTestResults(prev => prev.map(tr => 
+                            tr.endpoint === r.endpoint ? r : tr
+                          ));
+                        })}
+                        disabled={result.status === 'testing'}
+                      >
+                        <View style={styles.endpointHeader}>
+                          {getStatusIcon(result.status)}
+                          <View style={styles.endpointInfo}>
+                            <Text style={styles.endpointName}>{result.name}</Text>
+                            <Text style={styles.endpointPath}>{result.endpoint}</Text>
+                          </View>
+                          {result.responseTime !== undefined && (
+                            <Text style={styles.responseTime}>{result.responseTime}ms</Text>
+                          )}
+                        </View>
+                        <Text style={styles.endpointMessage}>{result.message}</Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
+          );
+        })}
+
+        {/* Debug Information */}
+        <View style={styles.debugCard}>
+          <Text style={styles.debugTitle}>Configuration Details</Text>
+          <View style={styles.debugRow}>
+            <Text style={styles.debugLabel}>Platform:</Text>
+            <Text style={styles.debugValue}>{Platform.OS}</Text>
           </View>
-        )}
-
-        {/* Configuration Info */}
-        <View style={styles.configCard}>
-          <Text style={styles.configTitle}>Configuration</Text>
-          <Text style={styles.configItem}>
-            Platform: {Platform.OS}
-          </Text>
-          <Text style={styles.configItem}>
-            Base URL: {process.env.EXPO_PUBLIC_RORK_API_BASE_URL || 'Not configured'}
-          </Text>
-          <Text style={styles.configItem}>
-            Force Mock: {process.env.EXPO_PUBLIC_FORCE_MOCK_DATA || 'false'}
-          </Text>
-          <Text style={styles.configItem}>
-            Debug API: {process.env.EXPO_PUBLIC_DEBUG_API || 'false'}
-          </Text>
+          <View style={styles.debugRow}>
+            <Text style={styles.debugLabel}>RORK API URL:</Text>
+            <Text style={styles.debugValue} numberOfLines={1}>{baseUrl}</Text>
+          </View>
+          <View style={styles.debugRow}>
+            <Text style={styles.debugLabel}>Mock Data:</Text>
+            <Text style={styles.debugValue}>{process.env.EXPO_PUBLIC_FORCE_MOCK_DATA || 'false'}</Text>
+          </View>
+          <View style={styles.debugRow}>
+            <Text style={styles.debugLabel}>Debug Mode:</Text>
+            <Text style={styles.debugValue}>{process.env.EXPO_PUBLIC_DEBUG_API || 'true'}</Text>
+          </View>
+          <View style={styles.debugRow}>
+            <Text style={styles.debugLabel}>Total Endpoints:</Text>
+            <Text style={styles.debugValue}>{totalTests}</Text>
+          </View>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
   },
   statusCard: {
+    backgroundColor: colors.surface,
     margin: 16,
     padding: 16,
     borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    borderWidth: 2,
   },
   statusHeader: {
     flexDirection: 'row',
@@ -468,139 +849,194 @@ const styles = StyleSheet.create({
   statusTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
   },
   statusSubtitle: {
-    fontSize: 14,
-    color: '#fff',
+    fontSize: 12,
+    color: colors.textSecondary,
     marginTop: 8,
-    opacity: 0.9,
+  },
+  errorHint: {
+    fontSize: 12,
+    color: colors.error,
+    marginTop: 4,
+    fontStyle: 'italic',
   },
   summaryCard: {
-    backgroundColor: '#fff',
-    margin: 16,
+    backgroundColor: colors.surface,
+    marginHorizontal: 16,
+    marginBottom: 16,
     padding: 16,
     borderRadius: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
   },
   summaryTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
-    marginBottom: 16,
+    color: colors.text,
+    marginBottom: 12,
   },
   summaryStats: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginBottom: 12,
   },
   statItem: {
     alignItems: 'center',
   },
   statNumber: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
   },
   statLabel: {
-    fontSize: 14,
-    color: '#6b7280',
+    fontSize: 12,
+    color: colors.textSecondary,
     marginTop: 4,
   },
-  resultsSection: {
-    padding: 16,
+  progressBar: {
+    height: 4,
+    backgroundColor: colors.border,
+    borderRadius: 2,
+    overflow: 'hidden',
   },
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#1f2937',
+  progressFill: {
+    height: '100%',
+    borderRadius: 2,
+  },
+  runAllButton: {
+    backgroundColor: colors.primary,
+    marginHorizontal: 16,
     marginBottom: 16,
-  },
-  resultCard: {
-    backgroundColor: '#fff',
     padding: 16,
     borderRadius: 12,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  resultHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
-  },
-  resultName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1f2937',
-    flex: 1,
-  },
-  resultEndpoint: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 8,
-  },
-  resultMessage: {
-    fontSize: 14,
-    marginBottom: 4,
-  },
-  responseTime: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginTop: 4,
-  },
-  viewDetails: {
-    fontSize: 14,
-    color: '#3b82f6',
-    marginTop: 8,
-    textDecorationLine: 'underline',
-  },
-  testButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: '#3b82f6',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
   },
-  testButtonText: {
-    color: '#fff',
+  runAllButtonDisabled: {
+    opacity: 0.6,
+  },
+  runAllButtonText: {
+    color: 'white',
     fontSize: 16,
     fontWeight: '600',
   },
-  testingIndicator: {
+  categoryContainer: {
+    backgroundColor: colors.surface,
+    marginHorizontal: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  categoryHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    padding: 32,
+    justifyContent: 'space-between',
+    padding: 16,
   },
-  testingText: {
+  categoryInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  categoryTitle: {
     fontSize: 16,
-    color: '#6b7280',
-    marginTop: 16,
+    fontWeight: '600',
+    color: colors.text,
   },
-  configCard: {
-    backgroundColor: '#fff',
+  categoryBadges: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  badgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  testCategoryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: colors.primary + '20',
+  },
+  testCategoryText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  endpointsList: {
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  endpointCard: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  endpointHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  endpointInfo: {
+    flex: 1,
+  },
+  endpointName: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: colors.text,
+  },
+  endpointPath: {
+    fontSize: 11,
+    color: colors.textSecondary,
+    marginTop: 2,
+  },
+  endpointMessage: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 4,
+    marginLeft: 32,
+  },
+  responseTime: {
+    fontSize: 11,
+    color: colors.textSecondary,
+  },
+  pendingIcon: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: colors.border,
+  },
+  debugCard: {
+    backgroundColor: colors.surface,
     margin: 16,
     padding: 16,
     borderRadius: 12,
-    marginBottom: 32,
   },
-  configTitle: {
+  debugTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#1f2937',
+    color: colors.text,
     marginBottom: 12,
   },
-  configItem: {
-    fontSize: 14,
-    color: '#6b7280',
+  debugRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 8,
+  },
+  debugLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  debugValue: {
+    fontSize: 12,
+    color: colors.text,
+    fontWeight: '500',
+    flex: 1,
+    textAlign: 'right',
   },
 });
