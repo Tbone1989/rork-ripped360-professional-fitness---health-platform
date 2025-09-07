@@ -99,6 +99,7 @@ export default function PlanDetailScreen() {
 
     // If already enrolled, navigate to workout session
     if (isEnrolled) {
+      console.log('[PlanDetail] Navigating to workout session:', `/workout/${plan.id}`);
       router.push(`/workout/${plan.id}`);
       return;
     }
