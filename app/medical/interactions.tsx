@@ -5,6 +5,7 @@ import { AlertTriangle, Search, Filter, Shield, Info, X, CheckCircle } from 'luc
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { colors } from '@/constants/colors';
 import { drugInteractions, supplementInteractions, herbalInteractions } from '@/mocks/supplements';
 import { DrugInteraction, SupplementInteraction, HerbalInteraction, InteractionAlert } from '@/types/medical';
 
@@ -195,8 +196,8 @@ export default function InteractionsScreen() {
                   {alert.recommendation}
                 </Text>
                 <Badge 
-                  text={alert.severity.toUpperCase()} 
-                  color={getSeverityColor(alert.severity)}
+                  label={alert.severity.toUpperCase()} 
+                  variant={alert.severity === 'critical' ? 'error' : alert.severity === 'major' ? 'warning' : 'info'}
                   style={styles.severityBadge}
                 />
               </Card>
@@ -263,8 +264,8 @@ export default function InteractionsScreen() {
                     {interaction.drug1} + {interaction.drug2}
                   </Text>
                   <Badge 
-                    text={interaction.severity.toUpperCase()} 
-                    color={getSeverityColor(interaction.severity)}
+                    label={interaction.severity.toUpperCase()} 
+                    variant={interaction.severity === 'serious' || interaction.severity === 'significant' ? 'error' : interaction.severity === 'contraindicated' ? 'warning' : 'info'}
                   />
                 </View>
                 <Text style={styles.interactionDescription}>{interaction.description}</Text>
@@ -301,8 +302,8 @@ export default function InteractionsScreen() {
                     {interaction.supplement} + {interaction.interactsWith}
                   </Text>
                   <Badge 
-                    text={interaction.severity.toUpperCase()} 
-                    color={getSeverityColor(interaction.severity)}
+                    label={interaction.severity.toUpperCase()} 
+                    variant={interaction.severity === 'high' ? 'error' : interaction.severity === 'moderate' ? 'warning' : 'info'}
                   />
                 </View>
                 <Text style={styles.interactionDescription}>{interaction.description}</Text>
@@ -363,13 +364,13 @@ export default function InteractionsScreen() {
                 <View style={styles.safetyInfo}>
                   <Text style={styles.safetyLabel}>Pregnancy: </Text>
                   <Badge 
-                    text={interaction.pregnancySafety.toUpperCase()} 
-                    color={interaction.pregnancySafety === 'safe' ? '#10B981' : interaction.pregnancySafety === 'avoid' ? '#DC2626' : '#D97706'}
+                    label={interaction.pregnancySafety.toUpperCase()} 
+                    variant={interaction.pregnancySafety === 'safe' ? 'success' : interaction.pregnancySafety === 'avoid' ? 'error' : 'warning'}
                   />
                   <Text style={styles.safetyLabel}>Breastfeeding: </Text>
                   <Badge 
-                    text={interaction.breastfeedingSafety.toUpperCase()} 
-                    color={interaction.breastfeedingSafety === 'safe' ? '#10B981' : interaction.breastfeedingSafety === 'avoid' ? '#DC2626' : '#D97706'}
+                    label={interaction.breastfeedingSafety.toUpperCase()} 
+                    variant={interaction.breastfeedingSafety === 'safe' ? 'success' : interaction.breastfeedingSafety === 'avoid' ? 'error' : 'warning'}
                   />
                 </View>
               </Card>
@@ -384,7 +385,7 @@ export default function InteractionsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
+    backgroundColor: colors.background.primary,
   },
   content: {
     flex: 1,
@@ -402,12 +403,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#1F2937',
+    color: colors.text.primary,
   },
   alertCard: {
     marginBottom: 12,
     borderLeftWidth: 4,
-    backgroundColor: '#FEF2F2',
+    backgroundColor: colors.background.secondary,
   },
   alertHeader: {
     flexDirection: 'row',
