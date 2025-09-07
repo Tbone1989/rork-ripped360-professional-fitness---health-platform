@@ -92,7 +92,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.example.hi.query();
+              const response = await trpcClient.example.hi.mutate({ name: 'Test' });
               return {
                 status: 'success' as const,
                 message: '✅ Test endpoint working',
@@ -153,7 +153,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.list.query();
+              const response = await trpcClient.coaching.list.query({});
               const count = Array.isArray(response) ? response.length : 0;
               return {
                 status: 'success' as const,
@@ -178,7 +178,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.clients.query();
+              const response = await trpcClient.coaching.clients.query({ viewerId: 'test', viewerRole: 'coach' });
               return {
                 status: 'success' as const,
                 message: `✅ Retrieved client data`,
@@ -202,7 +202,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.sessions.list.query();
+              const response = await trpcClient.coaching.sessions.list.query({ coachId: 'test' });
               return {
                 status: 'success' as const,
                 message: `✅ Sessions endpoint working`,
@@ -226,7 +226,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.messages.conversations.query();
+              const response = await trpcClient.coaching.messages.conversations.query({ userId: 'test' });
               return {
                 status: 'success' as const,
                 message: `✅ Messages endpoint working`,
@@ -282,8 +282,9 @@ export default function ApiTestScreen() {
             const start = Date.now();
             try {
               const response = await trpcClient.fitness.generate.mutate({
-                goals: ['strength'],
-                level: 'intermediate',
+                type: 'strength',
+                muscle: ['chest', 'triceps'],
+                difficulty: 'intermediate',
                 duration: 45,
               });
               return {
@@ -316,7 +317,7 @@ export default function ApiTestScreen() {
             const start = Date.now();
             try {
               const response = await trpcClient.nutrition.search.query({ query: 'apple' });
-              const count = response?.foods?.length || 0;
+              const count = Array.isArray(response) ? response.length : 0;
               return {
                 status: count > 0 ? 'success' as const : 'warning' as const,
                 message: count > 0 ? `✅ Found ${count} food items` : '⚠️ No results',
@@ -366,8 +367,11 @@ export default function ApiTestScreen() {
             try {
               const response = await trpcClient.nutrition.mealPlan.mutate({
                 calories: 2000,
-                diet: 'balanced',
+                protein: 150,
+                carbs: 250,
+                fat: 70,
                 meals: 3,
+                restrictions: [],
               });
               return {
                 status: 'success' as const,
@@ -398,7 +402,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.bloodwork.query();
+              const response = await trpcClient.health.bloodwork.mutate({});
               return {
                 status: 'success' as const,
                 message: '✅ Bloodwork data retrieved',
@@ -446,7 +450,10 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.digestive.query();
+              const response = await trpcClient.health.digestive.mutate({
+                symptoms: ['bloating'],
+                frequency: { bloating: 'occasional' },
+              });
               return {
                 status: 'success' as const,
                 message: '✅ Digestive health data retrieved',
@@ -470,7 +477,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.detox.query();
+              const response = await trpcClient.health.detox.mutate({});
               return {
                 status: 'success' as const,
                 message: '✅ Detox protocol retrieved',
@@ -494,7 +501,9 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.issues.query();
+              const response = await trpcClient.health.issues.mutate({
+                symptoms: ['fatigue'],
+              });
               return {
                 status: 'success' as const,
                 message: '✅ Health issues data retrieved',
@@ -609,13 +618,13 @@ export default function ApiTestScreen() {
   const getStatusIcon = (status: ApiTestResult['status']) => {
     switch (status) {
       case 'success':
-        return <CheckCircle size={20} color={colors.success} />;
+        return <CheckCircle size={20} color={colors.status.success} />;
       case 'error':
-        return <XCircle size={20} color={colors.error} />;
+        return <XCircle size={20} color={colors.status.error} />;
       case 'warning':
-        return <AlertCircle size={20} color={colors.warning} />;
+        return <AlertCircle size={20} color={colors.status.warning} />;
       case 'testing':
-        return <ActivityIndicator size="small" color={colors.primary} />;
+        return <ActivityIndicator size="small" color={colors.accent.primary} />;
       case 'pending':
         return <View style={styles.pendingIcon} />;
     }
@@ -631,8 +640,8 @@ export default function ApiTestScreen() {
       <Stack.Screen
         options={{
           title: 'RORK API Testing',
-          headerStyle: { backgroundColor: colors.background },
-          headerTintColor: colors.text,
+          headerStyle: { backgroundColor: colors.background.primary },
+          headerTintColor: colors.text.primary,
         }}
       />
 
@@ -644,20 +653,20 @@ export default function ApiTestScreen() {
       >
         {/* Connection Status Card */}
         <View style={[styles.statusCard, { 
-          borderColor: connectionStatus === 'connected' ? colors.success : 
-                       connectionStatus === 'disconnected' ? colors.error : colors.warning 
+          borderColor: connectionStatus === 'connected' ? colors.status.success : 
+                       connectionStatus === 'disconnected' ? colors.status.error : colors.status.warning 
         }]}>
           <View style={styles.statusHeader}>
             {connectionStatus === 'connected' ? (
-              <Wifi size={24} color={colors.success} />
+              <Wifi size={24} color={colors.status.success} />
             ) : connectionStatus === 'disconnected' ? (
-              <WifiOff size={24} color={colors.error} />
+              <WifiOff size={24} color={colors.status.error} />
             ) : (
-              <ActivityIndicator size="small" color={colors.primary} />
+              <ActivityIndicator size="small" color={colors.accent.primary} />
             )}
             <Text style={[styles.statusTitle, { 
-              color: connectionStatus === 'connected' ? colors.success : 
-                     connectionStatus === 'disconnected' ? colors.error : colors.warning 
+              color: connectionStatus === 'connected' ? colors.status.success : 
+                     connectionStatus === 'disconnected' ? colors.status.error : colors.status.warning 
             }]}>
               {connectionStatus === 'connected' ? 'RORK Backend Connected' : 
                connectionStatus === 'disconnected' ? 'RORK Backend Disconnected' : 
@@ -679,26 +688,26 @@ export default function ApiTestScreen() {
           <Text style={styles.summaryTitle}>API Test Results</Text>
           <View style={styles.summaryStats}>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.success }]}>{successCount}</Text>
+              <Text style={[styles.statNumber, { color: colors.status.success }]}>{successCount}</Text>
               <Text style={styles.statLabel}>Passed</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.error }]}>{errorCount}</Text>
+              <Text style={[styles.statNumber, { color: colors.status.error }]}>{errorCount}</Text>
               <Text style={styles.statLabel}>Failed</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.warning }]}>{warningCount}</Text>
+              <Text style={[styles.statNumber, { color: colors.status.warning }]}>{warningCount}</Text>
               <Text style={styles.statLabel}>Warnings</Text>
             </View>
             <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: colors.textSecondary }]}>{totalTests}</Text>
+              <Text style={[styles.statNumber, { color: colors.text.secondary }]}>{totalTests}</Text>
               <Text style={styles.statLabel}>Total</Text>
             </View>
           </View>
           <View style={styles.progressBar}>
             <View style={[styles.progressFill, { 
               width: `${(successCount / totalTests) * 100}%`,
-              backgroundColor: colors.success 
+              backgroundColor: colors.status.success 
             }]} />
           </View>
         </View>
@@ -734,17 +743,17 @@ export default function ApiTestScreen() {
                 onPress={() => toggleCategory(category.name)}
               >
                 <View style={styles.categoryInfo}>
-                  <Icon size={20} color={colors.primary} />
+                  <Icon size={20} color={colors.accent.primary} />
                   <Text style={styles.categoryTitle}>{category.name}</Text>
                   <View style={styles.categoryBadges}>
                     {categorySuccess > 0 && (
-                      <View style={[styles.badge, { backgroundColor: colors.success + '20' }]}>
-                        <Text style={[styles.badgeText, { color: colors.success }]}>{categorySuccess}</Text>
+                      <View style={[styles.badge, { backgroundColor: colors.status.success + '20' }]}>
+                        <Text style={[styles.badgeText, { color: colors.status.success }]}>{categorySuccess}</Text>
                       </View>
                     )}
                     {categoryError > 0 && (
-                      <View style={[styles.badge, { backgroundColor: colors.error + '20' }]}>
-                        <Text style={[styles.badgeText, { color: colors.error }]}>{categoryError}</Text>
+                      <View style={[styles.badge, { backgroundColor: colors.status.error + '20' }]}>
+                        <Text style={[styles.badgeText, { color: colors.status.error }]}>{categoryError}</Text>
                       </View>
                     )}
                   </View>
@@ -829,13 +838,13 @@ export default function ApiTestScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.background.primary,
   },
   scrollView: {
     flex: 1,
   },
   statusCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background.card,
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -852,17 +861,17 @@ const styles = StyleSheet.create({
   },
   statusSubtitle: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     marginTop: 8,
   },
   errorHint: {
     fontSize: 12,
-    color: colors.error,
+    color: colors.status.error,
     marginTop: 4,
     fontStyle: 'italic',
   },
   summaryCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background.card,
     marginHorizontal: 16,
     marginBottom: 16,
     padding: 16,
@@ -871,7 +880,7 @@ const styles = StyleSheet.create({
   summaryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: 12,
   },
   summaryStats: {
@@ -888,12 +897,12 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     marginTop: 4,
   },
   progressBar: {
     height: 4,
-    backgroundColor: colors.border,
+    backgroundColor: colors.border.light,
     borderRadius: 2,
     overflow: 'hidden',
   },
@@ -902,7 +911,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   runAllButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     marginHorizontal: 16,
     marginBottom: 16,
     padding: 16,
@@ -921,7 +930,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   categoryContainer: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background.card,
     marginHorizontal: 16,
     marginBottom: 12,
     borderRadius: 12,
@@ -942,7 +951,7 @@ const styles = StyleSheet.create({
   categoryTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.text.primary,
   },
   categoryBadges: {
     flexDirection: 'row',
@@ -961,21 +970,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,
-    backgroundColor: colors.primary + '20',
+    backgroundColor: colors.accent.primary + '20',
   },
   testCategoryText: {
     fontSize: 12,
     fontWeight: '600',
-    color: colors.primary,
+    color: colors.accent.primary,
   },
   endpointsList: {
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.border.light,
   },
   endpointCard: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.border.light,
   },
   endpointHeader: {
     flexDirection: 'row',
@@ -988,31 +997,31 @@ const styles = StyleSheet.create({
   endpointName: {
     fontSize: 14,
     fontWeight: '500',
-    color: colors.text,
+    color: colors.text.primary,
   },
   endpointPath: {
     fontSize: 11,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     marginTop: 2,
   },
   endpointMessage: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     marginTop: 4,
     marginLeft: 32,
   },
   responseTime: {
     fontSize: 11,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
   },
   pendingIcon: {
     width: 20,
     height: 20,
     borderRadius: 10,
-    backgroundColor: colors.border,
+    backgroundColor: colors.border.light,
   },
   debugCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background.card,
     margin: 16,
     padding: 16,
     borderRadius: 12,
@@ -1020,7 +1029,7 @@ const styles = StyleSheet.create({
   debugTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: 12,
   },
   debugRow: {
@@ -1030,11 +1039,11 @@ const styles = StyleSheet.create({
   },
   debugLabel: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
   },
   debugValue: {
     fontSize: 12,
-    color: colors.text,
+    color: colors.text.primary,
     fontWeight: '500',
     flex: 1,
     textAlign: 'right',
