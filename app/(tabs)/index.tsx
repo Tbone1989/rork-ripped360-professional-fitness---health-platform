@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, Animated } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign, Gift, Check, RefreshCw } from 'lucide-react-native';
+import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { brandAssets } from '@/constants/brand';
@@ -44,7 +44,7 @@ export default function HomeScreen() {
     return shuffled;
   };
 
-  // Rotate products with fade animation
+  // Rotate products with fade animation and more variety
   const rotateProducts = React.useCallback(() => {
     // Fade out
     Animated.timing(fadeAnim, {
@@ -52,10 +52,13 @@ export default function HomeScreen() {
       duration: 300,
       useNativeDriver: true,
     }).start(() => {
-      // Update products
-      const allProducts = [...products];
+      // Combine all available products for maximum variety
+      const allProducts = [...products, ...featuredProducts];
       const shuffled = shuffleArray(allProducts);
-      setRotatedProducts(shuffled);
+      // Take different slices each time to ensure variety
+      const startIndex = Math.floor(Math.random() * Math.max(1, allProducts.length - 8));
+      const rotated = shuffled.slice(startIndex, startIndex + 8);
+      setRotatedProducts(rotated);
       setLastRotation(Date.now());
       
       // Fade back in
@@ -67,13 +70,13 @@ export default function HomeScreen() {
     });
   }, [fadeAnim]);
 
-  // Auto-rotate products every 15 seconds for more visible movement
+  // Auto-rotate products every 10 seconds with more variety
   React.useEffect(() => {
     rotateProducts(); // Initial rotation
     
     const interval = setInterval(() => {
       rotateProducts();
-    }, 15000); // 15 seconds for more frequent updates
+    }, 10000); // 10 seconds for more frequent updates
 
     return () => clearInterval(interval);
   }, [rotateProducts]);
@@ -127,8 +130,8 @@ export default function HomeScreen() {
         url: typeof p.url === 'string' ? p.url : undefined,
       }));
     }
-    // Use rotated products for variety, fallback to featured if rotation not ready
-    const sourceProducts = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : shuffleArray(featuredProducts).slice(0, 5);
+    // Use rotated products for variety, ensure we show different items each time
+    const sourceProducts = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : shuffleArray([...products, ...featuredProducts]).slice(0, 5);
     return sourceProducts.map((p) => ({
       id: p.id,
       name: p.name,
@@ -310,13 +313,7 @@ export default function HomeScreen() {
             </ScrollView>
           </Animated.View>
           
-          {/* Rotation indicator with animation */}
-          <View style={styles.rotationIndicator}>
-            <View style={styles.rotationStatus}>
-              <RefreshCw size={12} color={colors.accent.primary} style={styles.rotatingIcon} />
-              <Text style={styles.rotationText}>Products shuffle every 15s • Fresh selection</Text>
-            </View>
-          </View>
+
         </View>
 
         <View style={styles.section}>
@@ -769,22 +766,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border.light,
   },
-  rotationIndicator: {
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  rotationStatus: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  rotatingIcon: {
-    opacity: 0.7,
-  },
-  rotationText: {
-    fontSize: 12,
-    color: colors.text.tertiary,
-    fontStyle: 'italic',
-  },
+
 
 });
