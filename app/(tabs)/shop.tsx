@@ -30,6 +30,15 @@ type ShopProduct = {
   price?: number;
 };
 
+const normalizeImageUrl = (src?: string): string | undefined => {
+  if (!src || typeof src !== 'string') return undefined;
+  const s = src.trim();
+  if (!s) return undefined;
+  if (s.startsWith('//')) return `https:${s}`;
+  if (s.startsWith('/')) return `https://www.rippedcityinc.com${s}`;
+  try { new URL(s); return s; } catch { return undefined; }
+};
+
 const ProductCard = ({ item }: { item: ShopProduct }) => {
   return (
     <View style={styles.productCard}>
@@ -105,7 +114,7 @@ export default function ShopScreen() {
     const arr = Array.isArray(dataAny?.products) ? dataAny.products : Array.isArray(dataAny) ? dataAny : [];
     return arr.slice(0, 250).map((p: any, index: number) => {
       const id = String(p.id || p.handle || `shop-${Date.now()}-${index}`);
-      const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
+      const image = normalizeImageUrl(p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined);
       const price = typeof p.price === 'number' ? (p.price > 1000 ? p.price / 100 : p.price) : typeof p.price_min === 'number' ? p.price_min / 100 : typeof p.variants?.[0]?.price === 'string' ? Number(p.variants[0].price) : undefined;
       const handle = p.handle ?? undefined;
       const url = handle ? `https://www.rippedcityinc.com/products/${handle}` : typeof p.url === 'string' ? p.url : `https://www.rippedcityinc.com`;
@@ -142,8 +151,11 @@ export default function ShopScreen() {
   }, [data, fallbackTried, parseProductsFromJson, tryFetchJson]);
 
   const sourceList: ShopProduct[] = useMemo(() => {
-    const apiList = (data ?? []) as ShopProduct[];
-    return apiList.length > 0 ? apiList : fallback;
+    const apiList = (Array.isArray(data) ? (data as ShopProduct[]) : [])
+      .map((p) => ({ ...p, image: normalizeImageUrl(p.image) }));
+    const base = apiList.length > 0 ? apiList : fallback;
+    const dedup = base.filter((p, idx, arr) => arr.findIndex(x => x.url === p.url) === idx);
+    return dedup;
   }, [data, fallback]);
 
   const products: ShopProduct[] = useMemo(() => {

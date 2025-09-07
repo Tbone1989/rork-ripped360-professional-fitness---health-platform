@@ -65,10 +65,10 @@ export default function HomeScreen() {
         isExternal: true,
       }));
 
-      const pool = [...mockPool, ...externalPool];
-      const shuffled = shuffleArray(pool);
-      const take = Math.min(12, shuffled.length);
-      const rotated = shuffled.slice(0, take);
+      const pool = shuffleArray([...externalPool, ...mockPool]);
+      const take = Math.min(14, pool.length);
+      const rotated = pool.slice(0, take);
+      console.log(`[Home] rotateProducts picked: externals=${externalPool.length} total=${pool.length}`);
       setRotatedProducts(rotated);
       setLastRotation(Date.now());
 
@@ -141,8 +141,20 @@ export default function HomeScreen() {
 
   type FeaturedItem = { id: string; name: string; image: string; price?: number; rating?: number; isExternal: boolean; url?: string };
   const featuredList: FeaturedItem[] = React.useMemo(() => {
-    const source = rotatedProducts.length > 0 ? rotatedProducts.slice(0, 5) : shuffleArray([...products, ...featuredProducts]).slice(0, 5);
-    return source.map((p: any, index: number) => {
+    const logCounts = () => {
+      try {
+        const extCount = rotatedProducts.filter((x: any) => typeof x?.url === 'string').length;
+        console.log(`[Home] Featured build. rotated=${rotatedProducts.length} externals=${extCount} lastRotation=${lastRotation}`);
+      } catch {}
+    };
+    logCounts();
+
+    let sourceBase: any[] = rotatedProducts.length > 0 ? rotatedProducts : shuffleArray([...products, ...featuredProducts]);
+    const externals = sourceBase.filter((p: any) => typeof p?.url === 'string');
+    const internals = sourceBase.filter((p: any) => typeof p?.url !== 'string');
+
+    const source = [...externals, ...internals].slice(0, 8);
+    return source.slice(0, 5).map((p: any, index: number) => {
       const isExternal = typeof p.url === 'string';
       const id = String(p.id ?? `feat-${index}`);
       const name = String((p.name ?? p.title) ?? 'Product');

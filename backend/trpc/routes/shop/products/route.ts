@@ -11,6 +11,29 @@ type ShopProduct = {
   handle?: string;
 };
 
+function normalizeImageUrl(src?: string): string | undefined {
+  if (!src || typeof src !== "string") return undefined;
+  let s = src.trim();
+  if (!s) return undefined;
+  if (s.startsWith("//")) return `https:${s}`;
+  if (s.startsWith("/")) return `https://www.rippedcityinc.com${s}`;
+  try {
+    const u = new URL(s);
+    return u.toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function normalizeProduct(p: ShopProduct): ShopProduct {
+  return {
+    ...p,
+    image: normalizeImageUrl(p.image),
+    url: p.url.startsWith("http") ? p.url : `https://www.rippedcityinc.com${p.url.startsWith("/") ? "" : "/"}${p.url}`,
+    price: typeof p.price === "number" && isFinite(p.price) ? p.price : undefined,
+  };
+}
+
 async function tryFetchJson(url: string): Promise<any | null> {
   try {
     const res = await fetch(url, {
@@ -43,7 +66,7 @@ function parseProductsFromJson(data: any): ShopProduct[] {
     .slice(0, 250)
     .map((p: any) => {
       const id = String(p.id ?? p.handle ?? p.title ?? Math.random());
-      const image = p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined;
+      const image = normalizeImageUrl(p.image?.src ?? p.images?.[0]?.src ?? p.featured_image ?? undefined);
       const price =
         typeof p.price === "number"
           ? // Some Shopify endpoints return cents as integer
@@ -60,7 +83,7 @@ function parseProductsFromJson(data: any): ShopProduct[] {
         ? p.url
         : `https://www.rippedcityinc.com`;
       const title = String(p.title ?? "");
-      return { id, title, url, image, price, handle } as ShopProduct;
+      return normalizeProduct({ id, title, url, image, price, handle }) as ShopProduct;
     })
     .filter((p: ShopProduct) => !!p.title);
 }
@@ -120,11 +143,11 @@ async function fetchFromSitemap(): Promise<ShopProduct[]> {
             const product = arr.find((j: any) => j && j["@type"] === "Product");
             if (product && product.name) {
               const title = String(product.name);
-              const img = typeof product.image === "string" ? product.image : Array.isArray(product.image) ? product.image[0] : undefined;
+              const img = normalizeImageUrl(typeof product.image === "string" ? product.image : Array.isArray(product.image) ? product.image[0] : undefined);
               const offers = product.offers as any;
               const price = typeof offers?.price === "string" ? Number(offers.price) : typeof offers?.price === "number" ? offers.price : undefined;
               const handle = url.split("/products/")[1] ?? undefined;
-              items.push({ id: url, title, url, image: img, price, handle });
+              items.push(normalizeProduct({ id: url, title, url, image: img, price, handle }));
               break;
             }
           } catch (err) {
@@ -168,7 +191,7 @@ async function parseFromCollectionsHtml(): Promise<ShopProduct[]> {
           const titleMatch = block.match(/alt=\"([^\"]+)/i) || block.match(/<h2[^>]*>([^<]+)/i) || block.match(/<span[^>]*class=\"[^\"]*(title|name)[^\"]*\"[^>]*>([^<]+)/i);
           const title = titleMatch ? (titleMatch[1] || titleMatch[2]) : undefined;
           if (title) {
-            out.push({ id: urlFull, title, url: urlFull, image: imgMatch?.[1] });
+            out.push(normalizeProduct({ id: urlFull, title, url: urlFull, image: normalizeImageUrl(imgMatch?.[1]) }));
           }
           if (out.length >= 60) break;
         }
@@ -185,7 +208,7 @@ async function parseFromCollectionsHtml(): Promise<ShopProduct[]> {
 
 function fallbackFromMocks(): ShopProduct[] {
   try {
-    return featuredProducts.map((p) => ({
+    return featuredProducts.map((p) => normalizeProduct({
       id: p.id,
       title: p.name,
       url: "https://www.rippedcityinc.com/",
@@ -210,7 +233,9 @@ export default publicProcedure
     for (const url of sources) {
       const data = await tryFetchJson(url);
       if (data) {
-        const products = parseProductsFromJson(data);
+        const products = parseProductsFromJson(data)
+          .map(normalizeProduct)
+          .filter((p, idx, arr) => p.title && p.url.includes("rippedcityinc.com") && arr.findIndex(x => x.url === p.url) === idx);
         if (products.length > 0) {
           console.log(`shop.products loaded from ${url}:`, products.length);
           return products;
@@ -218,13 +243,17 @@ export default publicProcedure
       }
     }
 
-    const sitemapProducts = await fetchFromSitemap();
+    const sitemapProducts = (await fetchFromSitemap())
+      .map(normalizeProduct)
+      .filter((p, idx, arr) => p.title && arr.findIndex(x => x.url === p.url) === idx);
     if (sitemapProducts.length > 0) {
       console.log("shop.products loaded from sitemap:", sitemapProducts.length);
       return sitemapProducts;
     }
 
-    const collectionParsed = await parseFromCollectionsHtml();
+    const collectionParsed = (await parseFromCollectionsHtml())
+      .map(normalizeProduct)
+      .filter((p, idx, arr) => p.title && arr.findIndex(x => x.url === p.url) === idx);
     if (collectionParsed.length > 0) {
       console.log("shop.products loaded from collections HTML:", collectionParsed.length);
       return collectionParsed;
