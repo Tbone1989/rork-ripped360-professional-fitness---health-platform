@@ -17,6 +17,7 @@ const goalOptions = [
   { id: 'hypertrophy', label: 'Muscle Growth' },
   { id: 'endurance', label: 'Endurance' },
   { id: 'fat-loss', label: 'Fat Loss' },
+  { id: 'yoga', label: 'Yoga & Flexibility' },
   { id: 'general', label: 'General Fitness' },
 ];
 
@@ -25,6 +26,7 @@ const equipmentOptions = [
   { id: 'home', label: 'Home Gym', description: 'Dumbbells, bench, pull-up bar' },
   { id: 'minimal', label: 'Minimal', description: 'Basic dumbbells or kettlebells' },
   { id: 'bodyweight', label: 'Bodyweight Only', description: 'No equipment needed' },
+  { id: 'yoga-mat', label: 'Yoga Mat', description: 'Yoga mat for floor exercises' },
   { id: 'bands', label: 'Resistance Bands', description: 'Bands and anchors only' },
   { id: 'barbell', label: 'Barbell', description: 'Barbell and plates' },
   { id: 'dumbbells', label: 'Dumbbells', description: 'Dumbbells only' },
@@ -224,6 +226,18 @@ export default function GenerateWorkoutScreen() {
           { name: 'Burpee Box Jumps', sets: 3, reps: '10-15', rest: '60s', muscle: 'full-body' },
           { name: 'Turkish Get-ups', sets: 3, reps: '5-8', rest: '75s', muscle: 'full-body' },
           { name: 'Medicine Ball Slams', sets: 4, reps: '15-25', rest: '45s', muscle: 'full-body' },
+        ],
+        yoga: [
+          { name: 'Downward Dog', sets: 3, reps: '45-60s', rest: '30s', muscle: 'full-body' },
+          { name: 'Warrior I', sets: 2, reps: '30-45s each side', rest: '30s', muscle: 'legs' },
+          { name: 'Warrior II', sets: 2, reps: '30-45s each side', rest: '30s', muscle: 'legs' },
+          { name: 'Tree Pose', sets: 2, reps: '30-60s each side', rest: '30s', muscle: 'balance' },
+          { name: 'Cat-Cow Stretch', sets: 3, reps: '8-12 cycles', rest: '30s', muscle: 'spine' },
+          { name: 'Cobra Pose', sets: 3, reps: '30-45s', rest: '30s', muscle: 'back' },
+          { name: 'Child\'s Pose', sets: 3, reps: '60-90s', rest: '0s', muscle: 'relaxation' },
+          { name: 'Seated Forward Fold', sets: 2, reps: '45-60s', rest: '30s', muscle: 'hamstrings' },
+          { name: 'Bridge Pose', sets: 3, reps: '30-45s', rest: '30s', muscle: 'glutes' },
+          { name: 'Pigeon Pose', sets: 2, reps: '60-90s each side', rest: '30s', muscle: 'hips' },
         ],
         general: [
           { name: 'Push-ups', sets: 3, reps: '10-15', rest: '60s', muscle: 'chest' },

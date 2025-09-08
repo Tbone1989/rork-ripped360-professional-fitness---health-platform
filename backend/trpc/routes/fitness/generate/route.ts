@@ -147,6 +147,18 @@ const getMockWorkout = (input: { type: string; muscle: string[]; difficulty: str
       { name: 'Turkish Get-ups', sets: 3, reps: '5-8', rest: 75, muscle: 'full-body' },
       { name: 'Medicine Ball Slams', sets: 4, reps: '15-25', rest: 45, muscle: 'full-body' },
     ],
+    yoga: [
+      { name: 'Downward Dog', sets: 3, reps: '45-60s', rest: 30, muscle: 'full-body' },
+      { name: 'Warrior I', sets: 2, reps: '30-45s each side', rest: 30, muscle: 'legs' },
+      { name: 'Warrior II', sets: 2, reps: '30-45s each side', rest: 30, muscle: 'legs' },
+      { name: 'Tree Pose', sets: 2, reps: '30-60s each side', rest: 30, muscle: 'balance' },
+      { name: 'Cat-Cow Stretch', sets: 3, reps: '8-12 cycles', rest: 30, muscle: 'spine' },
+      { name: 'Cobra Pose', sets: 3, reps: '30-45s', rest: 30, muscle: 'back' },
+      { name: 'Child\'s Pose', sets: 3, reps: '60-90s', rest: 0, muscle: 'relaxation' },
+      { name: 'Seated Forward Fold', sets: 2, reps: '45-60s', rest: 30, muscle: 'hamstrings' },
+      { name: 'Bridge Pose', sets: 3, reps: '30-45s', rest: 30, muscle: 'glutes' },
+      { name: 'Pigeon Pose', sets: 2, reps: '60-90s each side', rest: 30, muscle: 'hips' },
+    ],
     general: [
       { name: 'Push-ups', sets: 3, reps: '10-15', rest: 60, muscle: 'chest' },
       { name: 'Squats', sets: 3, reps: '12-20', rest: 60, muscle: 'legs' },
