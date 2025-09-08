@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Filter, Zap } from 'lucide-react-native';
+import { Filter, Zap, BookOpen } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -128,7 +128,18 @@ export default function WorkoutsScreen() {
             </View>
             
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Popular Exercises</Text>
+              <View style={styles.sectionHeaderRow}>
+                <Text style={styles.sectionTitle}>Popular Exercises</Text>
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  testID="open-exercise-dictionary"
+                  style={styles.dictionaryButton}
+                  onPress={() => router.push('/workouts/dictionary')}
+                >
+                  <BookOpen size={18} color={colors.accent.primary} />
+                  <Text style={styles.dictionaryButtonText}>Dictionary</Text>
+                </TouchableOpacity>
+              </View>
               {popularExercises.map((exercise) => (
                 <ExerciseCard 
                   key={exercise.id} 
@@ -209,6 +220,26 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.text.primary,
     marginBottom: 12,
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  dictionaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.medium,
+  },
+  dictionaryButtonText: {
+    marginLeft: 6,
+    color: colors.accent.primary,
+    fontWeight: '600',
   },
   categoriesContainer: {
     paddingVertical: 8,

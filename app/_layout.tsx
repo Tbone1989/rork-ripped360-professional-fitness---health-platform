@@ -127,6 +127,13 @@ function RootLayoutNav() {
         }} 
       />
       <Stack.Screen 
+        name="workouts/dictionary" 
+        options={{ 
+          title: "Exercise Dictionary",
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
         name="medical/upload" 
         options={{ 
           title: "Upload Bloodwork",
