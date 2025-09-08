@@ -69,15 +69,9 @@ const ProductCard = ({ item }: { item: ShopProduct }) => {
         </View>
         <View style={styles.productActions}>
           <Button
-            title="View Details"
-            onPress={() => router.push(`/shop/product/${item.id}`)}
-            style={[styles.viewButton, { flex: 1, marginRight: 8 }]}
-            variant="outline"
-          />
-          <Button
-            title="Site"
+            title="View on Website"
             onPress={() => Linking.openURL(item.url)}
-            style={[styles.viewButton, { paddingHorizontal: 12 }]}
+            style={[styles.viewButton, { flex: 1 }]}
             variant="outline"
             icon={<ExternalLink size={16} color={colors.accent.primary} />}
           />
