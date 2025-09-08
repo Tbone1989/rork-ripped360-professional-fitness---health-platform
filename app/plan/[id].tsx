@@ -83,33 +83,123 @@ export default function PlanDetailScreen() {
   const { user } = useUserStore();
   
   // Try to find the plan by ID, fallback to featuredWorkoutPlans if not found in mockPlans
-  let plan = mockPlans[id];
+  let plan: WorkoutPlan | null = mockPlans[id] || null;
   if (!plan) {
     // Check if it's a featured workout plan ID
     const featuredPlan = featuredWorkoutPlans.find(p => p.id === id);
     if (featuredPlan) {
-      plan = {
+      // Map featured workout plans to full plan details
+      const planMappings: Record<string, WorkoutPlan> = {
+        '1': {
+          id: '1',
+          title: 'Strength Training',
+          description: 'Build muscle and increase strength with progressive overload training. Perfect for those looking to gain muscle mass and improve overall strength.',
+          duration: '8 weeks',
+          workoutsPerWeek: 4,
+          totalWeeks: 8,
+          difficulty: 'intermediate',
+          rating: 4.9,
+          enrolled: 2800,
+          minutesPerWorkout: 60,
+          equipment: ['Barbell', 'Dumbbells', 'Bench', 'Squat Rack'],
+          imageUrl: featuredPlan.imageUrl,
+        },
+        '2': {
+          id: '2',
+          title: 'HIIT Cardio Blast',
+          description: 'High-intensity interval training to burn fat, boost metabolism, and improve cardiovascular endurance. Get shredded with this intense program.',
+          duration: '6 weeks',
+          workoutsPerWeek: 5,
+          totalWeeks: 6,
+          difficulty: 'advanced',
+          rating: 4.7,
+          enrolled: 3200,
+          minutesPerWorkout: 45,
+          equipment: ['Kettlebells', 'Jump Rope', 'Medicine Ball', 'Dumbbells'],
+          imageUrl: featuredPlan.imageUrl,
+        },
+        '3': {
+          id: '3',
+          title: 'Bodyweight Basics',
+          description: 'No equipment needed! Master fundamental bodyweight exercises and build functional strength anywhere, anytime.',
+          duration: '4 weeks',
+          workoutsPerWeek: 3,
+          totalWeeks: 4,
+          difficulty: 'beginner',
+          rating: 4.8,
+          enrolled: 5100,
+          minutesPerWorkout: 30,
+          equipment: ['Bodyweight', 'Pull-up Bar (optional)'],
+          imageUrl: featuredPlan.imageUrl,
+        },
+        '4': {
+          id: '4',
+          title: 'Endurance Builder',
+          description: 'Improve your stamina and cardiovascular fitness with this comprehensive endurance training program. Perfect for runners and athletes.',
+          duration: '12 weeks',
+          workoutsPerWeek: 4,
+          totalWeeks: 12,
+          difficulty: 'intermediate',
+          rating: 4.6,
+          enrolled: 2100,
+          minutesPerWorkout: 40,
+          equipment: ['Treadmill', 'Bike', 'Rowing Machine'],
+          imageUrl: featuredPlan.imageUrl,
+        },
+        '5': {
+          id: '5',
+          title: 'Yoga Flow',
+          description: 'Enhance flexibility, balance, and mental clarity with this progressive yoga program. Suitable for all levels.',
+          duration: '6 weeks',
+          workoutsPerWeek: 3,
+          totalWeeks: 6,
+          difficulty: 'beginner',
+          rating: 4.9,
+          enrolled: 1800,
+          minutesPerWorkout: 45,
+          equipment: ['Yoga Mat', 'Blocks', 'Strap'],
+          imageUrl: featuredPlan.imageUrl,
+        },
+      };
+      
+      plan = planMappings[featuredPlan.id] || {
         id: featuredPlan.id,
         title: featuredPlan.name,
-        description: featuredPlan.description,
+        description: featuredPlan.description || 'Transform your fitness with this comprehensive workout program.',
         duration: featuredPlan.duration,
-        workoutsPerWeek: featuredPlan.id === '1' ? 4 : featuredPlan.id === '2' ? 5 : featuredPlan.id === '3' ? 3 : featuredPlan.id === '4' ? 4 : 3,
+        workoutsPerWeek: 4,
         totalWeeks: parseInt(featuredPlan.duration.split(' ')[0]) || 8,
         difficulty: featuredPlan.difficulty as 'beginner' | 'intermediate' | 'advanced',
         rating: 4.8,
-        enrolled: featuredPlan.id === '1' ? 2800 : featuredPlan.id === '2' ? 3200 : featuredPlan.id === '3' ? 5100 : featuredPlan.id === '4' ? 2100 : 1800,
-        minutesPerWorkout: featuredPlan.id === '1' ? 60 : featuredPlan.id === '2' ? 75 : featuredPlan.id === '3' ? 35 : featuredPlan.id === '4' ? 40 : 30,
-        equipment: featuredPlan.id === '1' ? ['Barbell', 'Dumbbells', 'Bench', 'Squat Rack'] : 
-                   featuredPlan.id === '2' ? ['Barbell', 'Dumbbells', 'Pull-up Bar', 'Kettlebell'] :
-                   featuredPlan.id === '3' ? ['Bodyweight'] :
-                   featuredPlan.id === '4' ? ['Treadmill', 'Bike', 'Bodyweight'] :
-                   ['Yoga Mat', 'Blocks'],
+        enrolled: 2500,
+        minutesPerWorkout: 45,
+        equipment: ['Various Equipment'],
         imageUrl: featuredPlan.imageUrl,
       };
     } else {
-      plan = mockPlans['strength-foundations'];
+      // If no plan found, show error or redirect
+      plan = null;
     }
   }
+  if (!plan) {
+    return (
+      <View style={styles.container}>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorTitle}>Plan Not Found</Text>
+          <Text style={styles.errorDescription}>
+            The workout plan you&apos;re looking for doesn&apos;t exist.
+          </Text>
+          <TouchableOpacity
+            style={styles.errorButton}
+            onPress={() => router.back()}
+          >
+            <Text style={styles.errorButtonText}>Go Back</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    );
+  }
+  
   const isEnrolled = enrolledPlans.includes(plan.id);
 
   const handleEnroll = async () => {
@@ -386,6 +476,35 @@ const styles = StyleSheet.create({
   enrollButtonText: {
     color: '#fff',
     fontSize: 18,
+    fontWeight: '600' as const,
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  errorTitle: {
+    fontSize: 24,
+    fontWeight: 'bold' as const,
+    color: '#fff',
+    marginBottom: 12,
+  },
+  errorDescription: {
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.7)',
+    textAlign: 'center',
+    marginBottom: 24,
+  },
+  errorButton: {
+    backgroundColor: colors.accent.primary,
+    paddingHorizontal: 32,
+    paddingVertical: 14,
+    borderRadius: 8,
+  },
+  errorButtonText: {
+    color: '#fff',
+    fontSize: 16,
     fontWeight: '600' as const,
   },
 });
