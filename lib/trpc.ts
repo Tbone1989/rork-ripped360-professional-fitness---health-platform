@@ -56,20 +56,36 @@ const getBaseOrigin = () => {
 
 const getTrpcEndpointCandidates = (): string[] => {
   const forced = (process.env.EXPO_PUBLIC_TRPC_URL ?? "").trim();
+  const rorkUrl = (process.env.EXPO_PUBLIC_RORK_URL ?? "").trim();
+  const rorkProjectId = (process.env.EXPO_PUBLIC_RORK_PROJECT_ID ?? "").trim();
+  const defaultRorkProjectId = "as5h45pls18cy2nuagueu";
   const base = getBaseOrigin();
   const cleanBase = base ? base.replace(/\/$/, "") : "";
 
   const ordered: string[] = [];
+
   if (forced) ordered.push(forced);
+
+  if (rorkUrl) {
+    const cleanRork = rorkUrl.replace(/\/$/, "");
+    ordered.push(`${cleanRork}/api/trpc`);
+    ordered.push(`${cleanRork}/trpc`);
+  }
+
+  if (rorkProjectId || defaultRorkProjectId) {
+    const projectId = rorkProjectId || defaultRorkProjectId;
+    const rorkHost = "https://rork.com";
+    const basePath = `${rorkHost}/api/p/${projectId}`;
+    ordered.push(`${basePath}/api/trpc`);
+    ordered.push(`${basePath}/trpc`);
+  }
 
   if (cleanBase) {
     const withApi = `${cleanBase}${cleanBase.endsWith("/api") || /(\/api)(\b|\/)/.test(cleanBase) ? "" : "/api"}`.replace(/\/+$/, "");
-    // Prefer absolute endpoints first to avoid 404s from static hosts
     ordered.push(`${withApi}/trpc`);
     ordered.push(`${cleanBase}/trpc`);
   }
 
-  // Relative fallbacks last
   ordered.push("/api/trpc");
   ordered.push("/trpc");
 
@@ -122,17 +138,18 @@ export const trpcClient = trpc.createClient({
                 "Content-Type": "application/json",
                 ...(options?.headers ?? {}),
               },
-              signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined,
+              // 30s timeout if supported
+              signal: typeof AbortSignal !== 'undefined' && (AbortSignal as any).timeout ? (AbortSignal as any).timeout(30000) : options?.signal,
             });
 
             console.log("📡 tRPC Response:", response.status, response.statusText);
 
             if (!response.ok) {
-              const responseText = await response.text();
+              const responseText = await response.text().catch(() => "");
               const isHtml = responseText.includes("<!DOCTYPE") || responseText.includes("<html");
               const is404 = response.status === 404;
               const logFn = is404 || isHtml ? console.warn : console.error;
-              logFn("tRPC Non-OK Response:", response.status, response.statusText);
+              logFn("tRPC Non-OK Response:", response.status, response.statusText, u);
               if (is404 || isHtml) {
                 continue;
               }
@@ -146,7 +163,7 @@ export const trpcClient = trpc.createClient({
             return response;
           } catch (error) {
             lastErr = error;
-            console.warn("tRPC Network Warning:", (error as any)?.message ?? String(error));
+            console.warn("tRPC Network Warning:", (error as any)?.message ?? String(error), u);
             continue;
           }
         }
@@ -160,10 +177,12 @@ export const trpcClient = trpc.createClient({
             platform: Platform.OS,
             customUrl: process.env.EXPO_PUBLIC_TRPC_BASE_URL ?? process.env.EXPO_PUBLIC_API_BASE_URL,
             trpcUrl: process.env.EXPO_PUBLIC_TRPC_URL,
+            rorkUrl: process.env.EXPO_PUBLIC_RORK_URL,
+            rorkProjectId: process.env.EXPO_PUBLIC_RORK_PROJECT_ID,
             error: msg,
           };
           console.warn("tRPC Connection Fallback - Debug Info:", debugInfo);
-          console.warn("Ensure your backend is mounted at /api/trpc or set EXPO_PUBLIC_TRPC_URL.");
+          console.warn("Ensure your backend is mounted at /api/trpc or set EXPO_PUBLIC_TRPC_URL or EXPO_PUBLIC_RORK_URL.");
 
           return createFallbackResponse(lastErr);
         }
