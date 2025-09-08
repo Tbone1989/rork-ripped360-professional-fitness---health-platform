@@ -81,8 +81,66 @@ export default function ProductDetailScreen() {
     
     setIsLoading(true);
     try {
-      // Try to fetch from the actual product page
-      const handle = id.replace('shop-', '').split('-').slice(0, -1).join('-') || id;
+      // First try to get all products and find the matching one
+      const productsUrl = `https://www.rippedcityinc.com/products.json?limit=250`;
+      const productsResponse = await fetch(productsUrl, {
+        headers: {
+          'Accept': 'application/json',
+        },
+      });
+      
+      if (productsResponse.ok) {
+        const productsData = await productsResponse.json();
+        const products = productsData.products || [];
+        
+        // Find the product by ID
+        const productIdNum = id.replace('shop-', '');
+        const matchingProduct = products.find((p: any) => 
+          String(p.id) === productIdNum || 
+          String(p.id) === id ||
+          p.handle === id
+        );
+        
+        if (matchingProduct) {
+          const p = matchingProduct;
+          const productDetail: ProductDetail = {
+            id: String(p.id),
+            title: p.title || 'Ripped City Product',
+            description: p.body_html?.replace(/<[^>]*>/g, '') || p.description || '',
+            price: p.variants?.[0]?.price ? parseFloat(p.variants[0].price) : undefined,
+            comparePrice: p.variants?.[0]?.compare_at_price ? parseFloat(p.variants[0].compare_at_price) : undefined,
+            images: (p.images || []).map((img: any) => normalizeImageUrl(img.src)).filter(Boolean),
+            variants: p.variants,
+            options: p.options,
+            vendor: p.vendor,
+            productType: p.product_type,
+            tags: p.tags ? p.tags.split(', ') : [],
+            available: p.available !== false,
+            url: `https://www.rippedcityinc.com/products/${p.handle}`,
+          };
+          setProduct(productDetail);
+          
+          // Set initial variant
+          if (p.variants?.length > 0) {
+            setSelectedVariant(p.variants[0]);
+            // Set initial options
+            const initialOptions: Record<string, string> = {};
+            if (p.options) {
+              p.options.forEach((opt: any, index: number) => {
+                const variantOption = p.variants[0][`option${index + 1}`];
+                if (variantOption) {
+                  initialOptions[opt.name] = variantOption;
+                }
+              });
+            }
+            setSelectedOptions(initialOptions);
+          }
+          return;
+        }
+      }
+      
+      // If not found in products list, try direct product URL with handle
+      const handle = id.replace('shop-', '').replace(/\d+$/, '') || id;
       const productUrl = `https://www.rippedcityinc.com/products/${handle}.json`;
       
       const response = await fetch(productUrl, {
@@ -127,29 +185,24 @@ export default function ProductDetailScreen() {
             }
             setSelectedOptions(initialOptions);
           }
+        } else {
+          throw new Error('Product not found');
         }
       } else {
-        // Fallback to basic product info
-        setProduct({
-          id: id,
-          title: 'Ripped City Product',
-          description: 'Premium fitness apparel and accessories from Ripped City Inc.',
-          images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=500'],
-          url: 'https://www.rippedcityinc.com',
-          available: true,
-        });
+        throw new Error('Product not found');
       }
     } catch (error) {
       console.error('Error fetching product:', error);
-      // Fallback product
-      setProduct({
-        id: id,
-        title: 'Ripped City Product',
-        description: 'Premium fitness apparel and accessories from Ripped City Inc.',
-        images: ['https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?q=80&w=500'],
-        url: 'https://www.rippedcityinc.com',
-        available: true,
-      });
+      // Show error message instead of generic fallback
+      Alert.alert(
+        'Product Not Available',
+        'Unable to load product details. Please try again later.',
+        [
+          { text: 'Go Back', onPress: () => router.back() },
+          { text: 'Visit Website', onPress: () => Linking.openURL('https://www.rippedcityinc.com') }
+        ]
+      );
+      setProduct(null);
     } finally {
       setIsLoading(false);
     }
