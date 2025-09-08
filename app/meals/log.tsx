@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { 
   Plus, 
-  Search, 
-  Clock, 
   Flame, 
   Camera,
   Utensils,
@@ -17,11 +15,28 @@ import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { ChipGroup } from '@/components/ui/ChipGroup';
 import { apiService, NutritionData } from '@/services/api';
+
+const fontWeight600 = '600' as const;
+const fontWeight700 = '700' as const;
+
+type Unit = 'g' | 'oz' | 'lb' | 'serving';
 
 interface FoodItem extends NutritionData {
   id?: string;
   serving?: string;
+  quantity?: number;
+  unit?: Unit;
+  perGram?: {
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    fiber: number;
+    sugar: number;
+    sodium: number;
+  } | null;
 }
 
 const popularFoods: FoodItem[] = [
@@ -107,15 +122,51 @@ const popularFoods: FoodItem[] = [
 
 export default function LogFoodScreen() {
   const router = useRouter();
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFoods, setSelectedFoods] = useState<FoodItem[]>([]);
   const [searchResults, setSearchResults] = useState<FoodItem[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [showResults, setShowResults] = useState(false);
+  const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [showResults, setShowResults] = useState<boolean>(false);
 
   const filteredFoods = showResults ? searchResults : popularFoods.filter(food => 
     food.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const parseServingToGrams = useCallback((servingSize?: string): number | null => {
+    if (!servingSize) return null;
+    const match = servingSize.match(/(\d+\.?\d*)\s*(g|gram|grams)/i);
+    if (match) {
+      const grams = parseFloat(match[1]);
+      if (!Number.isNaN(grams) && grams > 0) return grams;
+    }
+    const per100g = servingSize.toLowerCase().includes('100g');
+    if (per100g) return 100;
+    return null;
+  }, []);
+
+  const enhanceFood = useCallback((item: NutritionData & { id?: string; serving?: string }): FoodItem => {
+    const grams = parseServingToGrams(item.servingSize);
+    const hasPerGram = grams !== null && grams > 0;
+    const perGram = hasPerGram
+      ? {
+          calories: item.calories / (grams as number),
+          protein: item.protein / (grams as number),
+          carbs: item.carbs / (grams as number),
+          fat: item.fat / (grams as number),
+          fiber: item.fiber / (grams as number),
+          sugar: item.sugar / (grams as number),
+          sodium: item.sodium / (grams as number),
+        }
+      : null;
+
+    return {
+      ...item,
+      serving: item.serving ?? item.servingSize,
+      quantity: hasPerGram ? 100 : 1,
+      unit: hasPerGram ? 'g' : 'serving',
+      perGram,
+    } as FoodItem;
+  }, [parseServingToGrams]);
 
   // Search API integration
   useEffect(() => {
@@ -129,7 +180,7 @@ export default function LogFoodScreen() {
       setIsSearching(true);
       try {
         const results = await apiService.searchFood(searchQuery);
-        setSearchResults(results.map((item, index) => ({
+        setSearchResults(results.map((item, index) => enhanceFood({
           ...item,
           id: `search-${index}`,
           serving: item.servingSize
@@ -145,10 +196,11 @@ export default function LogFoodScreen() {
 
     const timeoutId = setTimeout(searchFood, 500);
     return () => clearTimeout(timeoutId);
-  }, [searchQuery]);
+  }, [searchQuery, enhanceFood]);
 
   const addFood = (food: FoodItem) => {
-    setSelectedFoods(prev => [...prev, food]);
+    const enhanced = enhanceFood(food);
+    setSelectedFoods(prev => [...prev, enhanced]);
     Alert.alert('Added', `${food.name} added to your meal`);
   };
 
@@ -165,8 +217,46 @@ export default function LogFoodScreen() {
     );
   };
 
-  const totalCalories = selectedFoods.reduce((sum, food) => sum + food.calories, 0);
-  const totalProtein = selectedFoods.reduce((sum, food) => sum + food.protein, 0);
+  const OZ_TO_G = 28.3495;
+  const LB_TO_G = 453.592;
+
+  const computeMacros = useCallback((food: FoodItem) => {
+    const qty = food.quantity ?? 0;
+    const unit = food.unit ?? 'serving';
+    if (food.perGram) {
+      let grams = 0;
+      if (unit === 'g') grams = qty;
+      if (unit === 'oz') grams = qty * OZ_TO_G;
+      if (unit === 'lb') grams = qty * LB_TO_G;
+      const c = food.perGram.calories * grams;
+      const p = food.perGram.protein * grams;
+      const cb = food.perGram.carbs * grams;
+      const f = food.perGram.fat * grams;
+      return { calories: c, protein: p, carbs: cb, fat: f };
+    }
+    const multiplier = unit === 'serving' ? qty : 0;
+    return {
+      calories: food.calories * multiplier,
+      protein: food.protein * multiplier,
+      carbs: food.carbs * multiplier,
+      fat: food.fat * multiplier,
+    };
+  }, []);
+
+  const totals = useMemo(() => {
+    return selectedFoods.reduce(
+      (acc, item) => {
+        const m = computeMacros(item);
+        return {
+          calories: acc.calories + m.calories,
+          protein: acc.protein + m.protein,
+          carbs: acc.carbs + m.carbs,
+          fat: acc.fat + m.fat,
+        };
+      },
+      { calories: 0, protein: 0, carbs: 0, fat: 0 }
+    );
+  }, [selectedFoods, computeMacros]);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -208,11 +298,11 @@ export default function LogFoodScreen() {
           <View style={styles.summaryStats}>
             <View style={styles.summaryItem}>
               <Flame size={16} color={colors.accent.primary} />
-              <Text style={styles.summaryValue}>{Math.round(totalCalories)} cal</Text>
+              <Text style={styles.summaryValue}>{Math.round(totals.calories)} cal</Text>
             </View>
             <View style={styles.summaryItem}>
               <Beef size={16} color={colors.accent.primary} />
-              <Text style={styles.summaryValue}>{Math.round(totalProtein)}g protein</Text>
+              <Text style={styles.summaryValue}>{Math.round(totals.protein)}g protein</Text>
             </View>
           </View>
         </Card>
@@ -229,6 +319,7 @@ export default function LogFoodScreen() {
             <TouchableOpacity 
               style={styles.foodContent}
               onPress={() => addFood(food)}
+              testID={`food-${food.id}-add`}
             >
               <View style={styles.foodHeader}>
                 <View style={styles.foodIcon}>
@@ -281,6 +372,62 @@ export default function LogFoodScreen() {
         />
       </View>
 
+      {/* Adjust quantities/units for selected foods */}
+      {selectedFoods.length > 0 && (
+        <View style={styles.section}>
+          {selectedFoods.map((food, idx) => {
+            const hasPerGram = !!food.perGram;
+            const unitOptions = hasPerGram
+              ? [
+                  { id: 'g', label: 'g' },
+                  { id: 'oz', label: 'oz' },
+                  { id: 'lb', label: 'lb' },
+                ]
+              : [{ id: 'serving', label: 'serving' }];
+            const m = computeMacros(food);
+            return (
+              <Card key={`${food.id}-${idx}`} style={styles.selCard}>
+                <Text style={styles.selTitle}>{food.name}</Text>
+                <View style={styles.selRow}>
+                  <Input
+                    testID={`qty-${idx}`}
+                    value={String(food.quantity ?? 0)}
+                    onChangeText={(t) => {
+                      const v = parseFloat(t.replace(/[^0-9.]/g, ''));
+                      setSelectedFoods((prev) => {
+                        const copy = [...prev];
+                        copy[idx] = { ...copy[idx], quantity: Number.isFinite(v) ? v : 0 };
+                        return copy;
+                      });
+
+                    }}
+                    keyboardType="numeric"
+                    placeholder={hasPerGram ? 'grams' : 'servings'}
+                    style={styles.qtyInput}
+                  />
+                  <ChipGroup
+                    selectedId={(food.unit ?? (hasPerGram ? 'g' : 'serving')) as string}
+                    options={unitOptions}
+                    onChange={(ids) => {
+                      const newUnit = (ids[0] ?? (hasPerGram ? 'g' : 'serving')) as Unit;
+                      setSelectedFoods((prev) => {
+                        const copy = [...prev];
+                        copy[idx] = { ...copy[idx], unit: newUnit };
+                        return copy;
+                      });
+
+                    }}
+                    scrollable={false}
+                    style={styles.unitGroup}
+                  />
+                </View>
+                <Text style={styles.selMacros}>{`${Math.round(m.calories)} cal • ${Math.round(m.protein)}g P • ${Math.round(m.carbs)}g C • ${Math.round(m.fat)}g F`}</Text>
+              </Card>
+            );
+          })}
+        </View>
+      )}
+
       {/* Log Button */}
       {selectedFoods.length > 0 && (
         <View style={styles.logSection}>
@@ -288,6 +435,7 @@ export default function LogFoodScreen() {
             title={`Log Meal (${selectedFoods.length} items)`}
             onPress={logMeal}
             style={styles.logButton}
+            testID="log-meal-button"
           />
         </View>
       )}
@@ -329,7 +477,7 @@ const styles = StyleSheet.create({
   },
   summaryTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: fontWeight600,
     color: colors.text.primary,
     marginBottom: 12,
   },
@@ -353,7 +501,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: fontWeight600,
     color: colors.text.primary,
     marginBottom: 16,
   },
@@ -383,7 +531,7 @@ const styles = StyleSheet.create({
   },
   foodName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: fontWeight600,
     color: colors.text.primary,
     marginBottom: 2,
   },
@@ -396,7 +544,7 @@ const styles = StyleSheet.create({
   },
   foodCaloriesText: {
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: fontWeight700,
     color: colors.text.primary,
   },
   foodCaloriesLabel: {
@@ -430,5 +578,31 @@ const styles = StyleSheet.create({
   },
   logButton: {
     marginBottom: 20,
+  },
+  selCard: {
+    marginBottom: 12,
+    padding: 12,
+  },
+  selTitle: {
+    fontSize: 15,
+    fontWeight: fontWeight600,
+    color: colors.text.primary,
+    marginBottom: 8,
+  },
+  selRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  qtyInput: {
+    flex: 1,
+  },
+  unitGroup: {
+    flex: 1,
+  },
+  selMacros: {
+    marginTop: 8,
+    fontSize: 12,
+    color: colors.text.secondary,
   },
 });
