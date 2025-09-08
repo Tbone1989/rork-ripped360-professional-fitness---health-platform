@@ -33,10 +33,7 @@ export default function ExerciseDictionaryScreen() {
       if (map[o.id]) return false;
       map[o.id] = true;
       return true;
-      footerSpacer: {
-    height: 24,
-  },
-});
+    });
     return merged;
   }, []);
 
@@ -53,10 +50,7 @@ export default function ExerciseDictionaryScreen() {
       const cat = ex.category ?? 'Other';
       const catAllowed = selectedCategory === 'all' || selectedCategory === cat;
       return matchQ && diffAllowed && catAllowed;
-      footerSpacer: {
-    height: 24,
-  },
-});
+    });
   }, [searchQuery, selectedDifficulties, selectedCategory]);
 
   const onExercisePress = useCallback((id: string) => {
@@ -185,7 +179,7 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: colors.text.primary,
     marginBottom: 6,
   },
