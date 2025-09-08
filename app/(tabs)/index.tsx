@@ -27,6 +27,15 @@ export default function HomeScreen() {
   const user = useUserStore((state) => state.user);
   const { cartItems } = useShopStore();
   const { data: shopData } = trpc.shop.products.useQuery({});
+  
+  // Auto-login for demo purposes if no user is logged in
+  React.useEffect(() => {
+    if (!user) {
+      console.log('[Home] Auto-logging in user for demo');
+      const { login } = useUserStore.getState();
+      login('demo@example.com', 'password').catch(console.error);
+    }
+  }, [user]);
 
   const [fallback, setFallback] = React.useState<ShopProduct[]>([]);
   const [fallbackTried, setFallbackTried] = React.useState<boolean>(false);

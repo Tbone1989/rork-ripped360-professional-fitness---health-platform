@@ -204,21 +204,29 @@ export default function PlanDetailScreen() {
 
   const handleEnroll = async () => {
     if (!user) {
-      Alert.alert(
-        'Login Required',
-        'Please log in to enroll in workout plans.',
-        [
-          { text: 'Cancel', style: 'cancel' },
-          { text: 'Login', onPress: () => router.push('/(auth)/login') },
-        ]
-      );
-      return;
+      // Auto-login for demo purposes
+      console.log('[PlanDetail] Auto-logging in user for demo');
+      try {
+        const { login } = useUserStore.getState();
+        await login('demo@example.com', 'password');
+      } catch (error) {
+        console.error('[PlanDetail] Auto-login failed:', error);
+        Alert.alert(
+          'Login Required',
+          'Please log in to enroll in workout plans.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Login', onPress: () => router.push('/(auth)/login') },
+          ]
+        );
+        return;
+      }
     }
 
     // If already enrolled, navigate to workout session
     if (isEnrolled) {
-      console.log('[PlanDetail] Navigating to workout session:', `/workout/${plan.id}`);
-      router.push(`/workout/${plan.id}`);
+      console.log('[PlanDetail] Navigating to workout session:', `/workout/${plan.id}/session`);
+      router.push(`/workout/${plan.id}/session`);
       return;
     }
 
@@ -237,7 +245,7 @@ export default function PlanDetailScreen() {
           { text: 'Later', style: 'cancel' },
           { 
             text: 'Start Now', 
-            onPress: () => router.push(`/workout/${plan.id}-day-1`)
+            onPress: () => router.push(`/workout/${plan.id}/session`)
           },
         ]
       );
