@@ -23,24 +23,59 @@ const getWorkoutById = (id: string) => {
   const baseWorkout = featuredWorkoutPlans.find(plan => plan.id === id);
   if (!baseWorkout) return null;
   
-  // Create extended workout data based on the plan
+  // Build workout details by category to keep exercises/equipment sensible
+  const isStrength = baseWorkout.category === 'Strength Training';
+  const isCrossfit = baseWorkout.category === 'CrossFit';
+  const isCardio = baseWorkout.category === 'Cardio';
+  const isHome = baseWorkout.category === 'Home Workouts';
+  const isYoga = baseWorkout.category === 'Yoga';
+
+  const pool = isYoga
+    ? popularExercises.filter(e => e.category === 'Yoga')
+    : isCardio
+    ? popularExercises.filter(e => e.category === 'Cardio')
+    : isCrossfit
+    ? popularExercises.filter(e => e.category === 'CrossFit')
+    : isHome
+    ? popularExercises.filter(e => e.category === 'Home Workouts')
+    : popularExercises.filter(e => e.category === 'Strength Training');
+
+  const takeCount = isCrossfit ? 8 : isStrength ? 6 : isHome ? 5 : isCardio ? 5 : isYoga ? 6 : 6;
+  const exercises = pool.slice(0, Math.min(takeCount, pool.length));
+
+  const equipment = isStrength
+    ? ['Barbell', 'Dumbbells', 'Bench']
+    : isCrossfit
+    ? ['Barbell', 'Dumbbells', 'Pull-up Bar', 'Kettlebell']
+    : isHome
+    ? ['Bodyweight']
+    : isCardio
+    ? ['Treadmill', 'Bike', 'Bodyweight']
+    : ['Yoga Mat', 'Blocks'];
+
+  const targetMuscles = isStrength
+    ? ['Chest', 'Back', 'Shoulders', 'Arms']
+    : isCrossfit
+    ? ['Full Body', 'Core', 'Cardio']
+    : isHome
+    ? ['Full Body', 'Core']
+    : isCardio
+    ? ['Cardio', 'Legs', 'Core']
+    : ['Flexibility', 'Balance', 'Core'];
+
+  const duration = isCrossfit ? 60 : isStrength ? 45 : isHome ? 35 : isCardio ? 40 : 30;
+  const calories = isCrossfit ? 450 : isStrength ? 320 : isHome ? 280 : isCardio ? 380 : 200;
+  const completions = isCrossfit ? 892 : isStrength ? 1247 : isHome ? 1534 : isCardio ? 967 : 1203;
+
   const workoutData = {
     ...baseWorkout,
-    duration: baseWorkout.id === '1' ? 45 : baseWorkout.id === '2' ? 60 : baseWorkout.id === '3' ? 35 : baseWorkout.id === '4' ? 40 : 30,
-    exercises: popularExercises.slice(0, baseWorkout.id === '1' ? 6 : baseWorkout.id === '2' ? 8 : baseWorkout.id === '3' ? 4 : baseWorkout.id === '4' ? 5 : 6),
-    equipment: baseWorkout.id === '1' ? ['Barbell', 'Dumbbells', 'Bench'] : 
-               baseWorkout.id === '2' ? ['Barbell', 'Dumbbells', 'Pull-up Bar', 'Kettlebell'] :
-               baseWorkout.id === '3' ? ['Bodyweight'] :
-               baseWorkout.id === '4' ? ['Treadmill', 'Bike', 'Bodyweight'] :
-               ['Yoga Mat', 'Blocks'],
-    targetMuscles: baseWorkout.id === '1' ? ['Chest', 'Back', 'Shoulders', 'Arms'] :
-                   baseWorkout.id === '2' ? ['Full Body', 'Core', 'Cardio'] :
-                   baseWorkout.id === '3' ? ['Full Body', 'Core'] :
-                   baseWorkout.id === '4' ? ['Cardio', 'Legs', 'Core'] :
-                   ['Flexibility', 'Balance', 'Core'],
-    calories: baseWorkout.id === '1' ? 320 : baseWorkout.id === '2' ? 450 : baseWorkout.id === '3' ? 280 : baseWorkout.id === '4' ? 380 : 200,
+    duration,
+    exercises,
+    equipment,
+    targetMuscles,
+    calories,
     rating: 4.8,
-    completions: baseWorkout.id === '1' ? 1247 : baseWorkout.id === '2' ? 892 : baseWorkout.id === '3' ? 1534 : baseWorkout.id === '4' ? 967 : 1203,
+    completions,
   };
   
   return workoutData;
