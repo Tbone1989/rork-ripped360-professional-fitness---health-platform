@@ -151,7 +151,7 @@ export default function TestApiConnections() {
           result = await trpcClient.coaching.list.query({ specialty: 'fitness' });
           break;
         case 'shop.products':
-          result = await trpcClient.shop.products.query({ category: 'supplements' });
+          result = await trpcClient.shop.products.query();
           break;
         default:
           throw new Error(`Unknown route: ${route}`);
@@ -259,10 +259,9 @@ export default function TestApiConnections() {
 
   const checkEnvironmentVariables = (): TestResult => {
     const requiredVars = [
-      'EXPO_PUBLIC_RORK_API_BASE_URL',
-      'EXPO_PUBLIC_RIP360_NINJA_API_KEY',
-      'EXPO_PUBLIC_RIP360_NUTRITION_API_KEY',
-      'EXPO_PUBLIC_RIP360_HEALTH_FDA_API_KEY'
+      'EXPO_PUBLIC_RORK_URL',
+      'EXPO_PUBLIC_RORK_PROJECT_ID',
+      'EXPO_PUBLIC_TRPC_BASE_URL'
     ];
 
     const missingVars = requiredVars.filter(varName => !process.env[varName]);
