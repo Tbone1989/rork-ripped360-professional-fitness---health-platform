@@ -10,16 +10,14 @@ export const trpc = createTRPCReact<AppRouter>();
 const normalizeUrl = (url: string) => url.replace(/\/$/, "");
 
 const getBaseOrigin = () => {
-  // Use the RORK API URL directly
-  const rorkApiUrl = "https://rork.com/api/p/as5h45pls18cy2nuagueu";
-  const customBaseUrlRaw = process.env.EXPO_PUBLIC_RORK_API_BASE_URL || rorkApiUrl;
-  const customBaseUrl = typeof customBaseUrlRaw === "string" ? customBaseUrlRaw.trim() : rorkApiUrl;
-  
+  const customBaseUrlRaw = process.env.EXPO_PUBLIC_TRPC_BASE_URL || process.env.EXPO_PUBLIC_API_BASE_URL || "";
+  const customBaseUrl = typeof customBaseUrlRaw === "string" ? customBaseUrlRaw.trim() : "";
+
   if (customBaseUrl) {
     if (/^https?:\/\//i.test(customBaseUrl)) {
       return normalizeUrl(customBaseUrl);
     }
-    console.warn("EXPO_PUBLIC_RORK_API_BASE_URL provided without protocol. Prepending https://");
+    console.warn("EXPO_PUBLIC_TRPC_BASE_URL provided without protocol. Prepending https://");
     return normalizeUrl(`https://${customBaseUrl}`);
   }
 
@@ -33,11 +31,11 @@ const getBaseOrigin = () => {
 
   const c: any = Constants;
   const hostUri: string | undefined =
-    c?.expoConfig?.hostUri ||
-    c?.expoGoConfig?.hostUri ||
     c?.expoGoConfig?.debuggerHost ||
-    c?.manifest?.hostUri ||
+    c?.expoGoConfig?.hostUri ||
+    c?.expoConfig?.hostUri ||
     c?.manifest?.debuggerHost ||
+    c?.manifest?.hostUri ||
     undefined;
 
   if (hostUri) {
@@ -52,7 +50,7 @@ const getBaseOrigin = () => {
     }
   }
 
-  console.warn("Could not resolve hostUri from Expo Constants. Set EXPO_PUBLIC_RORK_API_BASE_URL to your dev server (e.g. http://192.168.1.10:8081).");
+  console.warn("Could not resolve hostUri from Expo Constants. Set EXPO_PUBLIC_TRPC_BASE_URL to your dev server (e.g. http://192.168.1.10:8081).");
   return "";
 };
 
@@ -63,23 +61,16 @@ const getTrpcEndpointCandidates = (): string[] => {
 
   const ordered: string[] = [];
   if (forced) ordered.push(forced);
-  
-  // For RORK API, the tRPC endpoint is at /api/trpc
-  if (cleanBase) {
-    // If the base already includes /api/p/xxx, add /api/trpc
-    if (cleanBase.includes("/api/p/")) {
-      ordered.push(`${cleanBase}/api/trpc`);
-    } else {
-      // Otherwise try standard patterns
-      const withApi = `${cleanBase}${cleanBase.endsWith("/api") || /(\/api)(\b|\/)/.test(cleanBase) ? "" : "/api"}`.replace(/\/+$/, "");
-      ordered.push(`${withApi}/trpc`);
-      ordered.push(`${cleanBase}/trpc`);
-    }
-  }
-  
-  // Fallback to relative paths
+
+  // Prefer relative endpoints first so same-origin works on web and dev
   ordered.push("/api/trpc");
   ordered.push("/trpc");
+
+  if (cleanBase) {
+    const withApi = `${cleanBase}${cleanBase.endsWith("/api") || /(\/api)(\b|\/)/.test(cleanBase) ? "" : "/api"}`.replace(/\/+$/, "");
+    ordered.push(`${withApi}/trpc`);
+    ordered.push(`${cleanBase}/trpc`);
+  }
 
   const seen = new Set<string>();
   const deduped = ordered.filter((u) => {
@@ -95,16 +86,16 @@ const getTrpcEndpointCandidates = (): string[] => {
 const endpointCandidates = getTrpcEndpointCandidates();
 console.log("tRPC endpoint candidates:", endpointCandidates);
 
-// Create a fallback client that returns mock data when backend is unavailable
 const createFallbackResponse = (error: any) => {
-  console.warn('tRPC: Using fallback response due to backend unavailability:', error.message);
+  const message = (error && (error as any).message) ? (error as any).message : "unknown";
+  console.warn("tRPC: Using fallback response due to backend unavailability:", message);
   return {
     ok: true,
     status: 200,
-    statusText: 'OK',
-    headers: new Headers({ 'content-type': 'application/json' }),
+    statusText: "OK",
+    headers: new Headers({ "content-type": "application/json" }),
     text: async () => JSON.stringify({ result: { data: { json: null } } }),
-    json: async () => ({ result: { data: { json: null } } })
+    json: async () => ({ result: { data: { json: null } } }),
   } as Response;
 };
 
@@ -126,11 +117,10 @@ export const trpcClient = trpc.createClient({
               ...options,
               ...(Platform.OS === "web" ? { mode: "cors" as const } : {}),
               headers: {
-                "Accept": "application/json",
+                Accept: "application/json",
                 "Content-Type": "application/json",
                 ...(options?.headers ?? {}),
               },
-              // Add timeout for better error handling
               signal: AbortSignal.timeout ? AbortSignal.timeout(30000) : undefined,
             });
 
@@ -164,27 +154,23 @@ export const trpcClient = trpc.createClient({
           }
         }
 
-        if (lastErr instanceof TypeError && ((lastErr as TypeError).message === "Failed to fetch" || (lastErr as TypeError).message.includes("Network"))) {
+        const msg = (lastErr && (lastErr as any).message) ? (lastErr as any).message : "unknown";
+        if (lastErr instanceof TypeError && (msg === "Failed to fetch" || msg.includes("Network"))) {
           const baseUrl = getBaseOrigin();
           const debugInfo = {
             baseUrl,
             endpointCandidates,
             platform: Platform.OS,
-            customUrl: process.env.EXPO_PUBLIC_RORK_API_BASE_URL,
+            customUrl: process.env.EXPO_PUBLIC_TRPC_BASE_URL ?? process.env.EXPO_PUBLIC_API_BASE_URL,
             trpcUrl: process.env.EXPO_PUBLIC_TRPC_URL,
-            error: lastErr.message
+            error: msg,
           };
           console.error("❌ tRPC Connection Failed - Debug Info:", debugInfo);
-          console.error("Please ensure:");
-          console.error("1. Your RORK backend is running");
-          console.error("2. The API URL is correct: https://rork.com/api/p/as5h45pls18cy2nuagueu");
-          console.error("3. CORS is properly configured on the backend");
-          
-          // Return a fallback response for graceful degradation
+          console.error("Ensure your backend is mounted at /api/trpc or set EXPO_PUBLIC_TRPC_URL.");
+
           return createFallbackResponse(lastErr);
         }
-        
-        // For other errors, also try to handle gracefully
+
         console.error("tRPC Request Failed:", lastErr);
         return createFallbackResponse(lastErr || new Error("Unknown tRPC connection error"));
       },
