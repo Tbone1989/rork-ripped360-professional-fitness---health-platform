@@ -62,15 +62,16 @@ const getTrpcEndpointCandidates = (): string[] => {
   const ordered: string[] = [];
   if (forced) ordered.push(forced);
 
-  // Prefer relative endpoints first so same-origin works on web and dev
-  ordered.push("/api/trpc");
-  ordered.push("/trpc");
-
   if (cleanBase) {
     const withApi = `${cleanBase}${cleanBase.endsWith("/api") || /(\/api)(\b|\/)/.test(cleanBase) ? "" : "/api"}`.replace(/\/+$/, "");
+    // Prefer absolute endpoints first to avoid 404s from static hosts
     ordered.push(`${withApi}/trpc`);
     ordered.push(`${cleanBase}/trpc`);
   }
+
+  // Relative fallbacks last
+  ordered.push("/api/trpc");
+  ordered.push("/trpc");
 
   const seen = new Set<string>();
   const deduped = ordered.filter((u) => {
@@ -128,17 +129,13 @@ export const trpcClient = trpc.createClient({
 
             if (!response.ok) {
               const responseText = await response.text();
-              console.error("❌ tRPC Error Response:", response.status, response.statusText);
-              console.log("Response text preview:", responseText.substring(0, 120));
-
-              if (
-                response.status === 404 ||
-                responseText.includes("<!DOCTYPE") ||
-                responseText.includes("<html")
-              ) {
+              const isHtml = responseText.includes("<!DOCTYPE") || responseText.includes("<html");
+              const is404 = response.status === 404;
+              const logFn = is404 || isHtml ? console.warn : console.error;
+              logFn("tRPC Non-OK Response:", response.status, response.statusText);
+              if (is404 || isHtml) {
                 continue;
               }
-
               return new Response(responseText, {
                 status: response.status,
                 statusText: response.statusText,
@@ -149,7 +146,7 @@ export const trpcClient = trpc.createClient({
             return response;
           } catch (error) {
             lastErr = error;
-            console.error("❌ tRPC Network Error:", error);
+            console.warn("tRPC Network Warning:", (error as any)?.message ?? String(error));
             continue;
           }
         }
@@ -165,8 +162,8 @@ export const trpcClient = trpc.createClient({
             trpcUrl: process.env.EXPO_PUBLIC_TRPC_URL,
             error: msg,
           };
-          console.error("❌ tRPC Connection Failed - Debug Info:", debugInfo);
-          console.error("Ensure your backend is mounted at /api/trpc or set EXPO_PUBLIC_TRPC_URL.");
+          console.warn("tRPC Connection Fallback - Debug Info:", debugInfo);
+          console.warn("Ensure your backend is mounted at /api/trpc or set EXPO_PUBLIC_TRPC_URL.");
 
           return createFallbackResponse(lastErr);
         }
