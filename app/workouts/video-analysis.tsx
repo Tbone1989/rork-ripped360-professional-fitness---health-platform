@@ -172,7 +172,7 @@ export default function VideoAnalysisScreen() {
     }
   };
 
-  const getScoreColor = (score: number) => {
+  const getScoreColor = (score: number): string => {
     if (score >= 80) return colors.status.success;
     if (score >= 60) return colors.status.warning;
     return colors.status.error;
@@ -313,7 +313,7 @@ export default function VideoAnalysisScreen() {
               {/* Improvements */}
               <View style={styles.feedbackSection}>
                 <View style={styles.feedbackHeader}>
-                  <ChevronRight size={20} color={colors.status.warning} />
+                  <ChevronRight size={20} color={colors.accent.secondary} />
                   <Text style={styles.feedbackTitle}>Improvements</Text>
                 </View>
                 {analysisResult.improvements.map((improvement, index) => (
