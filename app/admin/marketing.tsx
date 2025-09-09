@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Modal,
   FlatList,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
@@ -37,7 +38,15 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  AlertCircle
+  AlertCircle,
+  Brain,
+  Sparkles,
+  Zap,
+  UserCheck,
+  Activity,
+  Award,
+  Heart,
+  ShoppingBag,
 } from 'lucide-react-native';
 
 interface Campaign {
@@ -53,145 +62,349 @@ interface Campaign {
   openRate: number;
   clickRate: number;
   conversionRate: number;
+  revenue?: number;
   createdAt: Date;
-}
-
-interface Promotion {
-  id: string;
-  title: string;
-  description: string;
-  discountType: 'percentage' | 'fixed' | 'bogo' | 'free-trial';
-  discountValue: number;
-  code: string;
-  validFrom: Date;
-  validUntil: Date;
-  usageLimit: number;
-  usedCount: number;
-  targetProducts: string[];
-  targetUsers: string[];
-  isActive: boolean;
+  aiGenerated?: boolean;
+  personalized?: boolean;
+  abTest?: boolean;
 }
 
 interface UserSegment {
   id: string;
   name: string;
+  description: string;
   criteria: string[];
   userCount: number;
+  avgLTV?: number;
+  engagementScore?: number;
+  aiSuggested?: boolean;
+}
+
+interface AIInsight {
+  id: string;
+  type: 'opportunity' | 'trend' | 'recommendation';
+  title: string;
   description: string;
+  impact: 'high' | 'medium' | 'low';
+  actionable: boolean;
+}
+
+interface AutomationFlow {
+  id: string;
+  name: string;
+  description: string;
+  trigger: string;
+  status: 'active' | 'paused';
+  performance: {
+    triggered: number;
+    completed: number;
+    conversion: number;
+    revenue: number;
+  };
 }
 
 export default function MarketingScreen() {
-  const [activeTab, setActiveTab] = useState<'campaigns' | 'promotions' | 'analytics' | 'segments'>('campaigns');
+  const [activeTab, setActiveTab] = useState<'campaigns' | 'segments' | 'ai-insights' | 'automation'>('campaigns');
   const [campaigns, setCampaigns] = useState<Campaign[]>([
     {
       id: '1',
-      name: 'New Year Fitness Challenge',
+      name: 'Personalized Workout Recommendations',
       type: 'email',
       status: 'active',
-      targetAudience: 'All Users',
-      message: 'Start your fitness journey with our exclusive New Year challenge!',
-      subject: '🎊 New Year, New You - 30% OFF',
-      sentCount: 5420,
-      openRate: 42.3,
+      targetAudience: 'High-Engagement Users',
+      subject: '🎯 Your Custom Workout Plan is Ready!',
+      message: 'Based on your recent progress, we\'ve created a personalized workout plan just for you.',
+      sentCount: 2450,
+      openRate: 52.3,
       clickRate: 18.7,
       conversionRate: 8.2,
+      revenue: 12500,
       createdAt: new Date('2024-01-01'),
+      aiGenerated: true,
+      personalized: true,
     },
     {
       id: '2',
-      name: 'Premium Upgrade Push',
+      name: 'Win-Back Campaign',
       type: 'push',
       status: 'scheduled',
-      targetAudience: 'Free Users',
-      message: 'Unlock premium features and accelerate your progress!',
+      targetAudience: 'Churned Users',
+      message: 'We miss you! Come back with 50% off your next month 💪',
       scheduledDate: new Date('2024-02-01'),
       sentCount: 0,
       openRate: 0,
       clickRate: 0,
       conversionRate: 0,
       createdAt: new Date('2024-01-15'),
-    },
-  ]);
-
-  const [promotions, setPromotions] = useState<Promotion[]>([
-    {
-      id: '1',
-      title: 'Valentine\'s Special',
-      description: 'Get 30% off on all coaching plans',
-      discountType: 'percentage',
-      discountValue: 30,
-      code: 'LOVE30',
-      validFrom: new Date('2024-02-01'),
-      validUntil: new Date('2024-02-29'),
-      usageLimit: 500,
-      usedCount: 127,
-      targetProducts: ['coaching', 'meal-plans'],
-      targetUsers: ['all'],
-      isActive: true,
-    },
-  ]);
-
-  const [segments, setSegments] = useState<UserSegment[]>([
-    {
-      id: '1',
-      name: 'Active Premium Users',
-      criteria: ['subscription:premium', 'lastActive:7days', 'workouts:>10'],
-      userCount: 2341,
-      description: 'Premium users active in the last 7 days with 10+ workouts',
-    },
-    {
-      id: '2',
-      name: 'Inactive Free Users',
-      criteria: ['subscription:free', 'lastActive:>30days'],
-      userCount: 8923,
-      description: 'Free users who haven\'t been active in 30+ days',
+      aiGenerated: true,
+      abTest: true,
     },
     {
       id: '3',
-      name: 'High Spenders',
-      criteria: ['totalSpent:>500', 'purchases:>3'],
-      userCount: 456,
-      description: 'Users who have spent over $500 with 3+ purchases',
+      name: 'Premium Feature Spotlight',
+      type: 'in-app',
+      status: 'completed',
+      targetAudience: 'Free Trial Users',
+      message: 'Unlock AI-powered meal planning and save 30% today only!',
+      sentCount: 5200,
+      openRate: 68.4,
+      clickRate: 24.3,
+      conversionRate: 12.1,
+      revenue: 8900,
+      createdAt: new Date('2024-01-10'),
+      personalized: true,
+    },
+  ]);
+
+  const [segments] = useState<UserSegment[]>([
+    {
+      id: '1',
+      name: 'High-Value Power Users',
+      description: 'Most engaged users with high lifetime value',
+      criteria: ['Daily active', 'Premium subscription', 'Completed 50+ workouts', 'Referred 2+ friends'],
+      userCount: 1250,
+      avgLTV: 450,
+      engagementScore: 95,
+      aiSuggested: true,
+    },
+    {
+      id: '2',
+      name: 'At-Risk Premium Members',
+      description: 'Premium users showing signs of churn',
+      criteria: ['Premium subscription', 'Decreased activity 30%', 'No login in 7 days'],
+      userCount: 380,
+      avgLTV: 280,
+      engagementScore: 35,
+      aiSuggested: true,
+    },
+    {
+      id: '3',
+      name: 'Conversion Ready Free Users',
+      description: 'Free users most likely to convert',
+      criteria: ['Free tier', 'High feature usage', 'Viewed pricing 3+ times', 'Account age > 14 days'],
+      userCount: 2840,
+      avgLTV: 0,
+      engagementScore: 72,
+      aiSuggested: true,
+    },
+    {
+      id: '4',
+      name: 'Fitness Enthusiasts',
+      description: 'Users focused on workout features',
+      criteria: ['Completed 20+ workouts', 'Uses tracking features', 'Views leaderboard'],
+      userCount: 4560,
+      avgLTV: 180,
+      engagementScore: 78,
+    },
+    {
+      id: '5',
+      name: 'Nutrition Focused',
+      description: 'Users primarily using meal planning',
+      criteria: ['Uses meal planner', 'Logs meals daily', 'Views recipes'],
+      userCount: 3200,
+      avgLTV: 220,
+      engagementScore: 82,
+    },
+  ]);
+
+  const [aiInsights] = useState<AIInsight[]>([
+    {
+      id: '1',
+      type: 'opportunity',
+      title: 'Weekend Engagement Spike Detected',
+      description: 'Users are 3x more likely to upgrade on Sunday evenings. Schedule premium campaigns accordingly.',
+      impact: 'high',
+      actionable: true,
+    },
+    {
+      id: '2',
+      type: 'trend',
+      title: 'Meal Planning Feature Driving Conversions',
+      description: 'Users who try meal planning convert at 45% higher rate. Consider highlighting in onboarding.',
+      impact: 'high',
+      actionable: true,
+    },
+    {
+      id: '3',
+      type: 'recommendation',
+      title: 'Re-engage Dormant Premium Users',
+      description: '380 premium users haven\'t logged in for 7+ days. High churn risk - immediate action recommended.',
+      impact: 'high',
+      actionable: true,
+    },
+    {
+      id: '4',
+      type: 'opportunity',
+      title: 'Cross-sell Supplements to Active Users',
+      description: 'Users completing 5+ workouts/week show 68% interest in supplement recommendations.',
+      impact: 'medium',
+      actionable: true,
+    },
+  ]);
+
+  const [automationFlows] = useState<AutomationFlow[]>([
+    {
+      id: '1',
+      name: 'Welcome Series',
+      description: '7-day onboarding sequence for new users',
+      trigger: 'User signup',
+      status: 'active',
+      performance: {
+        triggered: 3420,
+        completed: 2804,
+        conversion: 45,
+        revenue: 28500,
+      },
+    },
+    {
+      id: '2',
+      name: 'Win-Back Campaign',
+      description: 'Re-engage users after 14 days of inactivity',
+      trigger: '14 days inactive',
+      status: 'active',
+      performance: {
+        triggered: 890,
+        completed: 623,
+        conversion: 28,
+        revenue: 8500,
+      },
+    },
+    {
+      id: '3',
+      name: 'Milestone Celebrations',
+      description: 'Reward users for achievements with special offers',
+      trigger: 'Achievement unlocked',
+      status: 'paused',
+      performance: {
+        triggered: 1560,
+        completed: 1435,
+        conversion: 18,
+        revenue: 4200,
+      },
     },
   ]);
 
   const [showCampaignModal, setShowCampaignModal] = useState(false);
-  const [showPromotionModal, setShowPromotionModal] = useState(false);
-  const [selectedSegment, setSelectedSegment] = useState<string>('all');
+  const [isGenerating, setIsGenerating] = useState(false);
   const [campaignForm, setCampaignForm] = useState({
     name: '',
     type: 'email' as Campaign['type'],
     message: '',
     subject: '',
-    targetAudience: 'all',
-    scheduledDate: '',
-  });
-
-  const [promotionForm, setPromotionForm] = useState({
-    title: '',
-    description: '',
-    discountType: 'percentage' as Promotion['discountType'],
-    discountValue: '',
-    code: '',
-    validFrom: '',
-    validUntil: '',
-    usageLimit: '',
+    targetAudience: '',
+    useAI: true,
+    personalize: true,
+    abTest: false,
   });
 
   const analytics = useMemo(() => ({
-    totalCampaigns: campaigns.length,
-    activeCampaigns: campaigns.filter(c => c.status === 'active').length,
-    totalReach: campaigns.reduce((sum, c) => sum + c.sentCount, 0),
+    totalRevenue: campaigns.reduce((sum, c) => sum + (c.revenue || 0), 0),
     avgOpenRate: campaigns.reduce((sum, c) => sum + c.openRate, 0) / campaigns.length || 0,
-    avgClickRate: campaigns.reduce((sum, c) => sum + c.clickRate, 0) / campaigns.length || 0,
     avgConversionRate: campaigns.reduce((sum, c) => sum + c.conversionRate, 0) / campaigns.length || 0,
-    totalPromotions: promotions.length,
-    activePromotions: promotions.filter(p => p.isActive).length,
-    totalRedemptions: promotions.reduce((sum, p) => sum + p.usedCount, 0),
-  }), [campaigns, promotions]);
+    totalReach: campaigns.reduce((sum, c) => sum + c.sentCount, 0),
+  }), [campaigns]);
+
+  const generateAIContent = async () => {
+    if (!campaignForm.targetAudience) {
+      Alert.alert('Select Audience', 'Please select a target audience first');
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: `You are an expert marketing copywriter for a fitness and wellness app. Create compelling, personalized marketing messages that drive engagement and conversions. Focus on benefits, urgency, and clear CTAs. Keep messages concise and action-oriented.`
+            },
+            {
+              role: 'user',
+              content: `Create a ${campaignForm.type} marketing message for the following audience segment: "${campaignForm.targetAudience}". 
+              Campaign name: ${campaignForm.name || 'Fitness campaign'}
+              Include: 
+              - Compelling subject line (if email)
+              - Personalized greeting
+              - Key value propositions (2-3 points)
+              - Clear call-to-action
+              - Sense of urgency or exclusivity
+              - Emoji for engagement
+              Format as JSON with 'subject' and 'message' fields.`
+            }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      if (data.completion) {
+        try {
+          const parsed = JSON.parse(data.completion);
+          setCampaignForm(prev => ({
+            ...prev,
+            subject: parsed.subject || '',
+            message: parsed.message || data.completion,
+          }));
+        } catch {
+          setCampaignForm(prev => ({
+            ...prev,
+            message: data.completion,
+          }));
+        }
+      }
+    } catch (error) {
+      console.error('Error generating AI content:', error);
+      Alert.alert('Error', 'Failed to generate AI content. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const generateAISegment = async () => {
+    setIsGenerating(true);
+    try {
+      const response = await fetch('https://toolkit.rork.com/text/llm/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'system',
+              content: 'You are a data analyst expert in user segmentation for fitness apps. Suggest valuable user segments based on behavior patterns and business goals.'
+            },
+            {
+              role: 'user',
+              content: `Suggest 3 high-value user segments for cross-marketing in a fitness app. For each segment provide:
+              - Name
+              - Description
+              - 3-4 specific criteria
+              - Estimated engagement potential (high/medium/low)
+              - Recommended campaign type
+              Format as JSON array.`
+            }
+          ]
+        })
+      });
+
+      const data = await response.json();
+      if (data.completion) {
+        Alert.alert('AI Segments Generated', 'New segment suggestions are ready for review!');
+      }
+    } catch (error) {
+      console.error('Error generating segments:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   const createCampaign = () => {
-    if (!campaignForm.name || !campaignForm.message) {
+    if (!campaignForm.name || !campaignForm.message || !campaignForm.targetAudience) {
       Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
@@ -200,104 +413,33 @@ export default function MarketingScreen() {
       id: Date.now().toString(),
       name: campaignForm.name,
       type: campaignForm.type,
-      status: campaignForm.scheduledDate ? 'scheduled' : 'draft',
+      status: 'draft',
       targetAudience: campaignForm.targetAudience,
       message: campaignForm.message,
       subject: campaignForm.subject,
-      scheduledDate: campaignForm.scheduledDate ? new Date(campaignForm.scheduledDate) : undefined,
       sentCount: 0,
       openRate: 0,
       clickRate: 0,
       conversionRate: 0,
       createdAt: new Date(),
+      aiGenerated: campaignForm.useAI,
+      personalized: campaignForm.personalize,
+      abTest: campaignForm.abTest,
     };
 
-    setCampaigns([...campaigns, newCampaign]);
+    setCampaigns([newCampaign, ...campaigns]);
     setShowCampaignModal(false);
     setCampaignForm({
       name: '',
       type: 'email',
       message: '',
       subject: '',
-      targetAudience: 'all',
-      scheduledDate: '',
+      targetAudience: '',
+      useAI: true,
+      personalize: true,
+      abTest: false,
     });
-    Alert.alert('Success', 'Campaign created successfully');
-  };
-
-  const createPromotion = () => {
-    if (!promotionForm.title || !promotionForm.code || !promotionForm.discountValue) {
-      Alert.alert('Error', 'Please fill in all required fields');
-      return;
-    }
-
-    const newPromotion: Promotion = {
-      id: Date.now().toString(),
-      title: promotionForm.title,
-      description: promotionForm.description,
-      discountType: promotionForm.discountType,
-      discountValue: parseFloat(promotionForm.discountValue),
-      code: promotionForm.code.toUpperCase(),
-      validFrom: new Date(promotionForm.validFrom),
-      validUntil: new Date(promotionForm.validUntil),
-      usageLimit: parseInt(promotionForm.usageLimit) || 0,
-      usedCount: 0,
-      targetProducts: ['all'],
-      targetUsers: ['all'],
-      isActive: true,
-    };
-
-    setPromotions([...promotions, newPromotion]);
-    setShowPromotionModal(false);
-    setPromotionForm({
-      title: '',
-      description: '',
-      discountType: 'percentage',
-      discountValue: '',
-      code: '',
-      validFrom: '',
-      validUntil: '',
-      usageLimit: '',
-    });
-    Alert.alert('Success', 'Promotion created successfully');
-  };
-
-  const sendCampaign = (campaignId: string) => {
-    Alert.alert(
-      'Send Campaign',
-      'Are you sure you want to send this campaign now?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Send',
-          onPress: () => {
-            setCampaigns(campaigns.map(c => 
-              c.id === campaignId 
-                ? { ...c, status: 'active' as Campaign['status'], sentCount: Math.floor(Math.random() * 10000) }
-                : c
-            ));
-            Alert.alert('Success', 'Campaign sent successfully');
-          }
-        }
-      ]
-    );
-  };
-
-  const deleteCampaign = (campaignId: string) => {
-    Alert.alert(
-      'Delete Campaign',
-      'Are you sure you want to delete this campaign?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            setCampaigns(campaigns.filter(c => c.id !== campaignId));
-          }
-        }
-      ]
-    );
+    Alert.alert('Success', 'AI Campaign created successfully! 🚀');
   };
 
   const getStatusColor = (status: Campaign['status']) => {
@@ -310,24 +452,42 @@ export default function MarketingScreen() {
     }
   };
 
-  const getStatusIcon = (status: Campaign['status']) => {
-    switch (status) {
-      case 'active': return <CheckCircle size={16} color={colors.status.success} />;
-      case 'scheduled': return <Clock size={16} color={colors.accent.secondary} />;
-      case 'completed': return <CheckCircle size={16} color={colors.text.secondary} />;
-      case 'paused': return <AlertCircle size={16} color={colors.status.warning} />;
-      default: return <XCircle size={16} color={colors.text.tertiary} />;
-    }
-  };
-
   const renderCampaigns = () => (
     <View style={styles.tabContent}>
+      <View style={styles.statsRow}>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>${(analytics.totalRevenue / 1000).toFixed(1)}K</Text>
+          <Text style={styles.statLabel}>Revenue Generated</Text>
+          <View style={styles.statChange}>
+            <TrendingUp size={14} color={colors.status.success} />
+            <Text style={styles.statChangeText}>+28%</Text>
+          </View>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>{analytics.avgOpenRate.toFixed(1)}%</Text>
+          <Text style={styles.statLabel}>Avg Open Rate</Text>
+          <View style={styles.statChange}>
+            <TrendingUp size={14} color={colors.status.success} />
+            <Text style={styles.statChangeText}>+12%</Text>
+          </View>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>{analytics.avgConversionRate.toFixed(1)}%</Text>
+          <Text style={styles.statLabel}>Conversion Rate</Text>
+          <View style={styles.statChange}>
+            <TrendingUp size={14} color={colors.status.success} />
+            <Text style={styles.statChangeText}>+5%</Text>
+          </View>
+        </View>
+      </View>
+
       <TouchableOpacity 
         style={styles.createButton}
         onPress={() => setShowCampaignModal(true)}
       >
         <Plus size={20} color={colors.text.primary} />
-        <Text style={styles.createButtonText}>Create Campaign</Text>
+        <Text style={styles.createButtonText}>Create AI Campaign</Text>
+        <Sparkles size={16} color={colors.accent.secondary} />
       </TouchableOpacity>
 
       <FlatList
@@ -338,14 +498,38 @@ export default function MarketingScreen() {
             <View style={styles.campaignHeader}>
               <View style={styles.campaignTitleRow}>
                 <Text style={styles.campaignName}>{item.name}</Text>
-                <View style={styles.statusBadge}>
-                  {getStatusIcon(item.status)}
+                {item.aiGenerated && (
+                  <View style={styles.aiIndicator}>
+                    <Brain size={14} color={colors.accent.secondary} />
+                    <Text style={styles.aiText}>AI</Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.campaignMeta}>
+                <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '20' }]}>
                   <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
                     {item.status.toUpperCase()}
                   </Text>
                 </View>
+                <View style={styles.typeBadge}>
+                  {item.type === 'email' && <Mail size={14} color={colors.text.secondary} />}
+                  {item.type === 'push' && <Bell size={14} color={colors.text.secondary} />}
+                  {item.type === 'in-app' && <MessageSquare size={14} color={colors.text.secondary} />}
+                  <Text style={styles.typeText}>{item.type}</Text>
+                </View>
+                {item.personalized && (
+                  <View style={styles.personalizedBadge}>
+                    <UserCheck size={12} color={colors.accent.primary} />
+                    <Text style={styles.personalizedText}>Personalized</Text>
+                  </View>
+                )}
+                {item.abTest && (
+                  <View style={styles.abTestBadge}>
+                    <Zap size={12} color={colors.accent.secondary} />
+                    <Text style={styles.abTestText}>A/B Test</Text>
+                  </View>
+                )}
               </View>
-              <Text style={styles.campaignType}>{item.type.toUpperCase()} • {item.targetAudience}</Text>
             </View>
 
             <Text style={styles.campaignMessage} numberOfLines={2}>{item.message}</Text>
@@ -353,297 +537,237 @@ export default function MarketingScreen() {
             {item.sentCount > 0 && (
               <View style={styles.metricsRow}>
                 <View style={styles.metric}>
+                  <Send size={14} color={colors.text.tertiary} />
                   <Text style={styles.metricValue}>{item.sentCount.toLocaleString()}</Text>
                   <Text style={styles.metricLabel}>Sent</Text>
                 </View>
                 <View style={styles.metric}>
+                  <Eye size={14} color={colors.text.tertiary} />
                   <Text style={styles.metricValue}>{item.openRate.toFixed(1)}%</Text>
-                  <Text style={styles.metricLabel}>Open Rate</Text>
+                  <Text style={styles.metricLabel}>Open</Text>
                 </View>
                 <View style={styles.metric}>
+                  <Target size={14} color={colors.text.tertiary} />
                   <Text style={styles.metricValue}>{item.clickRate.toFixed(1)}%</Text>
-                  <Text style={styles.metricLabel}>Click Rate</Text>
+                  <Text style={styles.metricLabel}>Click</Text>
                 </View>
-                <View style={styles.metric}>
-                  <Text style={styles.metricValue}>{item.conversionRate.toFixed(1)}%</Text>
-                  <Text style={styles.metricLabel}>Conversion</Text>
-                </View>
+                {item.revenue && (
+                  <View style={styles.metric}>
+                    <DollarSign size={14} color={colors.status.success} />
+                    <Text style={[styles.metricValue, styles.revenueNumber]}>
+                      ${(item.revenue / 1000).toFixed(1)}k
+                    </Text>
+                    <Text style={styles.metricLabel}>Revenue</Text>
+                  </View>
+                )}
               </View>
             )}
-
-            <View style={styles.campaignActions}>
-              {item.status === 'draft' && (
-                <TouchableOpacity 
-                  style={styles.actionButton}
-                  onPress={() => sendCampaign(item.id)}
-                >
-                  <Send size={18} color={colors.accent.primary} />
-                  <Text style={styles.actionButtonText}>Send Now</Text>
-                </TouchableOpacity>
-              )}
-              <TouchableOpacity style={styles.actionButton}>
-                <Eye size={18} color={colors.text.secondary} />
-                <Text style={styles.actionButtonText}>Preview</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
-                <Edit size={18} color={colors.text.secondary} />
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.actionButton}
-                onPress={() => deleteCampaign(item.id)}
-              >
-                <Trash2 size={18} color={colors.status.error} />
-              </TouchableOpacity>
-            </View>
           </View>
         )}
         contentContainerStyle={styles.listContent}
       />
     </View>
-  );
-
-  const renderPromotions = () => (
-    <View style={styles.tabContent}>
-      <TouchableOpacity 
-        style={styles.createButton}
-        onPress={() => setShowPromotionModal(true)}
-      >
-        <Plus size={20} color={colors.text.primary} />
-        <Text style={styles.createButtonText}>Create Promotion</Text>
-      </TouchableOpacity>
-
-      <FlatList
-        data={promotions}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.promotionCard}>
-            <View style={styles.promotionHeader}>
-              <Text style={styles.promotionTitle}>{item.title}</Text>
-              <Switch
-                value={item.isActive}
-                onValueChange={(value) => {
-                  setPromotions(promotions.map(p => 
-                    p.id === item.id ? { ...p, isActive: value } : p
-                  ));
-                }}
-                trackColor={{ false: colors.border.light, true: colors.accent.primary }}
-                thumbColor={colors.text.primary}
-              />
-            </View>
-
-            <Text style={styles.promotionDescription}>{item.description}</Text>
-
-            <View style={styles.promotionDetails}>
-              <View style={styles.promoCodeBox}>
-                <Text style={styles.promoCode}>{item.code}</Text>
-                <Text style={styles.promoDiscount}>
-                  {item.discountType === 'percentage' ? `${item.discountValue}% OFF` : `$${item.discountValue} OFF`}
-                </Text>
-              </View>
-
-              <View style={styles.promotionStats}>
-                <View style={styles.statRow}>
-                  <Text style={styles.statLabel}>Used:</Text>
-                  <Text style={styles.statValue}>{item.usedCount} / {item.usageLimit}</Text>
-                </View>
-                <View style={styles.statRow}>
-                  <Text style={styles.statLabel}>Valid:</Text>
-                  <Text style={styles.statValue}>
-                    {item.validFrom.toLocaleDateString()} - {item.validUntil.toLocaleDateString()}
-                  </Text>
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.promotionActions}>
-              <TouchableOpacity style={styles.actionButton}>
-                <BarChart3 size={18} color={colors.text.secondary} />
-                <Text style={styles.actionButtonText}>Analytics</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
-                <Edit size={18} color={colors.text.secondary} />
-                <Text style={styles.actionButtonText}>Edit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.actionButton}>
-                <Users size={18} color={colors.text.secondary} />
-                <Text style={styles.actionButtonText}>Target Users</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
-  );
-
-  const renderAnalytics = () => (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.analyticsGrid}>
-        <View style={styles.analyticsCard}>
-          <Megaphone size={24} color={colors.accent.primary} />
-          <Text style={styles.analyticsValue}>{analytics.totalCampaigns}</Text>
-          <Text style={styles.analyticsLabel}>Total Campaigns</Text>
-        </View>
-        <View style={styles.analyticsCard}>
-          <TrendingUp size={24} color={colors.status.success} />
-          <Text style={styles.analyticsValue}>{analytics.activeCampaigns}</Text>
-          <Text style={styles.analyticsLabel}>Active Campaigns</Text>
-        </View>
-        <View style={styles.analyticsCard}>
-          <Users size={24} color={colors.accent.secondary} />
-          <Text style={styles.analyticsValue}>{analytics.totalReach.toLocaleString()}</Text>
-          <Text style={styles.analyticsLabel}>Total Reach</Text>
-        </View>
-        <View style={styles.analyticsCard}>
-          <Mail size={24} color={colors.text.secondary} />
-          <Text style={styles.analyticsValue}>{analytics.avgOpenRate.toFixed(1)}%</Text>
-          <Text style={styles.analyticsLabel}>Avg Open Rate</Text>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Performance Metrics</Text>
-        <View style={styles.metricsContainer}>
-          <View style={styles.metricRow}>
-            <Text style={styles.metricRowLabel}>Average Click Rate</Text>
-            <Text style={styles.metricRowValue}>{analytics.avgClickRate.toFixed(1)}%</Text>
-          </View>
-          <View style={styles.metricRow}>
-            <Text style={styles.metricRowLabel}>Average Conversion Rate</Text>
-            <Text style={styles.metricRowValue}>{analytics.avgConversionRate.toFixed(1)}%</Text>
-          </View>
-          <View style={styles.metricRow}>
-            <Text style={styles.metricRowLabel}>Active Promotions</Text>
-            <Text style={styles.metricRowValue}>{analytics.activePromotions}</Text>
-          </View>
-          <View style={styles.metricRow}>
-            <Text style={styles.metricRowLabel}>Total Redemptions</Text>
-            <Text style={styles.metricRowValue}>{analytics.totalRedemptions}</Text>
-          </View>
-        </View>
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Top Performing Campaigns</Text>
-        {campaigns
-          .sort((a, b) => b.conversionRate - a.conversionRate)
-          .slice(0, 3)
-          .map((campaign) => (
-            <TouchableOpacity key={campaign.id} style={styles.topCampaignItem}>
-              <View>
-                <Text style={styles.topCampaignName}>{campaign.name}</Text>
-                <Text style={styles.topCampaignType}>{campaign.type.toUpperCase()}</Text>
-              </View>
-              <View style={styles.topCampaignMetrics}>
-                <Text style={styles.topCampaignConversion}>{campaign.conversionRate.toFixed(1)}%</Text>
-                <ChevronRight size={20} color={colors.text.tertiary} />
-              </View>
-            </TouchableOpacity>
-          ))}
-      </View>
-    </ScrollView>
   );
 
   const renderSegments = () => (
-    <View style={styles.tabContent}>
-      <TouchableOpacity style={styles.createButton}>
-        <Plus size={20} color={colors.text.primary} />
-        <Text style={styles.createButtonText}>Create Segment</Text>
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      <TouchableOpacity
+        style={styles.aiSegmentButton}
+        onPress={generateAISegment}
+        disabled={isGenerating}
+      >
+        <Brain size={20} color={colors.accent.secondary} />
+        <Text style={styles.aiSegmentButtonText}>Generate AI Segments</Text>
+        {isGenerating && <ActivityIndicator size="small" color={colors.accent.secondary} />}
       </TouchableOpacity>
 
-      <FlatList
-        data={segments}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <TouchableOpacity 
-            style={[
-              styles.segmentCard,
-              selectedSegment === item.id && styles.segmentCardSelected
-            ]}
-            onPress={() => setSelectedSegment(item.id)}
-          >
-            <View style={styles.segmentHeader}>
-              <Text style={styles.segmentName}>{item.name}</Text>
-              <Text style={styles.segmentCount}>{item.userCount.toLocaleString()} users</Text>
-            </View>
-            <Text style={styles.segmentDescription}>{item.description}</Text>
-            <View style={styles.segmentCriteria}>
-              {item.criteria.map((criterion, index) => (
-                <View key={index} style={styles.criterionBadge}>
-                  <Text style={styles.criterionText}>{criterion}</Text>
+      {segments.map(segment => (
+        <TouchableOpacity key={segment.id} style={styles.segmentCard}>
+          <View style={styles.segmentHeader}>
+            <View style={styles.segmentTitleRow}>
+              <Text style={styles.segmentName}>{segment.name}</Text>
+              {segment.aiSuggested && (
+                <View style={styles.aiSuggestedBadge}>
+                  <Sparkles size={12} color={colors.accent.secondary} />
+                  <Text style={styles.aiSuggestedText}>AI Suggested</Text>
                 </View>
-              ))}
+              )}
             </View>
-            <View style={styles.segmentActions}>
-              <TouchableOpacity style={styles.segmentAction}>
-                <Target size={16} color={colors.accent.primary} />
-                <Text style={styles.segmentActionText}>Target Campaign</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.segmentAction}>
-                <BarChart3 size={16} color={colors.text.secondary} />
-                <Text style={styles.segmentActionText}>View Analytics</Text>
-              </TouchableOpacity>
+            <Text style={styles.segmentDescription}>{segment.description}</Text>
+          </View>
+          
+          <View style={styles.segmentMetrics}>
+            <View style={styles.metricItem}>
+              <Users size={16} color={colors.text.secondary} />
+              <Text style={styles.metricItemValue}>{segment.userCount.toLocaleString()}</Text>
+              <Text style={styles.metricItemLabel}>Users</Text>
             </View>
-          </TouchableOpacity>
-        )}
-        contentContainerStyle={styles.listContent}
-      />
-    </View>
+            {segment.avgLTV !== undefined && (
+              <View style={styles.metricItem}>
+                <DollarSign size={16} color={colors.status.success} />
+                <Text style={styles.metricItemValue}>${segment.avgLTV}</Text>
+                <Text style={styles.metricItemLabel}>Avg LTV</Text>
+              </View>
+            )}
+            {segment.engagementScore && (
+              <View style={styles.metricItem}>
+                <Activity size={16} color={colors.accent.primary} />
+                <Text style={styles.metricItemValue}>{segment.engagementScore}%</Text>
+                <Text style={styles.metricItemLabel}>Engagement</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.criteriaList}>
+            {segment.criteria.map((criterion, index) => (
+              <View key={index} style={styles.criterion}>
+                <CheckCircle size={12} color={colors.text.tertiary} />
+                <Text style={styles.criterionText}>{criterion}</Text>
+              </View>
+            ))}
+          </View>
+          
+          <View style={styles.segmentActions}>
+            <TouchableOpacity 
+              style={styles.targetButton}
+              onPress={() => {
+                setCampaignForm(prev => ({ ...prev, targetAudience: segment.name }));
+                setShowCampaignModal(true);
+              }}
+            >
+              <Target size={16} color={colors.text.primary} />
+              <Text style={styles.targetButtonText}>Create Campaign</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.analyzeButton}>
+              <BarChart3 size={16} color={colors.accent.primary} />
+              <Text style={styles.analyzeButtonText}>Analyze</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </ScrollView>
+  );
+
+  const renderAIInsights = () => (
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.insightsHeader}>
+        <Text style={styles.insightsTitle}>AI-Powered Marketing Intelligence</Text>
+        <Text style={styles.insightsSubtitle}>Real-time insights to optimize your campaigns</Text>
+      </View>
+
+      {aiInsights.map(insight => (
+        <View key={insight.id} style={styles.insightCard}>
+          <View style={styles.insightHeader}>
+            <View style={styles.insightTypeContainer}>
+              {insight.type === 'opportunity' && <Zap size={20} color={colors.accent.secondary} />}
+              {insight.type === 'trend' && <TrendingUp size={20} color={colors.accent.primary} />}
+              {insight.type === 'recommendation' && <Brain size={20} color={colors.status.success} />}
+              <Text style={styles.insightType}>{insight.type.toUpperCase()}</Text>
+            </View>
+            <View style={[styles.impactBadge, styles[`${insight.impact}Impact`]]}>
+              <Text style={styles.impactText}>{insight.impact.toUpperCase()} IMPACT</Text>
+            </View>
+          </View>
+          
+          <Text style={styles.insightTitle}>{insight.title}</Text>
+          <Text style={styles.insightDescription}>{insight.description}</Text>
+          
+          {insight.actionable && (
+            <TouchableOpacity style={styles.actionButton}>
+              <Sparkles size={16} color={colors.text.primary} />
+              <Text style={styles.actionButtonText}>Take Action</Text>
+              <ChevronRight size={16} color={colors.text.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
+      ))}
+    </ScrollView>
+  );
+
+  const renderAutomation = () => (
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      <View style={styles.automationHeader}>
+        <Text style={styles.automationTitle}>Marketing Automation Flows</Text>
+        <Text style={styles.automationSubtitle}>Set up intelligent campaigns that run automatically</Text>
+      </View>
+
+      {automationFlows.map(flow => (
+        <TouchableOpacity key={flow.id} style={styles.automationCard}>
+          <View style={styles.automationIcon}>
+            {flow.name.includes('Welcome') && <UserCheck size={24} color={colors.accent.primary} />}
+            {flow.name.includes('Win-Back') && <Clock size={24} color={colors.status.warning} />}
+            {flow.name.includes('Milestone') && <Award size={24} color={colors.status.success} />}
+          </View>
+          <View style={styles.automationContent}>
+            <Text style={styles.automationName}>{flow.name}</Text>
+            <Text style={styles.automationDescription}>{flow.description}</Text>
+            <View style={styles.automationStats}>
+              <Text style={styles.automationStat}>
+                {flow.performance.conversion}% conversion
+              </Text>
+              <Text style={styles.automationStat}>• ${(flow.performance.revenue / 1000).toFixed(1)}k revenue</Text>
+            </View>
+          </View>
+          <Switch
+            value={flow.status === 'active'}
+            onValueChange={() => {}}
+            trackColor={{ false: colors.border.light, true: colors.accent.primary }}
+          />
+        </TouchableOpacity>
+      ))}
+
+      <TouchableOpacity style={styles.createAutomationButton}>
+        <Plus size={20} color={colors.text.primary} />
+        <Text style={styles.createAutomationText}>Create AI Automation</Text>
+      </TouchableOpacity>
+    </ScrollView>
   );
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.header}>
-        <Text style={styles.title}>Marketing Center</Text>
-        <Text style={styles.subtitle}>Manage campaigns, promotions & user engagement</Text>
+        <Text style={styles.title}>AI Marketing Center</Text>
+        <Text style={styles.subtitle}>Intelligent cross-marketing powered by AI</Text>
       </View>
 
-      <View style={styles.tabs}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'campaigns' && styles.activeTab]}
-          onPress={() => setActiveTab('campaigns')}
-        >
-          <Megaphone size={20} color={activeTab === 'campaigns' ? colors.accent.primary : colors.text.tertiary} />
-          <Text style={[styles.tabText, activeTab === 'campaigns' && styles.activeTabText]}>
-            Campaigns
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'promotions' && styles.activeTab]}
-          onPress={() => setActiveTab('promotions')}
-        >
-          <Gift size={20} color={activeTab === 'promotions' ? colors.accent.primary : colors.text.tertiary} />
-          <Text style={[styles.tabText, activeTab === 'promotions' && styles.activeTabText]}>
-            Promotions
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'analytics' && styles.activeTab]}
-          onPress={() => setActiveTab('analytics')}
-        >
-          <BarChart3 size={20} color={activeTab === 'analytics' ? colors.accent.primary : colors.text.tertiary} />
-          <Text style={[styles.tabText, activeTab === 'analytics' && styles.activeTabText]}>
-            Analytics
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === 'segments' && styles.activeTab]}
-          onPress={() => setActiveTab('segments')}
-        >
-          <Filter size={20} color={activeTab === 'segments' ? colors.accent.primary : colors.text.tertiary} />
-          <Text style={[styles.tabText, activeTab === 'segments' && styles.activeTabText]}>
-            Segments
-          </Text>
-        </TouchableOpacity>
-      </View>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.tabsContainer}>
+        <View style={styles.tabs}>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'campaigns' && styles.activeTab]}
+            onPress={() => setActiveTab('campaigns')}
+          >
+            <Send size={18} color={activeTab === 'campaigns' ? colors.accent.primary : colors.text.secondary} />
+            <Text style={[styles.tabText, activeTab === 'campaigns' && styles.activeTabText]}>Campaigns</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'segments' && styles.activeTab]}
+            onPress={() => setActiveTab('segments')}
+          >
+            <Users size={18} color={activeTab === 'segments' ? colors.accent.primary : colors.text.secondary} />
+            <Text style={[styles.tabText, activeTab === 'segments' && styles.activeTabText]}>Segments</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'ai-insights' && styles.activeTab]}
+            onPress={() => setActiveTab('ai-insights')}
+          >
+            <Brain size={18} color={activeTab === 'ai-insights' ? colors.accent.primary : colors.text.secondary} />
+            <Text style={[styles.tabText, activeTab === 'ai-insights' && styles.activeTabText]}>AI Insights</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.tab, activeTab === 'automation' && styles.activeTab]}
+            onPress={() => setActiveTab('automation')}
+          >
+            <Zap size={18} color={activeTab === 'automation' ? colors.accent.primary : colors.text.secondary} />
+            <Text style={[styles.tabText, activeTab === 'automation' && styles.activeTabText]}>Automation</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
 
       {activeTab === 'campaigns' && renderCampaigns()}
-      {activeTab === 'promotions' && renderPromotions()}
-      {activeTab === 'analytics' && renderAnalytics()}
       {activeTab === 'segments' && renderSegments()}
+      {activeTab === 'ai-insights' && renderAIInsights()}
+      {activeTab === 'automation' && renderAutomation()}
 
-      {/* Campaign Creation Modal */}
       <Modal
         visible={showCampaignModal}
         animationType="slide"
@@ -651,145 +775,165 @@ export default function MarketingScreen() {
         onRequestClose={() => setShowCampaignModal(false)}
       >
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create Campaign</Text>
-            
-            <TextInput
-              style={styles.input}
-              placeholder="Campaign Name"
-              placeholderTextColor={colors.text.tertiary}
-              value={campaignForm.name}
-              onChangeText={(text) => setCampaignForm({ ...campaignForm, name: text })}
-            />
-
-            <View style={styles.typeSelector}>
-              {(['email', 'push', 'in-app', 'sms'] as const).map((type) => (
-                <TouchableOpacity
-                  key={type}
-                  style={[
-                    styles.typeOption,
-                    campaignForm.type === type && styles.typeOptionSelected
-                  ]}
-                  onPress={() => setCampaignForm({ ...campaignForm, type })}
-                >
-                  <Text style={[
-                    styles.typeOptionText,
-                    campaignForm.type === type && styles.typeOptionTextSelected
-                  ]}>
-                    {type.toUpperCase()}
-                  </Text>
+          <KeyboardAvoidingView 
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.modalContent}
+          >
+            <ScrollView>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Create AI-Powered Campaign</Text>
+                <TouchableOpacity onPress={() => setShowCampaignModal(false)}>
+                  <Text style={styles.closeButton}>✕</Text>
                 </TouchableOpacity>
-              ))}
-            </View>
+              </View>
 
-            {campaignForm.type === 'email' && (
               <TextInput
                 style={styles.input}
-                placeholder="Email Subject"
+                placeholder="Campaign Name"
                 placeholderTextColor={colors.text.tertiary}
-                value={campaignForm.subject}
-                onChangeText={(text) => setCampaignForm({ ...campaignForm, subject: text })}
+                value={campaignForm.name}
+                onChangeText={text => setCampaignForm(prev => ({ ...prev, name: text }))}
               />
-            )}
 
-            <TextInput
-              style={[styles.input, styles.messageInput]}
-              placeholder="Message"
-              placeholderTextColor={colors.text.tertiary}
-              value={campaignForm.message}
-              onChangeText={(text) => setCampaignForm({ ...campaignForm, message: text })}
-              multiline
-              numberOfLines={4}
-            />
+              <View style={styles.typeSelector}>
+                {(['email', 'push', 'in-app', 'sms'] as const).map(type => (
+                  <TouchableOpacity
+                    key={type}
+                    style={[
+                      styles.typeOption,
+                      campaignForm.type === type && styles.typeOptionActive
+                    ]}
+                    onPress={() => setCampaignForm(prev => ({ ...prev, type }))}
+                  >
+                    <Text style={[
+                      styles.typeOptionText,
+                      campaignForm.type === type && styles.typeOptionTextActive
+                    ]}>
+                      {type}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowCampaignModal(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={createCampaign}
-              >
-                <Text style={styles.confirmButtonText}>Create</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+              <View style={styles.segmentSelector}>
+                <Text style={styles.inputLabel}>Target Audience</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {segments.map(segment => (
+                    <TouchableOpacity
+                      key={segment.id}
+                      style={[
+                        styles.segmentOption,
+                        campaignForm.targetAudience === segment.name && styles.segmentOptionActive
+                      ]}
+                      onPress={() => setCampaignForm(prev => ({ ...prev, targetAudience: segment.name }))}
+                    >
+                      <Text style={[
+                        styles.segmentOptionText,
+                        campaignForm.targetAudience === segment.name && styles.segmentOptionTextActive
+                      ]}>
+                        {segment.name}
+                      </Text>
+                      <Text style={styles.segmentOptionCount}>{segment.userCount.toLocaleString()} users</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
 
-      {/* Promotion Creation Modal */}
-      <Modal
-        visible={showPromotionModal}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setShowPromotionModal(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Create Promotion</Text>
-            
-            <TextInput
-              style={styles.input}
-              placeholder="Promotion Title"
-              placeholderTextColor={colors.text.tertiary}
-              value={promotionForm.title}
-              onChangeText={(text) => setPromotionForm({ ...promotionForm, title: text })}
-            />
+              {campaignForm.type === 'email' && (
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email Subject Line"
+                  placeholderTextColor={colors.text.tertiary}
+                  value={campaignForm.subject}
+                  onChangeText={text => setCampaignForm(prev => ({ ...prev, subject: text }))}
+                />
+              )}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Description"
-              placeholderTextColor={colors.text.tertiary}
-              value={promotionForm.description}
-              onChangeText={(text) => setPromotionForm({ ...promotionForm, description: text })}
-            />
-
-            <TextInput
-              style={styles.input}
-              placeholder="Promo Code"
-              placeholderTextColor={colors.text.tertiary}
-              value={promotionForm.code}
-              onChangeText={(text) => setPromotionForm({ ...promotionForm, code: text })}
-              autoCapitalize="characters"
-            />
-
-            <View style={styles.row}>
               <TextInput
-                style={[styles.input, styles.halfInput]}
-                placeholder="Discount Value"
+                style={[styles.input, styles.messageInput]}
+                placeholder="Message (or let AI generate it)"
                 placeholderTextColor={colors.text.tertiary}
-                value={promotionForm.discountValue}
-                onChangeText={(text) => setPromotionForm({ ...promotionForm, discountValue: text })}
-                keyboardType="numeric"
+                value={campaignForm.message}
+                onChangeText={text => setCampaignForm(prev => ({ ...prev, message: text }))}
+                multiline
+                numberOfLines={6}
               />
-              <TextInput
-                style={[styles.input, styles.halfInput]}
-                placeholder="Usage Limit"
-                placeholderTextColor={colors.text.tertiary}
-                value={promotionForm.usageLimit}
-                onChangeText={(text) => setPromotionForm({ ...promotionForm, usageLimit: text })}
-                keyboardType="numeric"
-              />
-            </View>
 
-            <View style={styles.modalActions}>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.cancelButton]}
-                onPress={() => setShowPromotionModal(false)}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={createPromotion}
-              >
-                <Text style={styles.confirmButtonText}>Create</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+              <View style={styles.campaignOptions}>
+                <View style={styles.aiToggle}>
+                  <View style={styles.toggleLeft}>
+                    <Brain size={18} color={colors.accent.secondary} />
+                    <Text style={styles.aiToggleText}>AI Content Generation</Text>
+                  </View>
+                  <Switch
+                    value={campaignForm.useAI}
+                    onValueChange={value => setCampaignForm(prev => ({ ...prev, useAI: value }))}
+                    trackColor={{ false: colors.border.light, true: colors.accent.primary }}
+                  />
+                </View>
+
+                <View style={styles.aiToggle}>
+                  <View style={styles.toggleLeft}>
+                    <UserCheck size={18} color={colors.accent.primary} />
+                    <Text style={styles.aiToggleText}>Personalization</Text>
+                  </View>
+                  <Switch
+                    value={campaignForm.personalize}
+                    onValueChange={value => setCampaignForm(prev => ({ ...prev, personalize: value }))}
+                    trackColor={{ false: colors.border.light, true: colors.accent.primary }}
+                  />
+                </View>
+
+                <View style={styles.aiToggle}>
+                  <View style={styles.toggleLeft}>
+                    <Zap size={18} color={colors.status.warning} />
+                    <Text style={styles.aiToggleText}>A/B Testing</Text>
+                  </View>
+                  <Switch
+                    value={campaignForm.abTest}
+                    onValueChange={value => setCampaignForm(prev => ({ ...prev, abTest: value }))}
+                    trackColor={{ false: colors.border.light, true: colors.accent.primary }}
+                  />
+                </View>
+              </View>
+
+              {campaignForm.useAI && (
+                <TouchableOpacity
+                  style={styles.generateButton}
+                  onPress={generateAIContent}
+                  disabled={isGenerating}
+                >
+                  {isGenerating ? (
+                    <>
+                      <ActivityIndicator size="small" color={colors.text.primary} />
+                      <Text style={styles.generateButtonText}>Generating AI Content...</Text>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles size={20} color={colors.text.primary} />
+                      <Text style={styles.generateButtonText}>Generate AI Content</Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              )}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => setShowCampaignModal(false)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={createCampaign}
+                >
+                  <Send size={18} color={colors.text.primary} />
+                  <Text style={styles.saveButtonText}>Launch Campaign</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </SafeAreaView>
@@ -808,7 +952,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold' as const,
+    fontWeight: 'bold',
     color: colors.text.primary,
     marginBottom: 4,
   },
@@ -816,19 +960,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text.secondary,
   },
-  tabs: {
-    flexDirection: 'row',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
+  tabsContainer: {
+    maxHeight: 50,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.light,
   },
+  tabs: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+  },
   tab: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginRight: 8,
     gap: 6,
   },
   activeTab: {
@@ -837,74 +984,154 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    color: colors.text.tertiary,
-    fontWeight: '500' as const,
+    color: colors.text.secondary,
   },
   activeTabText: {
     color: colors.accent.primary,
   },
   tabContent: {
     flex: 1,
+    padding: 16,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
+    gap: 8,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.background.secondary,
+    padding: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 11,
+    color: colors.text.tertiary,
+    marginBottom: 4,
+  },
+  statChange: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  statChangeText: {
+    fontSize: 12,
+    color: colors.status.success,
+    fontWeight: '600',
   },
   createButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.accent.primary,
-    margin: 20,
-    marginBottom: 10,
-    padding: 15,
+    padding: 16,
     borderRadius: 12,
+    marginBottom: 16,
     gap: 8,
   },
   createButtonText: {
-    color: colors.text.primary,
     fontSize: 16,
-    fontWeight: '600' as const,
+    fontWeight: '600',
+    color: colors.text.primary,
   },
   listContent: {
-    padding: 20,
-    paddingTop: 10,
+    paddingBottom: 20,
   },
   campaignCard: {
-    backgroundColor: colors.background.card,
-    borderRadius: 12,
+    backgroundColor: colors.background.secondary,
     padding: 16,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: colors.border.light,
+    borderRadius: 12,
+    marginBottom: 12,
   },
   campaignHeader: {
     marginBottom: 12,
   },
   campaignTitleRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 4,
+    gap: 8,
+    marginBottom: 8,
   },
   campaignName: {
-    fontSize: 18,
-    fontWeight: '600' as const,
+    fontSize: 16,
+    fontWeight: '600',
     color: colors.text.primary,
     flex: 1,
   },
-  statusBadge: {
+  aiIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: colors.background.tertiary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
     gap: 4,
+  },
+  aiText: {
+    fontSize: 10,
+    color: colors.accent.secondary,
+    fontWeight: '600',
+  },
+  campaignMeta: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: colors.background.secondary,
   },
   statusText: {
     fontSize: 11,
-    fontWeight: '600' as const,
+    fontWeight: '600',
   },
-  campaignType: {
+  typeBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.tertiary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  typeText: {
     fontSize: 12,
-    color: colors.text.tertiary,
+    color: colors.text.secondary,
+    marginLeft: 4,
+  },
+  personalizedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.tertiary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+  },
+  personalizedText: {
+    fontSize: 11,
+    color: colors.accent.primary,
+  },
+  abTestBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.tertiary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    gap: 4,
+  },
+  abTestText: {
+    fontSize: 11,
+    color: colors.accent.secondary,
   },
   campaignMessage: {
     fontSize: 14,
@@ -915,262 +1142,304 @@ const styles = StyleSheet.create({
   metricsRow: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    paddingVertical: 12,
+    paddingTop: 12,
     borderTopWidth: 1,
     borderTopColor: colors.border.light,
-    marginBottom: 12,
   },
   metric: {
     alignItems: 'center',
+    gap: 2,
   },
   metricValue: {
-    fontSize: 18,
-    fontWeight: '600' as const,
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text.primary,
   },
   metricLabel: {
     fontSize: 11,
     color: colors.text.tertiary,
-    marginTop: 2,
   },
-  campaignActions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  actionButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    backgroundColor: colors.background.secondary,
-  },
-  actionButtonText: {
-    fontSize: 13,
-    color: colors.text.secondary,
-  },
-  promotionCard: {
-    backgroundColor: colors.background.card,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-  },
-  promotionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  promotionTitle: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    color: colors.text.primary,
-    flex: 1,
-  },
-  promotionDescription: {
-    fontSize: 14,
-    color: colors.text.secondary,
-    marginBottom: 16,
-  },
-  promotionDetails: {
-    gap: 12,
-    marginBottom: 16,
-  },
-  promoCodeBox: {
-    backgroundColor: colors.background.secondary,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  promoCode: {
-    fontSize: 20,
-    fontWeight: 'bold' as const,
-    color: colors.accent.primary,
-    letterSpacing: 2,
-  },
-  promoDiscount: {
-    fontSize: 14,
-    color: colors.text.secondary,
-    marginTop: 4,
-  },
-  promotionStats: {
-    gap: 8,
-  },
-  statRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  statLabel: {
-    fontSize: 13,
-    color: colors.text.tertiary,
-  },
-  statValue: {
-    fontSize: 13,
-    color: colors.text.secondary,
-    fontWeight: '500' as const,
-  },
-  promotionActions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  analyticsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    padding: 20,
-    gap: 15,
-  },
-  analyticsCard: {
-    flex: 1,
-    minWidth: '45%',
-    backgroundColor: colors.background.card,
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border.light,
-  },
-  analyticsValue: {
-    fontSize: 24,
-    fontWeight: 'bold' as const,
-    color: colors.text.primary,
-    marginTop: 8,
-  },
-  analyticsLabel: {
-    fontSize: 12,
-    color: colors.text.tertiary,
-    marginTop: 4,
-  },
-  section: {
-    padding: 20,
-    paddingTop: 0,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600' as const,
-    color: colors.text.primary,
-    marginBottom: 15,
-  },
-  metricsContainer: {
-    backgroundColor: colors.background.card,
-    borderRadius: 12,
-    padding: 16,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-  },
-  metricRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border.light,
-  },
-  metricRowLabel: {
-    fontSize: 14,
-    color: colors.text.secondary,
-  },
-  metricRowValue: {
-    fontSize: 14,
-    fontWeight: '600' as const,
-    color: colors.text.primary,
-  },
-  topCampaignItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: colors.background.card,
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-  },
-  topCampaignName: {
-    fontSize: 16,
-    fontWeight: '500' as const,
-    color: colors.text.primary,
-  },
-  topCampaignType: {
-    fontSize: 12,
-    color: colors.text.tertiary,
-    marginTop: 2,
-  },
-  topCampaignMetrics: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  topCampaignConversion: {
-    fontSize: 18,
-    fontWeight: 'bold' as const,
+  revenueNumber: {
     color: colors.status.success,
+    fontWeight: 'bold',
+  },
+  aiSegmentButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background.tertiary,
+    padding: 14,
+    borderRadius: 12,
+    marginBottom: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.accent.secondary,
+    borderStyle: 'dashed',
+  },
+  aiSegmentButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.accent.secondary,
   },
   segmentCard: {
-    backgroundColor: colors.background.card,
-    borderRadius: 12,
+    backgroundColor: colors.background.secondary,
     padding: 16,
-    marginBottom: 15,
-    borderWidth: 1,
-    borderColor: colors.border.light,
-  },
-  segmentCardSelected: {
-    borderColor: colors.accent.primary,
-    borderWidth: 2,
+    borderRadius: 12,
+    marginBottom: 12,
   },
   segmentHeader: {
+    marginBottom: 12,
+  },
+  segmentTitleRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   segmentName: {
-    fontSize: 18,
-    fontWeight: '600' as const,
+    fontSize: 16,
+    fontWeight: '600',
     color: colors.text.primary,
+    flex: 1,
   },
-  segmentCount: {
-    fontSize: 14,
-    color: colors.accent.primary,
-    fontWeight: '500' as const,
-  },
-  segmentDescription: {
-    fontSize: 14,
-    color: colors.text.secondary,
-    marginBottom: 12,
-  },
-  segmentCriteria: {
+  aiSuggestedBadge: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 12,
-  },
-  criterionBadge: {
-    backgroundColor: colors.background.secondary,
-    paddingHorizontal: 10,
+    alignItems: 'center',
+    backgroundColor: colors.background.tertiary,
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 12,
+    gap: 4,
+  },
+  aiSuggestedText: {
+    fontSize: 10,
+    color: colors.accent.secondary,
+    fontWeight: '600',
+  },
+  segmentDescription: {
+    fontSize: 13,
+    color: colors.text.secondary,
+    marginTop: 4,
+  },
+  segmentMetrics: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    backgroundColor: colors.background.tertiary,
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+  metricItem: {
+    alignItems: 'center',
+    gap: 4,
+  },
+  metricItemValue: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+  },
+  metricItemLabel: {
+    fontSize: 11,
+    color: colors.text.tertiary,
+  },
+  criteriaList: {
+    marginBottom: 12,
+  },
+  criterion: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 6,
   },
   criterionText: {
-    fontSize: 11,
+    fontSize: 13,
     color: colors.text.secondary,
   },
   segmentActions: {
     flexDirection: 'row',
-    gap: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border.light,
+    gap: 8,
   },
-  segmentAction: {
+  targetButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accent.primary,
+    padding: 10,
+    borderRadius: 8,
     gap: 6,
   },
-  segmentActionText: {
+  targetButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  analyzeButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background.tertiary,
+    padding: 10,
+    borderRadius: 8,
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.accent.primary,
+  },
+  analyzeButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.accent.primary,
+  },
+  insightsHeader: {
+    marginBottom: 16,
+  },
+  insightsTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  insightsSubtitle: {
+    fontSize: 14,
+    color: colors.text.secondary,
+  },
+  insightCard: {
+    backgroundColor: colors.background.secondary,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  insightHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  insightTypeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  insightType: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: colors.text.secondary,
+  },
+  insightTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 8,
+  },
+  insightDescription: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    lineHeight: 20,
+  },
+  impactBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  highImpact: {
+    backgroundColor: colors.status.error + '20',
+  },
+  mediumImpact: {
+    backgroundColor: colors.status.warning + '20',
+  },
+  lowImpact: {
+    backgroundColor: colors.status.success + '20',
+  },
+  impactText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accent.primary,
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 12,
+    gap: 8,
+  },
+  actionButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
+  },
+  automationHeader: {
+    marginBottom: 16,
+  },
+  automationTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  automationSubtitle: {
+    fontSize: 14,
+    color: colors.text.secondary,
+  },
+  automationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.background.secondary,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 12,
+    gap: 12,
+  },
+  automationIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.background.tertiary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  automationContent: {
+    flex: 1,
+  },
+  automationName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 4,
+  },
+  automationDescription: {
     fontSize: 13,
+    color: colors.text.secondary,
+    marginBottom: 6,
+  },
+  automationStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  automationStat: {
+    fontSize: 12,
+    color: colors.text.tertiary,
+    fontWeight: '500',
+  },
+  createAutomationButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background.tertiary,
+    padding: 14,
+    borderRadius: 12,
+    marginTop: 8,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.border.medium,
+    borderStyle: 'dashed',
+  },
+  createAutomationText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text.secondary,
   },
   modalOverlay: {
@@ -1180,30 +1449,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContent: {
-    backgroundColor: colors.background.card,
+    backgroundColor: colors.background.secondary,
     borderRadius: 16,
-    padding: 24,
+    padding: 20,
     width: '90%',
-    maxWidth: 400,
+    maxWidth: 500,
+    maxHeight: '80%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
   },
   modalTitle: {
     fontSize: 20,
-    fontWeight: 'bold' as const,
+    fontWeight: 'bold',
     color: colors.text.primary,
-    marginBottom: 20,
+  },
+  closeButton: {
+    fontSize: 24,
+    color: colors.text.secondary,
+  },
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.secondary,
+    marginBottom: 8,
   },
   input: {
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.background.tertiary,
     borderRadius: 8,
     padding: 12,
     color: colors.text.primary,
-    fontSize: 14,
     marginBottom: 12,
     borderWidth: 1,
     borderColor: colors.border.light,
   },
   messageInput: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
   },
   typeSelector: {
@@ -1213,55 +1497,118 @@ const styles = StyleSheet.create({
   },
   typeOption: {
     flex: 1,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: colors.background.secondary,
+    backgroundColor: colors.background.tertiary,
     alignItems: 'center',
   },
-  typeOptionSelected: {
-    backgroundColor: colors.accent.primary,
+  typeOptionActive: {
+    backgroundColor: colors.accent.primary + '20',
+    borderWidth: 1,
+    borderColor: colors.accent.primary,
   },
   typeOptionText: {
-    fontSize: 12,
-    color: colors.text.tertiary,
-    fontWeight: '500' as const,
+    fontSize: 13,
+    color: colors.text.secondary,
   },
-  typeOptionTextSelected: {
+  typeOptionTextActive: {
+    color: colors.accent.primary,
+    fontWeight: '600',
+  },
+  segmentSelector: {
+    marginBottom: 12,
+  },
+  segmentOption: {
+    backgroundColor: colors.background.tertiary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  segmentOptionActive: {
+    backgroundColor: colors.accent.primary + '20',
+    borderColor: colors.accent.primary,
+  },
+  segmentOptionText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: colors.text.secondary,
+  },
+  segmentOptionTextActive: {
+    color: colors.accent.primary,
+  },
+  segmentOptionCount: {
+    fontSize: 11,
+    color: colors.text.tertiary,
+    marginTop: 2,
+  },
+  campaignOptions: {
+    marginBottom: 12,
+  },
+  aiToggle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  toggleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  aiToggleText: {
+    fontSize: 14,
     color: colors.text.primary,
   },
-  row: {
+  generateButton: {
     flexDirection: 'row',
-    gap: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accent.secondary,
+    padding: 14,
+    borderRadius: 8,
+    marginTop: 12,
+    marginBottom: 12,
+    gap: 8,
   },
-  halfInput: {
-    flex: 1,
+  generateButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.text.primary,
   },
   modalActions: {
     flexDirection: 'row',
     gap: 12,
     marginTop: 20,
   },
-  modalButton: {
+  cancelButton: {
     flex: 1,
-    paddingVertical: 12,
+    backgroundColor: colors.background.tertiary,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
-  cancelButton: {
-    backgroundColor: colors.background.secondary,
-  },
   cancelButtonText: {
+    fontSize: 14,
     color: colors.text.secondary,
-    fontSize: 16,
-    fontWeight: '500' as const,
   },
-  confirmButton: {
+  saveButton: {
+    flex: 1,
+    flexDirection: 'row',
     backgroundColor: colors.accent.primary,
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-  confirmButtonText: {
+  saveButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
     color: colors.text.primary,
-    fontSize: 16,
-    fontWeight: '600' as const,
   },
 });
