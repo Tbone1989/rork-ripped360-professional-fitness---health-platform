@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Filter, Zap, BookOpen } from 'lucide-react-native';
+import { Filter, Zap, BookOpen, Video } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -110,6 +110,23 @@ export default function WorkoutsScreen() {
                   title="Generate Workout"
                   onPress={() => router.push('/workouts/generate')}
                   style={styles.aiWorkoutButton}
+                />
+              </View>
+            </View>
+            
+            <View style={styles.videoAnalysisContainer}>
+              <View style={styles.videoAnalysisCard}>
+                <View style={styles.videoAnalysisHeader}>
+                  <Video size={24} color={colors.accent.primary} />
+                  <Text style={styles.videoAnalysisTitle}>Video Form Analysis</Text>
+                </View>
+                <Text style={styles.videoAnalysisDescription}>
+                  Upload or record your workout video to get AI-powered form feedback and coaching tips.
+                </Text>
+                <Button
+                  title="Analyze Video"
+                  onPress={() => router.push('/workouts/video-analysis')}
+                  style={styles.videoAnalysisButton}
                 />
               </View>
             </View>
@@ -274,6 +291,38 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
   aiWorkoutButton: {
+    alignSelf: 'flex-start',
+  },
+  videoAnalysisContainer: {
+    padding: 16,
+    paddingTop: 0,
+    marginBottom: 24,
+  },
+  videoAnalysisCard: {
+    backgroundColor: colors.background.secondary,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.border.medium,
+  },
+  videoAnalysisHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  videoAnalysisTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginLeft: 8,
+  },
+  videoAnalysisDescription: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  videoAnalysisButton: {
     alignSelf: 'flex-start',
   },
   emptyState: {
