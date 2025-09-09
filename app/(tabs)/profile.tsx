@@ -212,15 +212,7 @@ export default function ProfileScreen() {
       onPress: () => router.push('/profile/privacy'),
       testID: 'menu-privacy',
     },
-    ...(user?.role === 'admin'
-      ? [{
-        icon: <Shield size={20} color={colors.status.error} />,
-        title: 'Admin Dashboard',
-        onPress: () => router.push('/admin/dashboard'),
-        isSpecial: true as const,
-        testID: 'menu-admin-dashboard',
-      }] as const
-      : [])
+
 
   ];
 
