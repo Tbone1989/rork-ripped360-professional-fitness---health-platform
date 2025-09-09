@@ -13,7 +13,8 @@ import {
   ArrowLeft,
   Package,
   Users,
-  Phone
+  Phone,
+  FileText
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -245,6 +246,19 @@ export default function CoachDetailScreen() {
       </View>
       
       <View style={styles.actionButtons}>
+        <Button
+          title="Review & Sign Contract"
+          variant="outline"
+          icon={<FileText size={18} color={colors.accent.primary} />}
+          style={styles.contractButton}
+          fullWidth
+          onPress={() => router.push({
+            pathname: '/coaching/contract',
+            params: { coachId: coach.id, coachName: coach.name }
+          })}
+          testID="sign-contract"
+        />
+        
         {coach.pricingVisibility === 'consultation_required' ? (
           <>
             <Button
@@ -646,6 +660,9 @@ const styles = StyleSheet.create({
     marginBottom: 0,
   },
   messageButton: {
+    marginBottom: 0,
+  },
+  contractButton: {
     marginBottom: 0,
   },
 });
