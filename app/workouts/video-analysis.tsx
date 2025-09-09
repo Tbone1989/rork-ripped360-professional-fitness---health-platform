@@ -16,7 +16,7 @@ import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
 import { Video, ResizeMode } from 'expo-av';
 import { Camera, Upload, Play, CheckCircle, AlertCircle, ChevronRight } from 'lucide-react-native';
-import colors from '@/constants/colors';
+import { colors } from '@/constants/colors';
 
 interface AnalysisResult {
   overallScore: number;
