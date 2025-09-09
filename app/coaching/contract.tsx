@@ -78,7 +78,7 @@ export default function CoachingContract() {
       >
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.header}>
-            <FileText size={32} color={colors.primary} />
+            <FileText size={32} color={colors.accent.primary} />
             <Text style={styles.title}>Coaching Services Agreement</Text>
             <Text style={styles.subtitle}>Please review and sign the agreement below</Text>
           </View>
@@ -201,7 +201,7 @@ export default function CoachingContract() {
                 onChangeText={(text) =>
                   setSignatureData({ ...signatureData, clientName: text })
                 }
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.text.secondary}
               />
             </View>
 
@@ -214,7 +214,7 @@ export default function CoachingContract() {
                 onChangeText={(text) =>
                   setSignatureData({ ...signatureData, clientSignature: text })
                 }
-                placeholderTextColor={colors.textSecondary}
+                placeholderTextColor={colors.text.secondary}
               />
               <Text style={styles.signatureNote}>
                 By typing your name above, you are providing an electronic signature
@@ -235,7 +235,7 @@ export default function CoachingContract() {
                 signatureData.agreedToTerms && styles.checkboxChecked
               ]}>
                 {signatureData.agreedToTerms && (
-                  <Check size={16} color={colors.white} />
+                  <Check size={16} color={colors.text.primary} />
                 )}
               </View>
               <Text style={styles.checkboxText}>
@@ -244,7 +244,7 @@ export default function CoachingContract() {
             </TouchableOpacity>
 
             <View style={styles.warningBox}>
-              <AlertCircle size={20} color={colors.warning} />
+              <AlertCircle size={20} color={colors.status.warning} />
               <Text style={styles.warningText}>
                 This is a legally binding agreement. Please read carefully before signing.
               </Text>
@@ -272,7 +272,7 @@ export default function CoachingContract() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: colors.background.primary,
   },
   keyboardView: {
     flex: 1,
@@ -282,17 +282,17 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    borderBottomColor: colors.border.light,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold' as const,
-    color: colors.text,
+    color: colors.text.primary,
     marginTop: 12,
   },
   subtitle: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     marginTop: 4,
   },
   contractContainer: {
@@ -300,12 +300,12 @@ const styles = StyleSheet.create({
   },
   contractDate: {
     fontSize: 14,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     marginBottom: 16,
   },
   parties: {
     fontSize: 14,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: 24,
     lineHeight: 22,
   },
@@ -318,12 +318,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold' as const,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: 8,
   },
   sectionContent: {
     fontSize: 14,
-    color: colors.text,
+    color: colors.text.primary,
     lineHeight: 20,
     marginBottom: 8,
   },
@@ -332,21 +332,21 @@ const styles = StyleSheet.create({
   },
   bulletItem: {
     fontSize: 14,
-    color: colors.text,
+    color: colors.text.primary,
     lineHeight: 20,
     marginBottom: 8,
     paddingLeft: 8,
   },
   signatureSection: {
     padding: 20,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.background.secondary,
     borderTopWidth: 1,
-    borderTopColor: colors.border,
+    borderTopColor: colors.border.light,
   },
   signatureTitle: {
     fontSize: 20,
     fontWeight: 'bold' as const,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: 20,
   },
   inputGroup: {
@@ -355,21 +355,21 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600' as const,
-    color: colors.text,
+    color: colors.text.primary,
     marginBottom: 8,
   },
   input: {
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: colors.border.light,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
-    color: colors.text,
-    backgroundColor: colors.white,
+    color: colors.text.primary,
+    backgroundColor: colors.background.card,
   },
   signatureNote: {
     fontSize: 12,
-    color: colors.textSecondary,
+    color: colors.text.secondary,
     marginTop: 4,
     fontStyle: 'italic' as const,
   },
@@ -382,26 +382,26 @@ const styles = StyleSheet.create({
     width: 24,
     height: 24,
     borderWidth: 2,
-    borderColor: colors.border,
+    borderColor: colors.border.light,
     borderRadius: 4,
     marginRight: 12,
     alignItems: 'center',
     justifyContent: 'center',
   },
   checkboxChecked: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
+    backgroundColor: colors.accent.primary,
+    borderColor: colors.accent.primary,
   },
   checkboxText: {
     flex: 1,
     fontSize: 14,
-    color: colors.text,
+    color: colors.text.primary,
     lineHeight: 20,
   },
   warningBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.warningLight,
+    backgroundColor: 'rgba(255, 215, 0, 0.1)',
     padding: 12,
     borderRadius: 8,
     marginBottom: 20,
@@ -409,21 +409,21 @@ const styles = StyleSheet.create({
   warningText: {
     flex: 1,
     fontSize: 14,
-    color: colors.text,
+    color: colors.text.primary,
     marginLeft: 8,
   },
   submitButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   submitButtonDisabled: {
-    backgroundColor: colors.disabled,
+    backgroundColor: colors.text.disabled,
   },
   submitButtonText: {
     fontSize: 16,
     fontWeight: 'bold' as const,
-    color: colors.white,
+    color: colors.text.primary,
   },
 });
