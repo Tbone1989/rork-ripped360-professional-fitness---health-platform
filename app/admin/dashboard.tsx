@@ -434,6 +434,22 @@ export default function AdminDashboardScreen() {
             <DollarSign size={24} color={colors.status.success} />
             <Text style={styles.actionText}>Sales</Text>
           </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/test-apis')}
+            activeOpacity={0.7}
+          >
+            <TestTube size={24} color={colors.status.info} />
+            <Text style={styles.actionText}>API Tests</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => router.push('/test-trpc-debug')}
+            activeOpacity={0.7}
+          >
+            <Wifi size={24} color={colors.status.error} />
+            <Text style={styles.actionText}>tRPC Debug</Text>
+          </TouchableOpacity>
         </View>
       </View>
 

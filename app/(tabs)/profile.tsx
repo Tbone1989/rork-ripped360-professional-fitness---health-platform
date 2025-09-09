@@ -212,25 +212,13 @@ export default function ProfileScreen() {
       onPress: () => router.push('/profile/privacy'),
       testID: 'menu-privacy',
     },
-    {
-      icon: <Zap size={20} color={colors.status.info} />,
-      title: 'API Status',
-      onPress: () => router.push('/admin/api-status'),
-      testID: 'menu-api-status',
-    },
     ...(user?.role === 'admin'
       ? [{
-        icon: <TestTube size={20} color={colors.status.info} />,
-        title: 'API Test Suite',
-        onPress: () => router.push('/test-apis'),
+        icon: <Shield size={20} color={colors.status.error} />,
+        title: 'Admin Dashboard',
+        onPress: () => router.push('/admin/dashboard'),
         isSpecial: true as const,
-        testID: 'menu-api-tests',
-      }, {
-        icon: <Zap size={20} color={colors.status.error} />,
-        title: 'tRPC Debug',
-        onPress: () => router.push('/test-trpc-debug'),
-        isSpecial: true as const,
-        testID: 'menu-trpc-debug',
+        testID: 'menu-admin-dashboard',
       }] as const
       : [])
 
