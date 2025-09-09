@@ -29,6 +29,7 @@ import {
   TestTube,
   Wifi,
   DollarSign,
+  Megaphone,
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -182,6 +183,9 @@ export default function AdminDashboardScreen() {
         break;
       case 'sales':
         router.push('/admin/sales');
+        break;
+      case 'marketing':
+        router.push('/admin/marketing');
         break;
       default:
         break;
@@ -433,6 +437,14 @@ export default function AdminDashboardScreen() {
           >
             <DollarSign size={24} color={colors.status.success} />
             <Text style={styles.actionText}>Sales</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionCard}
+            onPress={() => handleQuickAction('marketing')}
+            activeOpacity={0.7}
+          >
+            <Megaphone size={24} color={colors.accent.secondary} />
+            <Text style={styles.actionText}>Marketing</Text>
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.actionCard}

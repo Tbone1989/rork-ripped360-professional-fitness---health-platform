@@ -24,6 +24,7 @@ export default function AdminLayout() {
       <Stack.Screen name="volume-tracking" options={{ title: 'User Volume Tracking' }} />
       <Stack.Screen name="user-issues" options={{ title: 'User Issues & Requests' }} />
       <Stack.Screen name="sales" options={{ title: 'Sales Analytics' }} />
+      <Stack.Screen name="marketing" options={{ title: 'Marketing Center' }} />
       <Stack.Screen name="api-status" options={{ title: 'API Status', headerShown: false }} />
       <Stack.Screen name="api-test" options={{ title: 'API Connection Test', headerShown: false }} />
     </Stack>
