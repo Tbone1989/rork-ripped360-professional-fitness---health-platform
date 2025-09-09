@@ -298,7 +298,7 @@ export default function AIBodyScanScreen() {
                 <View style={styles.actionButtons}>
                   <Button
                     title="Track Progress"
-                    onPress={() => router.push('/ai/progress')}
+                    onPress={() => router.push('/profile')}
                     style={styles.actionButton}
                   />
                   <Button
