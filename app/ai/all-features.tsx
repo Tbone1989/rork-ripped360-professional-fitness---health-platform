@@ -51,6 +51,33 @@ export default function AllAIFeaturesScreen() {
 
   const coreFeatures: AIFeature[] = [
     {
+      id: 'gym-companion',
+      title: 'AI Gym Companion',
+      description: 'Equipment scanner, anxiety support & motivation',
+      icon: Brain,
+      color: '#FF9F40',
+      route: '/ai/gym-companion',
+      badge: 'HOT',
+    },
+    {
+      id: 'meal-accountability',
+      title: 'Meal Accountability',
+      description: 'AI tracks every meal & keeps you on track',
+      icon: Camera,
+      color: '#B39DDB',
+      route: '/ai/meal-accountability',
+      badge: 'NEW',
+    },
+    {
+      id: 'physical-therapy',
+      title: 'AI Physical Therapy',
+      description: 'Posture analysis, stretching & injury recovery',
+      icon: Heart,
+      color: '#81C784',
+      route: '/ai/physical-therapy',
+      badge: 'MEDICAL',
+    },
+    {
       id: 'body-scan',
       title: 'AI Body Composition',
       description: 'Analyze body fat, muscle mass & get personalized recommendations',
@@ -83,7 +110,6 @@ export default function AllAIFeaturesScreen() {
       icon: Bot,
       color: '#FF69B4',
       route: '/ai/coach',
-      badge: 'NEW',
     },
     {
       id: 'supplement-optimizer',
@@ -92,15 +118,6 @@ export default function AllAIFeaturesScreen() {
       icon: Sparkles,
       color: '#EC4899',
       route: '/ai/supplement-optimizer',
-    },
-    {
-      id: 'recovery-ai',
-      title: 'Recovery Optimizer',
-      description: 'AI-powered recovery protocols & injury prevention',
-      icon: Heart,
-      color: '#EF4444',
-      route: '/ai/recovery',
-      comingSoon: true,
     },
   ];
 
