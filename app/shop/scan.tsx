@@ -252,6 +252,7 @@ const MobileScanner = () => {
         barcodeScannerSettings={{
           barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8', 'code128', 'code39'],
         }}
+        enableTorch={flashEnabled}
       >
         <View style={styles.overlay}>
           {/* Top controls */}

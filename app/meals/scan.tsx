@@ -173,7 +173,7 @@ const MobileScanner = () => {
         facing={facing}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
         barcodeScannerSettings={{ barcodeTypes: ['upc_a', 'upc_e', 'ean13', 'ean8', 'code128', 'code39'] }}
-        {...(flashEnabled ? { enableTorch: true } : {})}
+        enableTorch={flashEnabled}
         testID="camera-view"
       >
         <View style={styles.overlay}>
