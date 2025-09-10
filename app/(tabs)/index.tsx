@@ -14,6 +14,7 @@ import { CoachCard } from '@/components/coaching/CoachCard';
 import { Avatar } from '@/components/ui/Avatar';
 import { useUserStore } from '@/store/userStore';
 import { useShopStore } from '@/store/shopStore';
+import { FreeTierDashboard } from '@/components/ui/FreeTierDashboard';
 import { featuredWorkoutPlans } from '@/mocks/workouts';
 import { workoutCategories } from '@/mocks/workouts';
 import { featuredCoaches } from '@/mocks/coaches';
@@ -212,7 +213,12 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-
+        {/* Free Tier Dashboard for Free Users */}
+        {(!user?.subscription?.plan || user?.subscription?.plan === 'free') && (
+          <View style={styles.freeTierSection}>
+            <FreeTierDashboard />
+          </View>
+        )}
 
         <View style={styles.header}>
           <View>
@@ -903,6 +909,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border.light,
   },
-
-
+  freeTierSection: {
+    padding: 16,
+    paddingTop: 8,
+  },
 });
