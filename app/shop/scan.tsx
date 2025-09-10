@@ -5,6 +5,7 @@ import { X, Flashlight, FlashlightOff, RotateCcw, ShoppingBag } from 'lucide-rea
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
+import { trpcClient } from '@/lib/trpc';
 
 // Web fallback component
 const WebScanner = () => {
@@ -81,52 +82,116 @@ const MobileScanner = () => {
     }
   };
 
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
+  const handleBarCodeScanned = async ({ type, data }: { type: string; data: string }) => {
     if (scanned) return;
     
     setScanned(true);
 
-    // Mock product data lookup
-    const mockProductData = {
-      id: 'rci-001',
-      name: 'Ripped City Performance Tee',
-      brand: 'Ripped City Inc.',
-      category: 'apparel',
-      price: 29.99,
-      originalPrice: 39.99,
-      rating: 4.8,
-      reviews: 124,
-      inStock: true,
-      description: 'Premium performance t-shirt designed for intense workouts',
-      sizes: ['S', 'M', 'L', 'XL', 'XXL'],
-      colors: ['Black', 'White', 'Navy', 'Red'],
-      barcode: data,
-      image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400'
-    };
+    try {
+      // Try to get nutrition data from API (for food products)
+      const nutritionData = await trpcClient.nutrition.barcode.query({ barcode: data });
+      
+      if (nutritionData && nutritionData.name !== 'Unknown Item') {
+        // Convert nutrition data to shop product format
+        const productData = {
+          id: data,
+          name: nutritionData.name,
+          brand: nutritionData.brand || 'Ripped City Inc.',
+          category: 'nutrition',
+          price: 0, // Price would come from shop API
+          calories: nutritionData.calories,
+          protein: nutritionData.protein,
+          carbs: nutritionData.carbs,
+          fat: nutritionData.fat,
+          servingSize: nutritionData.servingSize,
+          barcode: data,
+          image: nutritionData.image || 'https://images.unsplash.com/photo-1606923829579-0cb981a83e2e?w=400'
+        };
 
-    Alert.alert(
-      'Product Found!',
-      `${mockProductData.name}\n$${mockProductData.price} (was $${mockProductData.originalPrice})`,
-      [
-        {
-          text: 'Scan Another',
-          onPress: () => setScanned(false),
-          style: 'cancel'
-        },
-        {
-          text: 'View Product',
-          onPress: () => {
-            router.push({
-              pathname: '/shop/product/[id]',
-              params: { 
-                id: mockProductData.id,
-                productData: JSON.stringify(mockProductData)
+        Alert.alert(
+          'Product Found!',
+          `${productData.name}${productData.brand ? ` by ${productData.brand}` : ''}\n${productData.calories} cal | ${productData.protein}g protein`,
+          [
+            {
+              text: 'Scan Another',
+              onPress: () => setScanned(false),
+              style: 'cancel'
+            },
+            {
+              text: 'View Details',
+              onPress: () => {
+                router.push({
+                  pathname: '/meals/[id]',
+                  params: { 
+                    id: data,
+                    productData: JSON.stringify(productData)
+                  }
+                });
               }
-            });
+            }
+          ]
+        );
+      } else {
+        // Fallback to mock product data for non-food items
+        const mockProductData = {
+          id: 'rci-001',
+          name: 'Ripped City Performance Tee',
+          brand: 'Ripped City Inc.',
+          category: 'apparel',
+          price: 29.99,
+          originalPrice: 39.99,
+          rating: 4.8,
+          reviews: 124,
+          inStock: true,
+          description: 'Premium performance t-shirt designed for intense workouts',
+          sizes: ['S', 'M', 'L', 'XL', 'XXL'],
+          colors: ['Black', 'White', 'Navy', 'Red'],
+          barcode: data,
+          image: 'https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400'
+        };
+
+        Alert.alert(
+          'Product Scanned',
+          `Barcode: ${data}\nShowing sample product`,
+          [
+            {
+              text: 'Scan Another',
+              onPress: () => setScanned(false),
+              style: 'cancel'
+            },
+            {
+              text: 'View Product',
+              onPress: () => {
+                router.push({
+                  pathname: '/shop/product/[id]',
+                  params: { 
+                    id: mockProductData.id,
+                    productData: JSON.stringify(mockProductData)
+                  }
+                });
+              }
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('Barcode scan error:', error);
+      Alert.alert(
+        'Scan Error',
+        'Unable to process barcode. Please try again or browse products manually.',
+        [
+          {
+            text: 'Scan Another',
+            onPress: () => setScanned(false),
+            style: 'cancel'
+          },
+          {
+            text: 'Browse Shop',
+            onPress: () => router.back()
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const toggleFlash = () => {

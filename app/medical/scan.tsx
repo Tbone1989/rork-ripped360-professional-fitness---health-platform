@@ -6,7 +6,7 @@ import { X, Flashlight, FlashlightOff, RotateCcw, Pill, Syringe } from 'lucide-r
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { TabBar } from '@/components/ui/TabBar';
-import { apiService } from '@/services/api';
+import { trpcClient } from '@/lib/trpc';
 
 const scanTabs = [
   { key: 'supplements', label: 'Supplements' },
@@ -106,7 +106,7 @@ const MobileScanner = () => {
 
     try {
       // Try to get supplement data from API
-      const supplementData = await apiService.getSupplementByBarcode(data);
+      const supplementData = await trpcClient.health.supplements.barcode.query({ barcode: data });
       
       if (supplementData) {
         Alert.alert(
@@ -121,13 +121,33 @@ const MobileScanner = () => {
             {
               text: 'View Details',
               onPress: () => {
-                router.push({
-                  pathname: `/supplements/details`,
-                  params: { 
-                    productData: JSON.stringify(supplementData),
-                    type: activeTab
-                  }
-                });
+                if (activeTab === 'supplements') {
+                  router.push({
+                    pathname: `/supplements/[id]`,
+                    params: { 
+                      id: supplementData.id,
+                      productData: JSON.stringify(supplementData)
+                    }
+                  });
+                } else if (activeTab === 'medicines') {
+                  router.push({
+                    pathname: `/medicines/[id]`,
+                    params: { 
+                      id: supplementData.id,
+                      productData: JSON.stringify(supplementData)
+                    }
+                  });
+                } else {
+                  // For peptides, use supplements view for now
+                  router.push({
+                    pathname: `/supplements/[id]`,
+                    params: { 
+                      id: supplementData.id,
+                      productData: JSON.stringify(supplementData),
+                      type: 'peptide'
+                    }
+                  });
+                }
               }
             }
           ]
@@ -144,7 +164,15 @@ const MobileScanner = () => {
             },
             {
               text: 'Browse Products',
-              onPress: () => router.push('/shop')
+              onPress: () => {
+                if (activeTab === 'supplements') {
+                  router.push('/medical');
+                } else if (activeTab === 'medicines') {
+                  router.push('/medicines');
+                } else {
+                  router.push('/medical');
+                }
+              }
             }
           ]
         );
@@ -162,7 +190,15 @@ const MobileScanner = () => {
           },
           {
             text: 'Browse Products',
-            onPress: () => router.push('/shop')
+            onPress: () => {
+              if (activeTab === 'supplements') {
+                router.push('/medical');
+              } else if (activeTab === 'medicines') {
+                router.push('/medicines');
+              } else {
+                router.push('/medical');
+              }
+            }
           }
         ]
       );
@@ -299,7 +335,15 @@ const MobileScanner = () => {
             <Button
               title="Browse Products"
               variant="outline"
-              onPress={() => router.push('/shop')}
+              onPress={() => {
+                if (activeTab === 'supplements') {
+                  router.push('/medical');
+                } else if (activeTab === 'medicines') {
+                  router.push('/medicines');
+                } else {
+                  router.push('/medical');
+                }
+              }}
               style={styles.manualButton}
             />
           </View>

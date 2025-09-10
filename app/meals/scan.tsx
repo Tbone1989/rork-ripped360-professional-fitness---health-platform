@@ -1,28 +1,87 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { X, Flashlight, FlashlightOff, RotateCcw, TestTube } from 'lucide-react-native';
-import { CameraView, useCameraPermissions } from 'expo-camera';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
-import { apiService } from '@/services/api';
+import { trpcClient } from '@/lib/trpc';
 import { useUserStore } from '@/store/userStore';
 
-const Scanner = () => {
+// Web fallback component
+const WebScanner = () => {
+  const router = useRouter();
+  
+  const handleManualEntry = () => {
+    Alert.alert(
+      'Manual Entry',
+      'Browse products manually',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Add Food', onPress: () => router.push('/meals/add') }
+      ]
+    );
+  };
+  
+  return (
+    <View style={styles.container}>
+      <Stack.Screen options={{ title: 'Scan Food Barcode' }} />
+      <View style={styles.webContainer}>
+        <Text style={styles.webTitle}>Camera Scanner</Text>
+        <Text style={styles.webSubtitle}>Camera scanning is not available on web</Text>
+        <Button title="Add Food Manually" onPress={handleManualEntry} />
+      </View>
+    </View>
+  );
+};
+
+// Mobile camera component
+const MobileScanner = () => {
   const router = useRouter();
   const { user } = useUserStore((s) => ({ user: s.user }));
   const isAdmin = user?.role === 'admin';
   const [scanned, setScanned] = useState<boolean>(false);
   const [flashEnabled, setFlashEnabled] = useState<boolean>(false);
   const [facing, setFacing] = useState<'back' | 'front'>('back');
-  const [permission, requestPermission] = useCameraPermissions();
+  const [CameraView, setCameraView] = useState<any>(null);
+  const [cameraPermission, setCameraPermission] = useState<any>(null);
+  const [requestCameraPermission, setRequestCameraPermission] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    // Dynamically import expo-camera only on mobile
+    if (Platform.OS !== 'web') {
+      const loadCamera = async () => {
+        try {
+          const camera = await import('expo-camera');
+          setCameraView(() => camera.CameraView);
+          
+          // Get initial permission status
+          const { status } = await camera.Camera.getCameraPermissionsAsync();
+          setCameraPermission({ granted: status === 'granted' });
+          
+          // Set up request permission function
+          setRequestCameraPermission(() => async () => {
+            const { status: newStatus } = await camera.Camera.requestCameraPermissionsAsync();
+            const newPermission = { granted: newStatus === 'granted' };
+            setCameraPermission(newPermission);
+            return newPermission;
+          });
+          
+          setIsLoading(false);
+        } catch (error) {
+          console.error('Failed to load camera:', error);
+          setIsLoading(false);
+        }
+      };
+      
+      loadCamera();
+    }
+  }, []);
 
   const handleRequestPermission = async () => {
-    try {
-      await requestPermission();
-    } catch (e) {
-      console.error('Camera permission request failed', e);
+    if (requestCameraPermission) {
+      await requestCameraPermission();
     }
   };
 
@@ -32,7 +91,7 @@ const Scanner = () => {
 
     try {
       const startTime = Date.now();
-      const foodData = await apiService.getFoodByBarcode(data);
+      const foodData = await trpcClient.nutrition.barcode.query({ barcode: data });
       const apiDuration = Date.now() - startTime;
 
       if (foodData) {
@@ -71,7 +130,7 @@ const Scanner = () => {
   const toggleFlash = () => setFlashEnabled(!flashEnabled);
   const toggleCamera = () => setFacing(current => (current === 'back' ? 'front' : 'back'));
 
-  if (!permission) {
+  if (isLoading || !CameraView) {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: 'Scan Food Barcode' }} />
@@ -82,7 +141,7 @@ const Scanner = () => {
     );
   }
 
-  if (!permission.granted) {
+  if (!cameraPermission || !cameraPermission.granted) {
     return (
       <View style={styles.container}>
         <Stack.Screen options={{ title: 'Scan Food Barcode' }} />
@@ -157,13 +216,33 @@ const Scanner = () => {
 };
 
 export default function MealScanScreen() {
-  return <Scanner />;
+  return Platform.OS === 'web' ? <WebScanner /> : <MobileScanner />;
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background.primary,
+  },
+  webContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  webTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text.primary,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  webSubtitle: {
+    fontSize: 16,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 22,
   },
 
   permissionContainer: {
