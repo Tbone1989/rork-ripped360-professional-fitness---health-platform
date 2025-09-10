@@ -8,13 +8,22 @@ import { Button } from '@/components/ui/Button';
 import { TabBar } from '@/components/ui/TabBar';
 import { trpcClient } from '@/lib/trpc';
 
+// Helper function to detect if we're on a mobile browser
+const isMobileBrowser = () => {
+  if (Platform.OS !== 'web') return false;
+  
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  return mobileRegex.test(userAgent);
+};
+
 const scanTabs = [
   { key: 'supplements', label: 'Supplements' },
   { key: 'medicines', label: 'Medicines' },
   { key: 'peptides', label: 'Peptides' },
 ];
 
-// Web fallback component
+// Web fallback component (only for desktop browsers)
 const WebScanner = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('supplements');
@@ -43,7 +52,8 @@ const WebScanner = () => {
       </View>
       <View style={styles.webContainer}>
         <Text style={styles.webTitle}>Camera Scanner</Text>
-        <Text style={styles.webSubtitle}>Camera scanning is not available on web</Text>
+        <Text style={styles.webSubtitle}>Camera scanning requires a mobile device</Text>
+        <Text style={styles.webHint}>Please use your phone's browser or the mobile app to scan barcodes</Text>
         <Button title="Browse Products" onPress={handleManualEntry} />
       </View>
     </View>
@@ -63,34 +73,32 @@ const MobileScanner = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Dynamically import expo-camera only on mobile
-    if (Platform.OS !== 'web') {
-      const loadCamera = async () => {
-        try {
-          const camera = await import('expo-camera');
-          setCameraView(() => camera.CameraView);
-          
-          // Get initial permission status
-          const { status } = await camera.Camera.getCameraPermissionsAsync();
-          setCameraPermission({ granted: status === 'granted' });
-          
-          // Set up request permission function
-          setRequestCameraPermission(() => async () => {
-            const { status: newStatus } = await camera.Camera.requestCameraPermissionsAsync();
-            const newPermission = { granted: newStatus === 'granted' };
-            setCameraPermission(newPermission);
-            return newPermission;
-          });
-          
-          setIsLoading(false);
-        } catch (error) {
-          console.error('Failed to load camera:', error);
-          setIsLoading(false);
-        }
-      };
-      
-      loadCamera();
-    }
+    // Load camera for native apps and mobile browsers
+    const loadCamera = async () => {
+      try {
+        const camera = await import('expo-camera');
+        setCameraView(() => camera.CameraView);
+        
+        // Get initial permission status
+        const { status } = await camera.Camera.getCameraPermissionsAsync();
+        setCameraPermission({ granted: status === 'granted' });
+        
+        // Set up request permission function
+        setRequestCameraPermission(() => async () => {
+          const { status: newStatus } = await camera.Camera.requestCameraPermissionsAsync();
+          const newPermission = { granted: newStatus === 'granted' };
+          setCameraPermission(newPermission);
+          return newPermission;
+        });
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to load camera:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    loadCamera();
   }, []);
 
   const handleRequestPermission = async () => {
@@ -355,7 +363,10 @@ const MobileScanner = () => {
 };
 
 export default function MedicalScanScreen() {
-  return Platform.OS === 'web' ? <WebScanner /> : <MobileScanner />;
+  // Show camera scanner on native apps and mobile browsers
+  // Only show web fallback on desktop browsers
+  const shouldUseCamera = Platform.OS !== 'web' || isMobileBrowser();
+  return shouldUseCamera ? <MobileScanner /> : <WebScanner />;
 }
 
 const styles = StyleSheet.create({
@@ -380,8 +391,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.secondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 12,
     lineHeight: 22,
+  },
+  webHint: {
+    fontSize: 14,
+    color: colors.text.tertiary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+    paddingHorizontal: 20,
   },
   tabContainer: {
     backgroundColor: colors.background.primary,

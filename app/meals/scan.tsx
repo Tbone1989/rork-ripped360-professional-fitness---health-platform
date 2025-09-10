@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, Platform } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, Platform, Dimensions } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { X, Flashlight, FlashlightOff, RotateCcw, TestTube } from 'lucide-react-native';
 
@@ -8,7 +8,16 @@ import { Button } from '@/components/ui/Button';
 import { trpcClient } from '@/lib/trpc';
 import { useUserStore } from '@/store/userStore';
 
-// Web fallback component
+// Helper function to detect if we're on a mobile browser
+const isMobileBrowser = () => {
+  if (Platform.OS !== 'web') return false;
+  
+  const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  const mobileRegex = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
+  return mobileRegex.test(userAgent);
+};
+
+// Web fallback component (only for desktop browsers)
 const WebScanner = () => {
   const router = useRouter();
   
@@ -28,7 +37,8 @@ const WebScanner = () => {
       <Stack.Screen options={{ title: 'Scan Food Barcode' }} />
       <View style={styles.webContainer}>
         <Text style={styles.webTitle}>Camera Scanner</Text>
-        <Text style={styles.webSubtitle}>Camera scanning is not available on web</Text>
+        <Text style={styles.webSubtitle}>Camera scanning requires a mobile device</Text>
+        <Text style={styles.webHint}>Please use your phone's browser or the mobile app to scan barcodes</Text>
         <Button title="Add Food Manually" onPress={handleManualEntry} />
       </View>
     </View>
@@ -49,34 +59,32 @@ const MobileScanner = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Dynamically import expo-camera only on mobile
-    if (Platform.OS !== 'web') {
-      const loadCamera = async () => {
-        try {
-          const camera = await import('expo-camera');
-          setCameraView(() => camera.CameraView);
-          
-          // Get initial permission status
-          const { status } = await camera.Camera.getCameraPermissionsAsync();
-          setCameraPermission({ granted: status === 'granted' });
-          
-          // Set up request permission function
-          setRequestCameraPermission(() => async () => {
-            const { status: newStatus } = await camera.Camera.requestCameraPermissionsAsync();
-            const newPermission = { granted: newStatus === 'granted' };
-            setCameraPermission(newPermission);
-            return newPermission;
-          });
-          
-          setIsLoading(false);
-        } catch (error) {
-          console.error('Failed to load camera:', error);
-          setIsLoading(false);
-        }
-      };
-      
-      loadCamera();
-    }
+    // Load camera for native apps and mobile browsers
+    const loadCamera = async () => {
+      try {
+        const camera = await import('expo-camera');
+        setCameraView(() => camera.CameraView);
+        
+        // Get initial permission status
+        const { status } = await camera.Camera.getCameraPermissionsAsync();
+        setCameraPermission({ granted: status === 'granted' });
+        
+        // Set up request permission function
+        setRequestCameraPermission(() => async () => {
+          const { status: newStatus } = await camera.Camera.requestCameraPermissionsAsync();
+          const newPermission = { granted: newStatus === 'granted' };
+          setCameraPermission(newPermission);
+          return newPermission;
+        });
+        
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Failed to load camera:', error);
+        setIsLoading(false);
+      }
+    };
+    
+    loadCamera();
   }, []);
 
   const handleRequestPermission = async () => {
@@ -216,7 +224,10 @@ const MobileScanner = () => {
 };
 
 export default function MealScanScreen() {
-  return Platform.OS === 'web' ? <WebScanner /> : <MobileScanner />;
+  // Show camera scanner on native apps and mobile browsers
+  // Only show web fallback on desktop browsers
+  const shouldUseCamera = Platform.OS !== 'web' || isMobileBrowser();
+  return shouldUseCamera ? <MobileScanner /> : <WebScanner />;
 }
 
 const styles = StyleSheet.create({
@@ -241,8 +252,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.secondary,
     textAlign: 'center',
-    marginBottom: 24,
+    marginBottom: 12,
     lineHeight: 22,
+  },
+  webHint: {
+    fontSize: 14,
+    color: colors.text.tertiary,
+    textAlign: 'center',
+    marginBottom: 24,
+    lineHeight: 20,
+    paddingHorizontal: 20,
   },
 
   permissionContainer: {
