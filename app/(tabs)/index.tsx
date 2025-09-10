@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Image, Linking, Animated, AppState } from 'react-native';
 import { useRouter, Stack } from 'expo-router';
-import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign } from 'lucide-react-native';
+import { Dumbbell, Users, Activity, TrendingUp, ShoppingBag, Star, Trophy, Crown, BookOpen, DollarSign, Brain, Heart, Camera } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { brandAssets } from '@/constants/brand';
@@ -417,6 +417,64 @@ export default function HomeScreen() {
         </Card>
       </View>
 
+      {/* AI Features Section */}
+      <View style={styles.aiFeaturesSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>AI-Powered Features</Text>
+          <TouchableOpacity onPress={() => router.push('/ai/all-features')}>
+            <Text style={styles.viewAllText}>View All</Text>
+          </TouchableOpacity>
+        </View>
+        
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.aiFeaturesContainer}
+        >
+          <TouchableOpacity
+            style={styles.aiFeatureCard}
+            onPress={() => router.push('/ai/physical-therapy')}
+          >
+            <Card style={styles.aiFeatureCardContent}>
+              <View style={[styles.aiFeatureIcon, { backgroundColor: '#81C78420' }]}>
+                <Heart size={24} color="#81C784" />
+              </View>
+              <Text style={styles.aiFeatureTitle}>Physical Therapy</Text>
+              <Text style={styles.aiFeatureDescription}>AI posture analysis & injury recovery</Text>
+              <Badge label="MEDICAL" variant="success" style={styles.aiFeatureBadge} />
+            </Card>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.aiFeatureCard}
+            onPress={() => router.push('/ai/gym-companion')}
+          >
+            <Card style={styles.aiFeatureCardContent}>
+              <View style={[styles.aiFeatureIcon, { backgroundColor: '#FF9F4020' }]}>
+                <Brain size={24} color="#FF9F40" />
+              </View>
+              <Text style={styles.aiFeatureTitle}>Gym Companion</Text>
+              <Text style={styles.aiFeatureDescription}>Equipment scanner & anxiety support</Text>
+              <Badge label="HOT" variant="warning" style={styles.aiFeatureBadge} />
+            </Card>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={styles.aiFeatureCard}
+            onPress={() => router.push('/ai/meal-accountability')}
+          >
+            <Card style={styles.aiFeatureCardContent}>
+              <View style={[styles.aiFeatureIcon, { backgroundColor: '#B39DDB20' }]}>
+                <Camera size={24} color="#B39DDB" />
+              </View>
+              <Text style={styles.aiFeatureTitle}>Meal Tracking</Text>
+              <Text style={styles.aiFeatureDescription}>AI tracks every meal & keeps you on track</Text>
+              <Badge label="NEW" variant="default" style={styles.aiFeatureBadge} />
+            </Card>
+          </TouchableOpacity>
+        </ScrollView>
+      </View>
+
         {/* Brand Synergy Features */}
         <View style={styles.brandSynergySection}>
           <Text style={styles.sectionTitle}>Exclusive Member Benefits</Text>
@@ -786,6 +844,52 @@ const styles = StyleSheet.create({
   },
   aiWorkoutButton: {
     alignSelf: 'flex-start',
+  },
+  aiFeaturesSection: {
+    marginTop: 24,
+    marginBottom: 24,
+  },
+  viewAllText: {
+    fontSize: 14,
+    color: colors.accent.primary,
+    fontWeight: '600',
+  },
+  aiFeaturesContainer: {
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  aiFeatureCard: {
+    width: 160,
+  },
+  aiFeatureCardContent: {
+    padding: 16,
+    alignItems: 'center',
+  },
+  aiFeatureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  aiFeatureTitle: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: colors.text.primary,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  aiFeatureDescription: {
+    fontSize: 11,
+    color: colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: 8,
+    lineHeight: 14,
+  },
+  aiFeatureBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
   },
   headerActions: {
     flexDirection: 'row',
