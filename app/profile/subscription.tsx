@@ -139,7 +139,7 @@ export default function SubscriptionScreen() {
                       </Text>
                       <Text style={styles.period}>/month</Text>
                       <Text style={styles.yearlyNote}>
-                        (${yearlyPrice}/year)
+                        (${yearlyPrice.toFixed(2)}/year)
                       </Text>
                     </>
                   ) : (
