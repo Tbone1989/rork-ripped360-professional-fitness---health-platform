@@ -236,14 +236,14 @@ export default function MealAccountabilityScreen() {
           <Image source={{ uri: selectedImage }} style={styles.previewImage} />
           {isAnalyzing && (
             <View style={styles.analyzingOverlay}>
-              <ActivityIndicator size="large" color={colors.primary} />
+              <ActivityIndicator size="large" color={colors.accent.primary} />
               <Text style={styles.analyzingText}>Analyzing your meal...</Text>
             </View>
           )}
         </View>
       ) : (
         <TouchableOpacity style={styles.uploadArea} onPress={() => pickImage(true)}>
-          <Camera size={40} color={colors.primary} />
+          <Camera size={40} color={colors.accent.primary} />
           <Text style={styles.uploadText}>Take Photo of Your Meal</Text>
           <Text style={styles.uploadSubtext}>AI will analyze nutrition instantly</Text>
         </TouchableOpacity>
@@ -292,7 +292,7 @@ export default function MealAccountabilityScreen() {
   const renderProgressTab = () => (
     <View style={styles.tabContent}>
       <View style={styles.streakCard}>
-        <Award size={32} color={colors.primary} />
+        <Award size={32} color={colors.accent.primary} />
         <Text style={styles.streakNumber}>{streak}</Text>
         <Text style={styles.streakLabel}>Day Streak</Text>
       </View>
@@ -309,7 +309,7 @@ export default function MealAccountabilityScreen() {
                 styles.macroProgressFill,
                 { 
                   width: `${getProgressPercentage(todayStats.calories, dailyGoals.calories)}%`,
-                  backgroundColor: colors.primary 
+                  backgroundColor: colors.accent.primary 
                 }
               ]}
             />
@@ -399,7 +399,7 @@ export default function MealAccountabilityScreen() {
         style={styles.reminderCard}
         onPress={() => setShowReminderModal(true)}
       >
-        <Bell size={24} color={colors.primary} />
+        <Bell size={24} color={colors.accent.primary} />
         <View style={styles.reminderInfo}>
           <Text style={styles.reminderTitle}>Meal Reminders</Text>
           <Text style={styles.reminderSubtext}>Set up accountability check-ins</Text>
@@ -435,7 +435,7 @@ export default function MealAccountabilityScreen() {
       <Stack.Screen
         options={{
           title: 'Meal Accountability',
-          headerStyle: { backgroundColor: colors.primary },
+          headerStyle: { backgroundColor: colors.accent.primary },
           headerTintColor: 'white',
         }}
       />
@@ -464,21 +464,21 @@ export default function MealAccountabilityScreen() {
           style={[styles.tab, activeTab === 'log' && styles.activeTab]}
           onPress={() => setActiveTab('log')}
         >
-          <Camera size={20} color={activeTab === 'log' ? colors.primary : '#999'} />
+          <Camera size={20} color={activeTab === 'log' ? colors.accent.primary : '#999'} />
           <Text style={[styles.tabText, activeTab === 'log' && styles.activeTabText]}>Log Meal</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'progress' && styles.activeTab]}
           onPress={() => setActiveTab('progress')}
         >
-          <TrendingUp size={20} color={activeTab === 'progress' ? colors.primary : '#999'} />
+          <TrendingUp size={20} color={activeTab === 'progress' ? colors.accent.primary : '#999'} />
           <Text style={[styles.tabText, activeTab === 'progress' && styles.activeTabText]}>Progress</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'coach' && styles.activeTab]}
           onPress={() => setActiveTab('coach')}
         >
-          <Target size={20} color={activeTab === 'coach' ? colors.primary : '#999'} />
+          <Target size={20} color={activeTab === 'coach' ? colors.accent.primary : '#999'} />
           <Text style={[styles.tabText, activeTab === 'coach' && styles.activeTabText]}>Coach</Text>
         </TouchableOpacity>
       </View>
@@ -563,7 +563,7 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
+    borderBottomColor: colors.accent.primary,
   },
   tabText: {
     fontSize: 12,
@@ -571,7 +571,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   activeTabText: {
-    color: colors.primary,
+    color: colors.accent.primary,
     fontWeight: '600',
   },
   content: {
@@ -611,7 +611,7 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     borderRadius: 2,
   },
   imagePreview: {
@@ -671,10 +671,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 4,
   },
   cameraButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
   },
   galleryButton: {
-    backgroundColor: colors.secondary,
+    backgroundColor: colors.accent.secondary,
   },
   buttonText: {
     color: 'white',
@@ -808,7 +808,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   coachCard: {
-    backgroundColor: colors.primary + '10',
+    backgroundColor: colors.accent.primary + '10',
     borderRadius: 12,
     padding: 16,
     marginBottom: 16,
@@ -816,7 +816,7 @@ const styles = StyleSheet.create({
   coachTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: colors.primary,
+    color: colors.accent.primary,
     marginBottom: 8,
   },
   coachMessage: {
@@ -865,7 +865,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -915,7 +915,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   modalButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',

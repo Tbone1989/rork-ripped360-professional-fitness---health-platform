@@ -102,7 +102,7 @@ export default function GymCompanionScreen() {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (workoutStarted) {
       interval = setInterval(() => {
         setWorkoutTimer(prev => prev + 1);
@@ -223,14 +223,14 @@ export default function GymCompanionScreen() {
             <Image source={{ uri: selectedImage }} style={styles.previewImage} />
             {isAnalyzing && (
               <View style={styles.analyzingOverlay}>
-                <ActivityIndicator size="large" color={colors.primary} />
+                <ActivityIndicator size="large" color={colors.accent.primary} />
                 <Text style={styles.analyzingText}>Analyzing equipment...</Text>
               </View>
             )}
           </View>
         ) : (
           <View style={styles.placeholderContainer}>
-            <Camera size={60} color={colors.primary} />
+            <Camera size={60} color={colors.accent.primary} />
             <Text style={styles.placeholderText}>No image selected</Text>
           </View>
         )}
@@ -275,7 +275,7 @@ export default function GymCompanionScreen() {
                 <Text style={styles.infoTitle}>Proper Form</Text>
                 {exerciseInfo.properForm.map((tip, index) => (
                   <View key={index} style={styles.tipRow}>
-                    <CheckCircle size={16} color={colors.primary} />
+                    <CheckCircle size={16} color={colors.accent.primary} />
                     <Text style={styles.tipText}>{tip}</Text>
                   </View>
                 ))}
@@ -344,7 +344,7 @@ export default function GymCompanionScreen() {
               <Text style={styles.tipTitle}>{tip.title}</Text>
               <Text style={styles.tipDescription}>{tip.description}</Text>
             </View>
-            <Volume2 size={20} color={colors.primary} />
+            <Volume2 size={20} color={colors.accent.primary} />
           </TouchableOpacity>
         ))}
       </View>
@@ -364,7 +364,7 @@ export default function GymCompanionScreen() {
       <Text style={styles.sectionTitle}>Daily Motivation</Text>
       
       <View style={styles.motivationCard}>
-        <Zap size={30} color={colors.primary} />
+        <Zap size={30} color={colors.accent.primary} />
         <Text style={styles.motivationQuote}>{currentMotivation}</Text>
         <TouchableOpacity
           style={styles.refreshButton}
@@ -378,19 +378,19 @@ export default function GymCompanionScreen() {
       </View>
 
       <View style={styles.streakContainer}>
-        <Award size={24} color={colors.primary} />
+        <Award size={24} color={colors.accent.primary} />
         <Text style={styles.streakText}>7 Day Streak! 🔥</Text>
       </View>
 
       <View style={styles.goalsSection}>
         <Text style={styles.goalsSectionTitle}>Today's Goals</Text>
         <View style={styles.goalCard}>
-          <Target size={20} color={colors.primary} />
+          <Target size={20} color={colors.accent.primary} />
           <Text style={styles.goalText}>Complete 30 min workout</Text>
           <CheckCircle size={20} color="#4CAF50" />
         </View>
         <View style={styles.goalCard}>
-          <Target size={20} color={colors.primary} />
+          <Target size={20} color={colors.accent.primary} />
           <Text style={styles.goalText}>Try one new exercise</Text>
           <View style={styles.goalProgress} />
         </View>
@@ -467,7 +467,7 @@ export default function GymCompanionScreen() {
       <Stack.Screen
         options={{
           title: 'AI Gym Companion',
-          headerStyle: { backgroundColor: colors.primary },
+          headerStyle: { backgroundColor: colors.accent.primary },
           headerTintColor: 'white',
         }}
       />
@@ -477,28 +477,28 @@ export default function GymCompanionScreen() {
           style={[styles.tab, activeTab === 'scan' && styles.activeTab]}
           onPress={() => setActiveTab('scan')}
         >
-          <Camera size={20} color={activeTab === 'scan' ? colors.primary : '#999'} />
+          <Camera size={20} color={activeTab === 'scan' ? colors.accent.primary : '#999'} />
           <Text style={[styles.tabText, activeTab === 'scan' && styles.activeTabText]}>Scan</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'anxiety' && styles.activeTab]}
           onPress={() => setActiveTab('anxiety')}
         >
-          <Heart size={20} color={activeTab === 'anxiety' ? colors.primary : '#999'} />
+          <Heart size={20} color={activeTab === 'anxiety' ? colors.accent.primary : '#999'} />
           <Text style={[styles.tabText, activeTab === 'anxiety' && styles.activeTabText]}>Anxiety</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'motivation' && styles.activeTab]}
           onPress={() => setActiveTab('motivation')}
         >
-          <Zap size={20} color={activeTab === 'motivation' ? colors.primary : '#999'} />
+          <Zap size={20} color={activeTab === 'motivation' ? colors.accent.primary : '#999'} />
           <Text style={[styles.tabText, activeTab === 'motivation' && styles.activeTabText]}>Motivate</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.tab, activeTab === 'companion' && styles.activeTab]}
           onPress={() => setActiveTab('companion')}
         >
-          <Users size={20} color={activeTab === 'companion' ? colors.primary : '#999'} />
+          <Users size={20} color={activeTab === 'companion' ? colors.accent.primary : '#999'} />
           <Text style={[styles.tabText, activeTab === 'companion' && styles.activeTabText]}>Track</Text>
         </TouchableOpacity>
       </View>
@@ -570,7 +570,7 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: colors.primary,
+    borderBottomColor: colors.accent.primary,
   },
   tabText: {
     fontSize: 12,
@@ -578,7 +578,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   activeTabText: {
-    color: colors.primary,
+    color: colors.accent.primary,
     fontWeight: '600',
   },
   content: {
@@ -642,7 +642,7 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -682,7 +682,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   tag: {
-    backgroundColor: colors.primary + '20',
+    backgroundColor: colors.accent.primary + '20',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
@@ -690,7 +690,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   tagText: {
-    color: colors.primary,
+    color: colors.accent.primary,
     fontSize: 14,
   },
   tipRow: {
@@ -731,7 +731,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   anxietyButtonActive: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
   },
   anxietyButtonText: {
     fontSize: 16,
@@ -793,7 +793,7 @@ const styles = StyleSheet.create({
   },
   primaryButton: {
     flexDirection: 'row',
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -824,10 +824,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 20,
-    backgroundColor: colors.primary + '20',
+    backgroundColor: colors.accent.primary + '20',
   },
   refreshButtonText: {
-    color: colors.primary,
+    color: colors.accent.primary,
     fontWeight: '600',
   },
   streakContainer: {
@@ -895,7 +895,7 @@ const styles = StyleSheet.create({
   timerText: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: colors.accent.primary,
   },
   startButton: {
     flexDirection: 'row',
@@ -956,7 +956,7 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   finishButton: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     paddingVertical: 16,
     borderRadius: 12,
     alignItems: 'center',
@@ -1013,7 +1013,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   modalButtonSubmit: {
-    backgroundColor: colors.primary,
+    backgroundColor: colors.accent.primary,
     marginLeft: 8,
   },
   modalButtonText: {

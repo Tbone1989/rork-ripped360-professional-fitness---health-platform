@@ -106,7 +106,7 @@ export default function PhysicalTherapyScreen() {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isTimerRunning && exerciseTimer > 0) {
       interval = setInterval(() => {
         setExerciseTimer(prev => prev - 1);
