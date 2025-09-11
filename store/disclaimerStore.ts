@@ -54,18 +54,23 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
 
   const ensureAccepted = useCallback(async (type: DisclaimerType): Promise<boolean> => {
     if (acceptance?.[type]) return true;
+    if (state.visible) {
+      return new Promise<boolean>((resolve) => {
+        pendingResolve.current = resolve;
+      });
+    }
     return new Promise<boolean>((resolve) => {
       pendingResolve.current = resolve;
       setState({ visible: true, type });
     });
-  }, [acceptance]);
+  }, [acceptance, state.visible]);
 
   const onAccept = useCallback(() => {
     const t = state.type;
     if (!t) return;
     const next = { ...acceptance, [t]: true } as AcceptanceMap;
     setAcceptance(next);
-    persist(next);
+    void persist(next);
     setState({ visible: false, type: null });
     pendingResolve.current?.(true);
     pendingResolve.current = null;
@@ -81,8 +86,11 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
     const pathname = usePathname();
 
     useEffect(() => {
+      let cancelled = false;
       const run = async () => {
         try {
+          if (cancelled) return;
+          if (state.visible) return;
           if (!acceptance?.general) {
             await ensureAccepted('general');
           }
@@ -98,8 +106,11 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
           console.error('[DisclaimerGuard] error', e);
         }
       };
-      run();
-    }, [pathname]);
+      void run();
+      return () => {
+        cancelled = true;
+      };
+    }, [pathname, acceptance?.general, acceptance?.doctor, acceptance?.medical, state.visible]);
 
     return null;
   };

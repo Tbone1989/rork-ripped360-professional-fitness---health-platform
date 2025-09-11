@@ -53,11 +53,16 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
 
   const ensureAccepted = useCallback(async (type: DisclaimerType): Promise<boolean> => {
     if (acceptance?.[type]) return true;
+    if (state.visible) {
+      return new Promise<boolean>((resolve) => {
+        pendingResolve.current = resolve;
+      });
+    }
     return new Promise<boolean>((resolve) => {
       pendingResolve.current = resolve;
       setState({ visible: true, type });
     });
-  }, [acceptance]);
+  }, [acceptance, state.visible]);
 
   const onAccept = useCallback(() => {
     const t = state.type;
@@ -80,8 +85,11 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
     const pathname = usePathname();
 
     useEffect(() => {
+      let cancelled = false;
       const run = async () => {
         try {
+          if (cancelled) return;
+          if (state.visible) return;
           if (!acceptance?.general) {
             await ensureAccepted('general');
           }
@@ -98,8 +106,11 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
         }
       };
       void run();
+      return () => {
+        cancelled = true;
+      };
       // re-check when route changes or acceptance updates
-    }, [pathname, acceptance?.general, acceptance?.doctor, acceptance?.medical]);
+    }, [pathname, acceptance?.general, acceptance?.doctor, acceptance?.medical, state.visible, state.type]);
 
     return null;
   });
