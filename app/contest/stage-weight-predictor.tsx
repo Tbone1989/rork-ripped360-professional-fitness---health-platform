@@ -17,6 +17,7 @@ interface WeightPrediction {
 }
 
 export default function StageWeightPredictorScreen() {
+  console.log('[StageWeightPredictorScreen] Component mounted');
   const [currentWeight, setCurrentWeight] = useState('');
   const [currentBodyFat, setCurrentBodyFat] = useState('');
   const [targetBodyFat, setTargetBodyFat] = useState('');

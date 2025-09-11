@@ -139,8 +139,6 @@ export default function VirtualPosingScreen() {
     <View style={styles.container} testID="virtual-posing-screen">
       <Stack.Screen options={{ title: 'Virtual Posing Practice' }} />
       
-
-      
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <Card style={styles.heroCard}>
           <View style={styles.headerRow}>

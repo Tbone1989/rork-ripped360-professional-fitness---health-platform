@@ -18,6 +18,7 @@ interface PeakWeekPlan {
 }
 
 export default function PeakWeekAIPredictorScreen() {
+  console.log('[PeakWeekAIPredictorScreen] Component mounted');
   const [currentWeight, setCurrentWeight] = useState('');
   const [targetWeight, setTargetWeight] = useState('');
   const [bodyFat, setBodyFat] = useState('');

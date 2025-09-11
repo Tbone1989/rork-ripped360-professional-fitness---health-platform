@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/Button';
 import { useContestStore } from '@/store/contestStore';
 
 export default function PhysiquePredictorScreen() {
+  console.log('[PhysiquePredictorScreen] Component mounted');
   const { currentPrep } = useContestStore();
   const canPredict = useMemo(() => Boolean(currentPrep), [currentPrep]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
