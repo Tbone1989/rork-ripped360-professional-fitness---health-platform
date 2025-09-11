@@ -426,7 +426,7 @@ export default function AIChallengeGeneratorScreen() {
               title="Continue Challenge"
               variant="primary"
               size="small"
-              onPress={() => router.push('/community/index')}
+              onPress={() => router.push('/community')}
               fullWidth
               icon={<TrendingUp size={16} color="white" />}
             />
@@ -593,7 +593,7 @@ export default function AIChallengeGeneratorScreen() {
                     title="Continue Challenge"
                     onPress={() => {
                       setShowChallengeModal(false);
-                      router.push('/community/index');
+                      router.push('/community');
                     }}
                     fullWidth
                     icon={<TrendingUp size={18} color="white" />}
