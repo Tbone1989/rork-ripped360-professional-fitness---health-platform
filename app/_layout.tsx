@@ -8,6 +8,7 @@ import { View, Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
+import { DisclaimerProvider, DisclaimerGuard, DisclaimerHost } from "@/store/legalDisclaimerProvider";
 import { trpc, trpcClient } from "@/lib/trpc";
 import notificationService from "@/services/notificationService";
 import calendarService from "@/services/calendarService";
@@ -217,12 +218,16 @@ export default function RootLayout() {
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
         <WellnessProvider>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <View style={{ flex: 1, backgroundColor: colors.background.primary }} testID="root-layout">
-              <StatusBar style="light" />
-              <RootLayoutNav />
-            </View>
-          </GestureHandlerRootView>
+          <DisclaimerProvider>
+            <GestureHandlerRootView style={{ flex: 1 }}>
+              <View style={{ flex: 1, backgroundColor: colors.background.primary }} testID="root-layout">
+                <StatusBar style="light" />
+                <DisclaimerGuard />
+                <RootLayoutNav />
+                <DisclaimerHost />
+              </View>
+            </GestureHandlerRootView>
+          </DisclaimerProvider>
         </WellnessProvider>
       </QueryClientProvider>
     </trpc.Provider>
