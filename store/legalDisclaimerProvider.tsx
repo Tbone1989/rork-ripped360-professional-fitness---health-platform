@@ -90,9 +90,6 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
         try {
           if (cancelled) return;
           if (state.visible) return;
-          if (!acceptance?.general) {
-            await ensureAccepted('general');
-          }
           if (pathname?.includes('doctor') || pathname?.startsWith('/medical')) {
             if (!acceptance?.doctor) {
               await ensureAccepted('doctor');
@@ -110,7 +107,7 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
         cancelled = true;
       };
       // re-check when route changes or acceptance updates
-    }, [pathname, acceptance?.general, acceptance?.doctor, acceptance?.medical, state.visible, state.type]);
+    }, [pathname, acceptance?.doctor, acceptance?.medical, state.visible, state.type]);
 
     return null;
   });
