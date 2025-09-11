@@ -5,8 +5,8 @@ import { Stack } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { Mic, StopCircle, Bot, User, RotateCcw, Sparkles } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
-import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { Audio } from 'expo-av';
+import { useDisclaimer } from '@/store/legalDisclaimerProvider';
 
 interface Turn {
   id: string;
@@ -27,9 +27,8 @@ export default function VoiceCoachScreen() {
     },
   ]);
   const [state, setState] = useState<SessionState>('idle');
-  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(true);
-  const [acceptedDisclaimer, setAcceptedDisclaimer] = useState<boolean>(false);
   const scrollRef = useRef<ScrollView>(null);
+  const { ensureAccepted } = useDisclaimer();
   const recordingRef = useRef<Audio.Recording | null>(null);
   const webMediaStreamRef = useRef<MediaStream | null>(null);
   const webRecorderRef = useRef<MediaRecorder | null>(null);
@@ -39,7 +38,7 @@ export default function VoiceCoachScreen() {
     scrollRef.current?.scrollToEnd({ animated: true });
   }, [turns]);
 
-  const canRecord = acceptedDisclaimer && (state === 'idle' || state === 'recording');
+  const canRecord = state === 'idle' || state === 'recording';
 
   const stopWebRecording = useCallback(() => {
     try {
@@ -104,10 +103,6 @@ export default function VoiceCoachScreen() {
 
 
   const startRecording = useCallback(async () => {
-    if (!acceptedDisclaimer) {
-      setShowDisclaimer(true);
-      return;
-    }
     if (state === 'recording') return;
     setState('recording');
     if (Platform.OS === 'web') {
@@ -162,7 +157,7 @@ export default function VoiceCoachScreen() {
         setState('idle');
       }
     }
-  }, [acceptedDisclaimer, state, transcribeBlob]);
+  }, [state, transcribeBlob]);
 
   const stopRecording = useCallback(async () => {
     if (state !== 'recording') return;
@@ -207,16 +202,14 @@ export default function VoiceCoachScreen() {
   }, [getAssistantReply, pushTurn, state, stopWebRecording]);
 
   const onMicPress = useCallback(async () => {
-    if (!canRecord) {
-      setShowDisclaimer(true);
-      return;
-    }
+    const accepted = await ensureAccepted('audio');
+    if (!accepted) return;
     if (state === 'recording') {
       await stopRecording();
-    } else {
+    } else if (canRecord) {
       await startRecording();
     }
-  }, [canRecord, startRecording, stopRecording, state]);
+  }, [ensureAccepted, canRecord, startRecording, stopRecording, state]);
 
   const intents = useMemo(
     () => [
@@ -290,14 +283,6 @@ export default function VoiceCoachScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <LegalDisclaimer
-        visible={showDisclaimer}
-        type="audio"
-        title="Audio Safety & Consent"
-        onClose={() => setShowDisclaimer(false)}
-        onAccept={() => { setAcceptedDisclaimer(true); setShowDisclaimer(false); }}
-        testID="voiceDisclaimerModal"
-      />
     </SafeAreaView>
   );
 }
