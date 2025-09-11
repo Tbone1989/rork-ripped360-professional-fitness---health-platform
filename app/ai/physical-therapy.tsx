@@ -78,9 +78,9 @@ export default function PhysicalTherapyScreen() {
     { part: 'Wrist', icon: '✋' },
   ];
 
-  const stretchingExercises: Exercise[] = [
+  const generalExercises: Exercise[] = [
     {
-      id: '1',
+      id: 'gen-1',
       name: 'Cat-Cow Stretch',
       category: 'stretch',
       duration: 30,
@@ -90,7 +90,7 @@ export default function PhysicalTherapyScreen() {
       difficulty: 'beginner',
     },
     {
-      id: '2',
+      id: 'gen-2',
       name: 'Hamstring Stretch',
       category: 'stretch',
       duration: 45,
@@ -100,6 +100,207 @@ export default function PhysicalTherapyScreen() {
       difficulty: 'beginner',
     },
   ];
+
+  const exercisesByBodyPart: Record<string, Exercise[]> = {
+    General: generalExercises,
+    'Lower Back': [
+      {
+        id: 'lb-1',
+        name: 'Child’s Pose',
+        category: 'mobility',
+        duration: 45,
+        description: 'Lengthen and decompress lumbar spine.',
+        benefits: ['Eases low back tension', 'Improves hip mobility'],
+        cautions: ['Avoid if knee pain'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'lb-2',
+        name: 'McGill Curl-Up',
+        category: 'strength',
+        duration: 30,
+        description: 'Spine-sparing core activation.',
+        benefits: ['Stabilizes spine', 'Builds core endurance'],
+        cautions: ['Keep neutral spine'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'lb-3',
+        name: 'Glute Bridge',
+        category: 'strength',
+        duration: 40,
+        description: 'Activates glutes to offload low back.',
+        benefits: ['Improves hip extension', 'Reduces anterior pelvic tilt'],
+        cautions: ['Avoid arching lower back'],
+        difficulty: 'beginner',
+      },
+    ],
+    Knee: [
+      {
+        id: 'k-1',
+        name: 'Quad Set',
+        category: 'strength',
+        duration: 30,
+        description: 'Isometric quad activation to support knee.',
+        benefits: ['Reduces knee pain', 'Improves patellar tracking'],
+        cautions: ['Stop if pain increases'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'k-2',
+        name: 'Hamstring Heel Slide',
+        category: 'mobility',
+        duration: 30,
+        description: 'Gentle knee flexion/extension range of motion.',
+        benefits: ['Restores ROM', 'Decreases stiffness'],
+        cautions: ['Slow and controlled'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'k-3',
+        name: 'Short Arc Quad',
+        category: 'strength',
+        duration: 30,
+        description: 'Terminal knee extension focus.',
+        benefits: ['Supports ACL/MCL rehab', 'Improves extension'],
+        cautions: ['Avoid locking out forcefully'],
+        difficulty: 'beginner',
+      },
+    ],
+    Shoulder: [
+      {
+        id: 'sh-1',
+        name: 'Scapular Retractions',
+        category: 'strength',
+        duration: 30,
+        description: 'Pinch shoulder blades to improve posture.',
+        benefits: ['Counters rounded shoulders', 'Stabilizes scapula'],
+        cautions: ['Keep neck relaxed'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'sh-2',
+        name: 'Pendulum Swings',
+        category: 'mobility',
+        duration: 45,
+        description: 'Passive shoulder decompression circles.',
+        benefits: ['Decreases impingement', 'Promotes synovial flow'],
+        cautions: ['Small controlled arcs'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'sh-3',
+        name: 'External Rotation (Band)',
+        category: 'strength',
+        duration: 30,
+        description: 'Rotator cuff activation with band.',
+        benefits: ['Improves stability', 'Reduces pain with reaching'],
+        cautions: ['Elbow at side, neutral wrist'],
+        difficulty: 'beginner',
+      },
+    ],
+    Neck: [
+      {
+        id: 'n-1',
+        name: 'Chin Tucks',
+        category: 'mobility',
+        duration: 30,
+        description: 'Axial retraction to align cervical spine.',
+        benefits: ['Reduces forward head', 'Eases neck strain'],
+        cautions: ['Gentle motion only'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'n-2',
+        name: 'Upper Trap Stretch',
+        category: 'stretch',
+        duration: 30,
+        description: 'Lengthen upper trapezius.',
+        benefits: ['Relieves neck tension', 'Improves posture'],
+        cautions: ['Avoid pulling the head'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'n-3',
+        name: 'Scalene Stretch',
+        category: 'stretch',
+        duration: 30,
+        description: 'Gentle lateral neck stretch.',
+        benefits: ['Improves breathing mechanics', 'Reduces nerve tension'],
+        cautions: ['Stop with tingling'],
+        difficulty: 'beginner',
+      },
+    ],
+    Ankle: [
+      {
+        id: 'a-1',
+        name: 'Calf Stretch (Wall)',
+        category: 'stretch',
+        duration: 30,
+        description: 'Gastrocnemius and soleus lengthening.',
+        benefits: ['Improves dorsiflexion', 'Helps Achilles issues'],
+        cautions: ['Keep heel down'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'a-2',
+        name: 'Ankle Alphabet',
+        category: 'mobility',
+        duration: 45,
+        description: 'Trace alphabet to restore ROM.',
+        benefits: ['Multi-planar mobility', 'Gentle activation'],
+        cautions: ['Seated, relaxed'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'a-3',
+        name: 'Single-Leg Balance',
+        category: 'balance',
+        duration: 30,
+        description: 'Proprioception for ankle stability.',
+        benefits: ['Reduces re-sprain risk', 'Improves control'],
+        cautions: ['Use support as needed'],
+        difficulty: 'beginner',
+      },
+    ],
+    Wrist: [
+      {
+        id: 'w-1',
+        name: 'Wrist Flexor Stretch',
+        category: 'stretch',
+        duration: 30,
+        description: 'Palm extended, gentle forearm stretch.',
+        benefits: ['Helps tendonitis/overuse', 'Improves flexibility'],
+        cautions: ['Avoid numbness'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'w-2',
+        name: 'Wrist Extensor Stretch',
+        category: 'stretch',
+        duration: 30,
+        description: 'Knuckles down, extend elbow.',
+        benefits: ['Reduces lateral elbow strain', 'Improves mobility'],
+        cautions: ['Gentle pressure'],
+        difficulty: 'beginner',
+      },
+      {
+        id: 'w-3',
+        name: 'Grip Squeezes',
+        category: 'strength',
+        duration: 30,
+        description: 'Light resistance ball squeezes.',
+        benefits: ['Builds forearm strength', 'Supports wrist stability'],
+        cautions: ['Avoid pain'],
+        difficulty: 'beginner',
+      },
+    ],
+  };
+
+  const getExercisesForBodyPart = (part: string): Exercise[] => {
+    const key = part && exercisesByBodyPart[part] ? part : 'General';
+    return exercisesByBodyPart[key];
+  };
 
   useEffect(() => {
     loadInjuryProfile();
@@ -213,14 +414,15 @@ export default function PhysicalTherapyScreen() {
       const completion: string = data?.completion ?? '';
       console.log('[AI] Completion:', completion.slice(0, 200));
 
+      const selectedPart = bodyPart || 'General';
       const profile: InjuryProfile = {
         id: Date.now().toString(),
-        bodyPart: bodyPart || 'General',
+        bodyPart: selectedPart,
         severity: 'mild',
         dateReported: new Date(),
         symptoms: symptoms ? symptoms.split(',').map((s) => s.trim()) : [],
         restrictions: [],
-        recommendedExercises: stretchingExercises,
+        recommendedExercises: getExercisesForBodyPart(selectedPart),
         progress: 0,
       };
 
@@ -234,14 +436,15 @@ export default function PhysicalTherapyScreen() {
         Alert && Alert.alert('Analysis error', 'We could not analyze the posture right now. Using a basic plan instead.\n' + message);
       } catch {}
 
+      const selectedPart = bodyPart || 'General';
       const fallbackProfile: InjuryProfile = {
         id: Date.now().toString(),
-        bodyPart: bodyPart || 'General',
+        bodyPart: selectedPart,
         severity: 'mild',
         dateReported: new Date(),
         symptoms: symptoms ? symptoms.split(',').map((s) => s.trim()) : [],
         restrictions: [],
-        recommendedExercises: stretchingExercises,
+        recommendedExercises: getExercisesForBodyPart(selectedPart),
         progress: 0,
       };
       setInjuryProfile(fallbackProfile);
@@ -358,6 +561,9 @@ export default function PhysicalTherapyScreen() {
   const renderExercisesTab = () => (
     <View style={styles.tabContent}>
       <Text style={styles.sectionTitle}>Your Therapy Exercises</Text>
+      {injuryProfile?.bodyPart ? (
+        <Text style={styles.sectionDescription}>Focused on: {injuryProfile.bodyPart}</Text>
+      ) : null}
       
       {currentExercise ? (
         <View style={styles.exercisePlayer}>
