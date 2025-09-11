@@ -106,15 +106,14 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
 
   const Host: React.FC = () => {
     const visible = state.visible && !!state.type;
-    return visible ? (
-      <LegalDisclaimer
-        visible
-        onClose={onClose}
-        onAccept={onAccept}
-        type={state.type as DisclaimerType}
-        testID={`disclaimer-${state.type ?? 'unknown'}`}
-      />
-    ) : null;
+    if (!visible) return null;
+    return React.createElement(LegalDisclaimer, {
+      visible: true,
+      onClose,
+      onAccept,
+      type: state.type as DisclaimerType,
+      testID: `disclaimer-${state.type ?? 'unknown'}`,
+    });
   };
 
   return {
