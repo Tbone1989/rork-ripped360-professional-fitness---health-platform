@@ -5,7 +5,9 @@ import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { useUserStore } from '@/store/userStore';
 import { Attachment } from '@/types/user';
-import { FileText, Link as LinkIcon, ShieldAlert, ShieldCheck } from 'lucide-react-native';
+import { FileText, Link as LinkIcon, ShieldAlert, ShieldCheck, Headphones } from 'lucide-react-native';
+
+import talkService from '@/services/talkService';
 
 export default function AttachmentsVisibilityScreen() {
   const user = useUserStore((s) => s.user);
@@ -110,6 +112,15 @@ export default function AttachmentsVisibilityScreen() {
         <View style={styles.infoRow}>
           <ShieldCheck size={20} color={colors.accent.primary} />
           <Text style={styles.infoText}>Only items toggled on are visible to verified coaches. Your email and phone stay hidden.</Text>
+          <TouchableOpacity
+            onPress={() => talkService.speak('Manage which of your files coaches can view. Toggle a file to grant or revoke access. Your contact details remain private.')}
+            style={styles.speakBtn}
+            testID="speak-attachments-info"
+            accessibilityRole="button"
+            accessibilityLabel="Read info"
+          >
+            <Headphones size={18} color={colors.accent.primary} />
+          </TouchableOpacity>
         </View>
         {!isClient && (
           <View style={styles.warnRow}>
@@ -148,7 +159,17 @@ export default function AttachmentsVisibilityScreen() {
                   </TouchableOpacity>
                 </View>
               </View>
-              <Switch
+              <View style={styles.actionsRight}>
+                <TouchableOpacity
+                  onPress={() => talkService.speak(`${item.title}. ${typeof item.url === 'string' ? 'Link available.' : ''}`)}
+                  style={styles.itemSpeakBtn}
+                  testID={`speak-${(typeof item.id === 'string' && item.id.trim().length > 0) ? item.id.trim() : `idx-${index}`}`}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Read ${item.title}`}
+                >
+                  <Headphones size={18} color={colors.text.secondary} />
+                </TouchableOpacity>
+                <Switch
                 testID={`visible-${(typeof item.id === 'string' && item.id.trim().length > 0) ? item.id.trim() : `idx-${index}`}`}
                 value={!!item.visibleToCoaches}
                 onValueChange={() => toggleVisibility(index)}
@@ -156,6 +177,7 @@ export default function AttachmentsVisibilityScreen() {
                 thumbColor={colors.background.card}
                 disabled={!isClient}
               />
+              </View>
             </View>
           </Card>
         )}
@@ -170,7 +192,7 @@ export default function AttachmentsVisibilityScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background.primary },
-  infoCard: { margin: 16, padding: 14 },
+  infoCard: { margin: 16, padding: 14, position: 'relative' as const },
   infoRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   infoText: { color: colors.text.secondary, fontSize: 14, flex: 1 },
   warnRow: { flexDirection: 'row', gap: 8, alignItems: 'center', marginTop: 8 },
@@ -192,4 +214,7 @@ const styles = StyleSheet.create({
   saveBtn: { margin: 16, backgroundColor: colors.accent.primary, borderRadius: 12, alignItems: 'center', paddingVertical: 16 },
   saveBtnDisabled: { opacity: 0.6 },
   saveText: { color: colors.text.primary, fontWeight: '700', fontSize: 18 },
+  speakBtn: { position: 'absolute' as const, right: 10, top: 10, padding: 6, borderRadius: 8, backgroundColor: colors.background.secondary },
+  actionsRight: { flexDirection: 'row' as const, alignItems: 'center' as const, gap: 8 },
+  itemSpeakBtn: { padding: 6, borderRadius: 8, backgroundColor: colors.background.secondary },
 });

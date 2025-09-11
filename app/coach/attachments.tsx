@@ -5,7 +5,8 @@ import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { useUserStore } from '@/store/userStore';
 import { trpc } from '@/lib/trpc';
-import { FileText, Link as LinkIcon, Users2 } from 'lucide-react-native';
+import talkService from '@/services/talkService';
+import { FileText, Link as LinkIcon, Users2, Headphones } from 'lucide-react-native';
 
 interface ClientItem { id: string; name: string; email: string; profileImageUrl?: string; }
 
@@ -41,6 +42,15 @@ export default function CoachAttachmentsScreen() {
         <View style={styles.infoRow}>
           <Users2 size={18} color={colors.accent.primary} />
           <Text style={styles.infoText}>Select a {viewerRole === 'medical' ? 'patient' : 'client'} to view files shared with professionals.</Text>
+          <TouchableOpacity
+            onPress={() => talkService.speak(`Select a ${viewerRole === 'medical' ? 'patient' : 'client'} to view files shared with professionals.`)}
+            style={styles.speakBtn}
+            testID="speak-coach-attachments-info"
+            accessibilityRole="button"
+            accessibilityLabel="Read info"
+          >
+            <Headphones size={18} color={colors.accent.primary} />
+          </TouchableOpacity>
         </View>
       </Card>
 
@@ -89,6 +99,9 @@ export default function CoachAttachmentsScreen() {
                   </View>
                   <View style={styles.meta}>
                     <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
+                    <TouchableOpacity onPress={() => talkService.speak(item.title)} style={styles.itemSpeakBtn} testID={`speak-${typeof item.id === 'string' ? item.id : 'att'}`} accessibilityRole="button" accessibilityLabel={`Read ${item.title}`}>
+                      <Headphones size={16} color={colors.text.secondary} />
+                    </TouchableOpacity>
                     <TouchableOpacity style={styles.linkRow} onPress={() => openUrl(item.url)}>
                       <LinkIcon size={14} color={colors.accent.primary} />
                       <Text style={styles.link} numberOfLines={1}>{item.url}</Text>
@@ -107,7 +120,7 @@ export default function CoachAttachmentsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background.primary },
-  infoCard: { margin: 16, padding: 12 },
+  infoCard: { margin: 16, padding: 12, position: 'relative' as const },
   infoRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   infoText: { color: colors.text.secondary, fontSize: 13, flex: 1 },
   sectionTitle: { color: colors.text.primary, fontSize: 16, fontWeight: '700', marginHorizontal: 16, marginBottom: 8 },
@@ -127,4 +140,6 @@ const styles = StyleSheet.create({
   title: { color: colors.text.primary, fontSize: 15, fontWeight: '600', marginBottom: 4 },
   linkRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   link: { color: colors.accent.primary, fontSize: 12, flexShrink: 1 },
+  speakBtn: { position: 'absolute' as const, right: 10, top: 10, padding: 6, borderRadius: 8, backgroundColor: colors.background.secondary },
+  itemSpeakBtn: { padding: 6, borderRadius: 8, backgroundColor: colors.background.secondary, marginTop: 6, alignSelf: 'flex-start' as const },
 });
