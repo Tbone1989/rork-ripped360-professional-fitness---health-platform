@@ -29,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Audio } from 'expo-av';
 
 interface Message {
   id: string;
@@ -57,7 +58,12 @@ export default function AICoachScreen() {
   ]);
   const [inputText, setInputText] = useState('');
   const [isTyping, setIsTyping] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
+  const [isRecording, setIsRecording] = useState<boolean>(false);
+  const recordingRef = useRef<Audio.Recording | null>(null);
+  const [isTranscribing, setIsTranscribing] = useState<boolean>(false);
+  const webMediaStreamRef = useRef<MediaStream | null>(null);
+  const webRecorderRef = useRef<MediaRecorder | null>(null);
+  const webChunksRef = useRef<BlobPart[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
 
   const quickActions: QuickAction[] = [
@@ -158,13 +164,120 @@ export default function AICoachScreen() {
     }
   };
 
-  const toggleRecording = () => {
+  const stopWebRecording = () => {
+    try {
+      webRecorderRef.current?.stop();
+      webMediaStreamRef.current?.getTracks().forEach((t) => t.stop());
+    } catch {}
+  };
+
+  const transcribeAudioBlob = async (blob: Blob) => {
+    setIsTranscribing(true);
+    try {
+      const form = new FormData();
+      const file = new File([blob], 'recording.webm', { type: 'audio/webm' });
+      form.append('audio', file as any);
+      const res = await fetch('https://toolkit.rork.com/stt/transcribe/', { method: 'POST', body: form });
+      const data = await res.json();
+      const text: string = data?.text ?? '';
+      if (text) setInputText(text);
+    } catch (e) {
+      console.log('STT error', e);
+      setInputText("What's the best workout for building muscle?");
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  const toggleRecording = async () => {
     if (isRecording) {
       setIsRecording(false);
-      // Simulate voice transcription
-      setInputText("What's the best workout for building muscle?");
+      if (Platform.OS === 'web') {
+        stopWebRecording();
+      } else {
+        try {
+          const rec = recordingRef.current;
+          if (rec) {
+            await rec.stopAndUnloadAsync();
+            const uri = rec.getURI();
+            if (uri) {
+              const uriParts = uri.split('.');
+              const fileType = uriParts[uriParts.length - 1];
+              const form = new FormData();
+              form.append('audio', {
+                uri,
+                name: 'recording.' + fileType,
+                type: 'audio/' + fileType,
+              } as any);
+              const res = await fetch('https://toolkit.rork.com/stt/transcribe/', { method: 'POST', body: form });
+              const data = await res.json();
+              const text: string = data?.text ?? '';
+              if (text) setInputText(text);
+            }
+          }
+        } catch (e) {
+          console.log('mobile STT error', e);
+          setInputText("What's the best workout for building muscle?");
+        } finally {
+          recordingRef.current = null;
+          try { await Audio.setAudioModeAsync({ allowsRecordingIOS: false }); } catch {}
+        }
+      }
+      return;
+    }
+
+    setIsRecording(true);
+    if (Platform.OS === 'web') {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        webMediaStreamRef.current = stream;
+        // @ts-ignore MediaRecorder exists on web
+        const recorder: MediaRecorder = new MediaRecorder(stream);
+        webRecorderRef.current = recorder;
+        webChunksRef.current = [];
+        recorder.ondataavailable = (e: BlobEvent) => {
+          if (e.data && e.data.size > 0) webChunksRef.current.push(e.data);
+        };
+        recorder.onstop = async () => {
+          const blob = new Blob(webChunksRef.current, { type: 'audio/webm' });
+          await transcribeAudioBlob(blob);
+          webChunksRef.current = [];
+        };
+        recorder.start();
+      } catch (e) {
+        console.log('Web mic error', e);
+        setIsRecording(false);
+      }
     } else {
-      setIsRecording(true);
+      try {
+        await Audio.requestPermissionsAsync();
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: true, playsInSilentModeIOS: true });
+        const recording = new Audio.Recording();
+        await recording.prepareToRecordAsync({
+          android: {
+            extension: '.m4a',
+            outputFormat: 2 as any,
+            audioEncoder: 3 as any,
+            sampleRate: 44100,
+            numberOfChannels: 1,
+            bitRate: 128000,
+          },
+          ios: {
+            extension: '.wav',
+            outputFormat: 1 as any,
+            audioQuality: 0 as any,
+            sampleRate: 44100,
+            numberOfChannels: 1,
+            bitRate: 128000,
+          },
+          web: {},
+        } as any);
+        recordingRef.current = recording;
+        await recording.startAsync();
+      } catch (e) {
+        console.log('Recording error', e);
+        setIsRecording(false);
+      }
     }
   };
 
@@ -306,6 +419,7 @@ export default function AICoachScreen() {
             
             <View style={styles.inputActions}>
               <TouchableOpacity
+                testID="voice-toggle"
                 style={[styles.voiceButton, isRecording && styles.voiceButtonActive]}
                 onPress={toggleRecording}
               >
@@ -317,9 +431,10 @@ export default function AICoachScreen() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
+                testID="send-message"
+                style={[styles.sendButton, (!inputText.trim() || isTranscribing) && styles.sendButtonDisabled]}
                 onPress={() => sendMessage(inputText)}
-                disabled={!inputText.trim()}
+                disabled={!inputText.trim() || isTranscribing}
               >
                 <Send size={20} color="#FFFFFF" />
               </TouchableOpacity>

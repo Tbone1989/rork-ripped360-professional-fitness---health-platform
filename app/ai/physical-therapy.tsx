@@ -162,6 +162,7 @@ export default function PhysicalTherapyScreen() {
   const analyzePosture = async (base64Image: string) => {
     setIsAnalyzing(true);
     try {
+      console.log('[AI] analyzePosture:start');
       const messages: Array<any> = [
         {
           role: 'system',
@@ -193,7 +194,7 @@ export default function PhysicalTherapyScreen() {
         body: JSON.stringify({ messages }),
       });
 
-      const raw = await response.text();
+      const raw = await response.text(); // backend may return plain text on error
       console.log('[AI] Raw response:', raw.slice(0, 200));
 
       let data: any = null;
@@ -229,8 +230,21 @@ export default function PhysicalTherapyScreen() {
       console.error('Failed to analyze posture:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
       try {
-        Alert && Alert.alert('Analysis error', 'We could not analyze the posture right now. Please try again.\n' + message);
+        Alert && Alert.alert('Analysis error', 'We could not analyze the posture right now. Using a basic plan instead.\n' + message);
       } catch {}
+
+      const fallbackProfile: InjuryProfile = {
+        id: Date.now().toString(),
+        bodyPart: bodyPart || 'General',
+        severity: 'mild',
+        dateReported: new Date(),
+        symptoms: symptoms ? symptoms.split(',').map((s) => s.trim()) : [],
+        restrictions: [],
+        recommendedExercises: stretchingExercises,
+        progress: 0,
+      };
+      setInjuryProfile(fallbackProfile);
+      try { await AsyncStorage.setItem('injuryProfile', JSON.stringify(fallbackProfile)); } catch {}
     } finally {
       setIsAnalyzing(false);
     }
@@ -320,7 +334,7 @@ export default function PhysicalTherapyScreen() {
           )}
         </View>
       ) : (
-        <TouchableOpacity style={styles.uploadArea} onPress={pickImage}>
+        <TouchableOpacity testID="upload-area" style={styles.uploadArea} onPress={pickImage}>
           <Camera size={40} color={colors.accent.primary} />
           <Text style={styles.uploadText}>Take Photo for Posture Analysis</Text>
           <Text style={styles.uploadSubtext}>AI will identify issues and recommend exercises</Text>
@@ -328,6 +342,7 @@ export default function PhysicalTherapyScreen() {
       )}
 
       <TouchableOpacity 
+        testID="get-plan-button"
         style={styles.primaryButton}
         onPress={() => analyzePosture('')}
       >
@@ -569,12 +584,14 @@ export default function PhysicalTherapyScreen() {
 
             <View style={styles.modalButtons}>
               <TouchableOpacity
+                testID="pain-cancel"
                 style={[styles.modalButton, styles.modalButtonCancel]}
                 onPress={() => setShowPainModal(false)}
               >
                 <Text style={styles.modalButtonText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
+                testID="pain-save"
                 style={[styles.modalButton, styles.modalButtonSubmit]}
                 onPress={() => {
                   completeSession();
