@@ -176,6 +176,34 @@ function RootLayoutNav() {
           presentation: "card",
         }} 
       />
+      <Stack.Screen 
+        name="contest/physique-predictor" 
+        options={{ 
+          title: "Physique Predictor",
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="contest/virtual-posing" 
+        options={{ 
+          title: "Virtual Posing Coach",
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="contest/peak-week-ai" 
+        options={{ 
+          title: "Peak Week AI",
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
+        name="contest/stage-weight-predictor" 
+        options={{ 
+          title: "Stage Weight Predictor",
+          presentation: "card",
+        }} 
+      />
     </Stack>
   );
 }
