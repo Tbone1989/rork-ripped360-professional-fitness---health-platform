@@ -91,15 +91,19 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
         try {
           if (cancelled) return;
           if (state.visible) return;
-          if (!acceptance?.general) {
-            await ensureAccepted('general');
-          }
-          if (pathname?.includes('doctor') || pathname?.startsWith('/medical')) {
+          const isDoctorArea = !!(pathname && (pathname.includes('doctor') || pathname.startsWith('/medical')));
+          const isClientArea = !!(pathname && (pathname.startsWith('/coach') || pathname.startsWith('/coaching')));
+
+          if (isDoctorArea) {
             if (!acceptance?.doctor) {
               await ensureAccepted('doctor');
             }
             if (!acceptance?.medical) {
               await ensureAccepted('medical');
+            }
+          } else if (isClientArea) {
+            if (!acceptance?.coach) {
+              await ensureAccepted('coach');
             }
           }
         } catch (e) {
@@ -110,7 +114,7 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
       return () => {
         cancelled = true;
       };
-    }, [pathname, acceptance?.general, acceptance?.doctor, acceptance?.medical, state.visible]);
+    }, [pathname, acceptance?.doctor, acceptance?.medical, acceptance?.coach, state.visible]);
 
     return null;
   };
