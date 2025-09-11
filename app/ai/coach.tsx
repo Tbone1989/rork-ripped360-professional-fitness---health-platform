@@ -484,6 +484,17 @@ export default function AICoachScreen() {
                 <Text style={styles.featureCardText}>Instant macros</Text>
               </Card>
             </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.featureCard}
+              onPress={() => router.push('/ai/voice-coach')}
+            >
+              <Card style={styles.featureCardContent}>
+                <Mic size={24} color={colors.accent.primary} />
+                <Text style={styles.featureCardTitle}>Voice Coach</Text>
+                <Text style={styles.featureCardText}>Hands-free session</Text>
+              </Card>
+            </TouchableOpacity>
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
