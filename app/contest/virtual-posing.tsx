@@ -67,6 +67,8 @@ const mandatoryPoses: Pose[] = [
 ];
 
 export default function VirtualPosingScreen() {
+  console.log('[VirtualPosingScreen] Component mounted');
+  
   const [currentPose, setCurrentPose] = useState<Pose | null>(null);
   const [timer, setTimer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
@@ -131,9 +133,16 @@ export default function VirtualPosingScreen() {
     return `${seconds}s`;
   };
 
+  console.log('[VirtualPosingScreen] Rendering with currentPose:', currentPose?.name);
+  
   return (
     <View style={styles.container} testID="virtual-posing-screen">
       <Stack.Screen options={{ title: 'Virtual Posing Practice' }} />
+      
+      <View style={styles.testContainer}>
+        <Text style={styles.testText}>Virtual Posing Coach is Working!</Text>
+        <Text style={styles.testSubtext}>This page loaded successfully.</Text>
+      </View>
       
       <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false}>
         <Card style={styles.heroCard}>
