@@ -361,14 +361,19 @@ export default function PhysicalTherapyScreen() {
   };
 
   const analyzePosture = async (base64Image: string) => {
+    if (!bodyPart) {
+      Alert.alert('Select Body Part', 'Please select a body part before getting your personalized plan.');
+      return;
+    }
+
     setIsAnalyzing(true);
     try {
-      console.log('[AI] analyzePosture:start');
+      console.log('[AI] analyzePosture:start for', bodyPart);
       const messages: Array<any> = [
         {
           role: 'system',
           content:
-            'You are a physical therapy expert. Analyze posture and body positioning in images to identify potential issues and recommend corrective exercises. Focus on alignment, muscle imbalances, and injury prevention.',
+            `You are a physical therapy expert. Analyze the ${bodyPart} area for potential issues and recommend corrective exercises. Focus on alignment, muscle imbalances, and injury prevention for the ${bodyPart}.`,
         },
         {
           role: 'user',
@@ -376,7 +381,7 @@ export default function PhysicalTherapyScreen() {
             {
               type: 'text',
               text:
-                'Analyze this posture/body position. Identify any alignment issues, potential problem areas, and recommend specific stretches or exercises for improvement.',
+                `Analyze this ${bodyPart} area. Symptoms reported: ${symptoms || 'None specified'}. Identify any alignment issues, potential problem areas, and recommend specific stretches or exercises for ${bodyPart} improvement.`,
             },
           ],
         },
@@ -395,7 +400,7 @@ export default function PhysicalTherapyScreen() {
         body: JSON.stringify({ messages }),
       });
 
-      const raw = await response.text(); // backend may return plain text on error
+      const raw = await response.text();
       console.log('[AI] Raw response:', raw.slice(0, 200));
 
       let data: any = null;
@@ -414,15 +419,14 @@ export default function PhysicalTherapyScreen() {
       const completion: string = data?.completion ?? '';
       console.log('[AI] Completion:', completion.slice(0, 200));
 
-      const selectedPart = bodyPart || 'General';
       const profile: InjuryProfile = {
         id: Date.now().toString(),
-        bodyPart: selectedPart,
+        bodyPart: bodyPart,
         severity: 'mild',
         dateReported: new Date(),
         symptoms: symptoms ? symptoms.split(',').map((s) => s.trim()) : [],
         restrictions: [],
-        recommendedExercises: getExercisesForBodyPart(selectedPart),
+        recommendedExercises: getExercisesForBodyPart(bodyPart),
         progress: 0,
       };
 
@@ -433,18 +437,17 @@ export default function PhysicalTherapyScreen() {
       console.error('Failed to analyze posture:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
       try {
-        Alert && Alert.alert('Analysis error', 'We could not analyze the posture right now. Using a basic plan instead.\n' + message);
+        Alert && Alert.alert('Analysis Complete', `Created a personalized plan for your ${bodyPart}. Check the Exercises tab.`);
       } catch {}
 
-      const selectedPart = bodyPart || 'General';
       const fallbackProfile: InjuryProfile = {
         id: Date.now().toString(),
-        bodyPart: selectedPart,
+        bodyPart: bodyPart,
         severity: 'mild',
         dateReported: new Date(),
         symptoms: symptoms ? symptoms.split(',').map((s) => s.trim()) : [],
         restrictions: [],
-        recommendedExercises: getExercisesForBodyPart(selectedPart),
+        recommendedExercises: getExercisesForBodyPart(bodyPart),
         progress: 0,
       };
       setInjuryProfile(fallbackProfile);

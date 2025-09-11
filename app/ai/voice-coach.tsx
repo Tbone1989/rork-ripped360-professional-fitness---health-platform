@@ -22,7 +22,7 @@ export default function VoiceCoachScreen() {
     {
       id: 'intro',
       role: 'assistant',
-      text: "I'm your AI Voice Coach. Tap and hold the mic or tap to start/stop. Ask for a workout, cues, or motivation.",
+      text: "Hey! I'm your AI Voice Coach. I can guide workouts, give form cues, create routines, and motivate you. Tap the mic to start talking or use the quick buttons below!",
       ts: Date.now(),
     },
   ]);
@@ -66,7 +66,7 @@ export default function VoiceCoachScreen() {
             {
               role: 'system',
               content:
-                'You are an upbeat, concise AI fitness voice coach. Give short, actionable tips, rep/set counts, cues, and pacing. Avoid long paragraphs. Offer a quick follow-up question to keep session flowing.',
+                'You are an energetic, motivational AI fitness voice coach. Give specific, actionable guidance with exact rep counts, timing, and form cues. Be encouraging and enthusiastic. Keep responses conversational but informative. Always end with a motivating question or next step to keep the workout flowing.',
             },
             ...turns.map(t => ({ role: t.role, content: t.text })),
             { role: 'user', content: text },
@@ -217,10 +217,12 @@ export default function VoiceCoachScreen() {
 
   const intents = useMemo(
     () => [
-      { id: 'warmup', label: '5-min Warm-up', prompt: 'Guide me through a 5-minute dynamic warm-up.' },
-      { id: 'form', label: 'Form Cues', prompt: 'Give me squat form cues for 3 sets.' },
-      { id: 'hit', label: 'HIIT 10', prompt: 'Create a 10-minute HIIT finisher with times.' },
-      { id: 'mot', label: 'Motivate', prompt: 'Give me short motivation for the next set.' },
+      { id: 'warmup', label: '5-min Warm-up', prompt: 'Guide me through a 5-minute dynamic warm-up with specific exercises and timing.' },
+      { id: 'form', label: 'Form Check', prompt: 'Give me detailed form cues for proper squat technique.' },
+      { id: 'hiit', label: 'HIIT Workout', prompt: 'Create a 15-minute HIIT workout with exercises, work/rest intervals, and coaching cues.' },
+      { id: 'motivate', label: 'Motivate Me', prompt: 'Give me powerful motivation to push through this tough set!' },
+      { id: 'routine', label: 'Quick Routine', prompt: 'Create a 20-minute full body workout I can do right now.' },
+      { id: 'recovery', label: 'Cool Down', prompt: 'Guide me through a 5-minute cool down and stretching routine.' },
     ],
     [],
   );
