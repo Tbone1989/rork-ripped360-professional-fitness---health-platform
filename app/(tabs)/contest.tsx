@@ -19,7 +19,10 @@ import {
   Target,
   TrendingUp,
   Clock,
-  Users
+  Users,
+  Brain,
+  Sparkles,
+  Scale
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -147,6 +150,7 @@ export default function ContestScreen() {
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => router.push('/contest/dashboard')}
+              testID="contest-action-dashboard"
             >
               <TrendingUp size={24} color={colors.accent.primary} />
               <Text style={styles.actionText}>Dashboard</Text>
@@ -155,6 +159,7 @@ export default function ContestScreen() {
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => router.push('/contest/protocols')}
+              testID="contest-action-protocols"
             >
               <Timer size={24} color={colors.accent.primary} />
               <Text style={styles.actionText}>Protocols</Text>
@@ -163,6 +168,7 @@ export default function ContestScreen() {
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => router.push('/contest/peak-week')}
+              testID="contest-action-peak-week"
             >
               <Calendar size={24} color={colors.accent.primary} />
               <Text style={styles.actionText}>Peak Week</Text>
@@ -171,9 +177,46 @@ export default function ContestScreen() {
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={() => router.push('/contest/posing')}
+              testID="contest-action-posing"
             >
               <Droplets size={24} color={colors.accent.primary} />
               <Text style={styles.actionText}>Posing</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => router.push('/contest/physique-predictor')}
+              testID="contest-action-physique"
+            >
+              <Brain size={24} color={colors.accent.primary} />
+              <Text style={styles.actionText}>Physique Predictor</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => router.push('/contest/stage-weight-predictor')}
+              testID="contest-action-stage-weight"
+            >
+              <Scale size={24} color={colors.accent.primary} />
+              <Text style={styles.actionText}>Stage Weight</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => router.push('/contest/virtual-posing')}
+              testID="contest-action-virtual-posing"
+            >
+              <Camera size={24} color={colors.accent.primary} />
+              <Text style={styles.actionText}>Virtual Posing</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => router.push('/contest/peak-week-ai')}
+              testID="contest-action-peak-week-ai"
+            >
+              <Sparkles size={24} color={colors.accent.primary} />
+              <Text style={styles.actionText}>Peak Week AI</Text>
             </TouchableOpacity>
           </View>
 
