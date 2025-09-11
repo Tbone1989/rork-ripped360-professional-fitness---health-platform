@@ -216,7 +216,6 @@ export default function AllAIFeaturesScreen() {
       icon: Users,
       color: '#3B82F6',
       route: '/ai/buddy',
-      comingSoon: true,
     },
     {
       id: 'challenge-creator',
@@ -225,7 +224,6 @@ export default function AllAIFeaturesScreen() {
       icon: Calendar,
       color: '#A855F7',
       route: '/ai/challenges',
-      comingSoon: true,
     },
   ];
 
