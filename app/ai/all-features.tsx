@@ -155,8 +155,7 @@ export default function AllAIFeaturesScreen() {
       description: 'Personalized workouts based on your genetics',
       icon: Dna,
       color: '#7C3AED',
-      route: '/ai/genetics',
-      comingSoon: true,
+      route: '/ai/dna-training',
       isPremium: true,
     },
     {
@@ -165,8 +164,7 @@ export default function AllAIFeaturesScreen() {
       description: 'Optimize sleep patterns for maximum gains',
       icon: Moon,
       color: '#4B5563',
-      route: '/ai/sleep',
-      comingSoon: true,
+      route: '/ai/sleep-recovery',
     },
     {
       id: 'grocery-ai',
@@ -174,8 +172,7 @@ export default function AllAIFeaturesScreen() {
       description: 'AI-generated shopping lists based on meal plans',
       icon: ShoppingBag,
       color: '#059669',
-      route: '/ai/grocery',
-      comingSoon: true,
+      route: '/meals/smart-list',
     },
   ];
 
