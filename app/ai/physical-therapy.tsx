@@ -10,6 +10,7 @@ import {
   Dimensions,
   Modal,
   TextInput,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
@@ -161,45 +162,75 @@ export default function PhysicalTherapyScreen() {
   const analyzePosture = async (base64Image: string) => {
     setIsAnalyzing(true);
     try {
+      const messages: Array<any> = [
+        {
+          role: 'system',
+          content:
+            'You are a physical therapy expert. Analyze posture and body positioning in images to identify potential issues and recommend corrective exercises. Focus on alignment, muscle imbalances, and injury prevention.',
+        },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text:
+                'Analyze this posture/body position. Identify any alignment issues, potential problem areas, and recommend specific stretches or exercises for improvement.',
+            },
+          ],
+        },
+      ];
+
+      if (base64Image) {
+        (messages[1].content as Array<any>).push({ type: 'image', image: base64Image });
+      }
+
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [
-            {
-              role: 'system',
-              content: 'You are a physical therapy expert. Analyze posture and body positioning in images to identify potential issues and recommend corrective exercises. Focus on alignment, muscle imbalances, and injury prevention.'
-            },
-            {
-              role: 'user',
-              content: [
-                { type: 'text', text: 'Analyze this posture/body position. Identify any alignment issues, potential problem areas, and recommend specific stretches or exercises for improvement.' },
-                { type: 'image', image: base64Image }
-              ]
-            }
-          ]
-        })
+        headers: {
+          'Content-Type': 'application/json',
+          Accept: 'application/json',
+        },
+        body: JSON.stringify({ messages }),
       });
 
-      const data = await response.json();
-      
-      // Create injury profile based on analysis
+      const raw = await response.text();
+      console.log('[AI] Raw response:', raw.slice(0, 200));
+
+      let data: any = null;
+      try {
+        data = raw ? JSON.parse(raw) : null;
+      } catch (parseErr) {
+        const errText = raw || 'Invalid response';
+        throw new Error(`AI service error (${response.status}): ${errText.slice(0, 180)}`);
+      }
+
+      if (!response.ok) {
+        const errMsg = typeof data === 'object' && data && 'error' in data ? String((data as any).error) : raw;
+        throw new Error(`AI service error (${response.status}): ${String(errMsg).slice(0, 180)}`);
+      }
+
+      const completion: string = data?.completion ?? '';
+      console.log('[AI] Completion:', completion.slice(0, 200));
+
       const profile: InjuryProfile = {
         id: Date.now().toString(),
         bodyPart: bodyPart || 'General',
         severity: 'mild',
         dateReported: new Date(),
-        symptoms: symptoms.split(',').map(s => s.trim()),
+        symptoms: symptoms ? symptoms.split(',').map((s) => s.trim()) : [],
         restrictions: [],
         recommendedExercises: stretchingExercises,
         progress: 0,
       };
-      
+
       setInjuryProfile(profile);
       await AsyncStorage.setItem('injuryProfile', JSON.stringify(profile));
-      
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to analyze posture:', error);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      try {
+        Alert && Alert.alert('Analysis error', 'We could not analyze the posture right now. Please try again.\n' + message);
+      } catch {}
     } finally {
       setIsAnalyzing(false);
     }
