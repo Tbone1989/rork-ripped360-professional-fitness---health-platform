@@ -226,6 +226,7 @@ export default function PhysicalTherapyScreen() {
 
       setInjuryProfile(profile);
       await AsyncStorage.setItem('injuryProfile', JSON.stringify(profile));
+      setActiveTab('exercises');
     } catch (error: unknown) {
       console.error('Failed to analyze posture:', error);
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -245,6 +246,7 @@ export default function PhysicalTherapyScreen() {
       };
       setInjuryProfile(fallbackProfile);
       try { await AsyncStorage.setItem('injuryProfile', JSON.stringify(fallbackProfile)); } catch {}
+      setActiveTab('exercises');
     } finally {
       setIsAnalyzing(false);
     }
@@ -343,11 +345,12 @@ export default function PhysicalTherapyScreen() {
 
       <TouchableOpacity 
         testID="get-plan-button"
-        style={styles.primaryButton}
+        style={[styles.primaryButton, isAnalyzing ? { opacity: 0.7 } : null]}
         onPress={() => analyzePosture('')}
+        disabled={isAnalyzing}
       >
         <Activity size={20} color="white" />
-        <Text style={styles.primaryButtonText}>Get Personalized Plan</Text>
+        <Text style={styles.primaryButtonText}>{isAnalyzing ? 'Generating...' : 'Get Personalized Plan'}</Text>
       </TouchableOpacity>
     </View>
   );
