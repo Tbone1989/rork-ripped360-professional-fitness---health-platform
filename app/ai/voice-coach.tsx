@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, ActivityIndicator, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
 import { colors } from '@/constants/colors';
-import { Mic, StopCircle, Bot, User, RotateCcw, Sparkles } from 'lucide-react-native';
+import { Mic, StopCircle, Bot, User, RotateCcw, Sparkles, Send } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Audio } from 'expo-av';
 import { useDisclaimer } from '@/store/legalDisclaimerProvider';
@@ -27,6 +27,7 @@ export default function VoiceCoachScreen() {
     },
   ]);
   const [state, setState] = useState<SessionState>('idle');
+  const [inputText, setInputText] = useState<string>('');
   const scrollRef = useRef<ScrollView>(null);
   const { ensureAccepted } = useDisclaimer();
   const recordingRef = useRef<Audio.Recording | null>(null);
@@ -42,9 +43,12 @@ export default function VoiceCoachScreen() {
 
   const stopWebRecording = useCallback(() => {
     try {
+      console.log('[VoiceCoach] stopWebRecording');
       webRecorderRef.current?.stop();
       webMediaStreamRef.current?.getTracks().forEach(t => t.stop());
-    } catch {}
+    } catch (e) {
+      console.log('[VoiceCoach] stopWebRecording error', e);
+    }
   }, []);
 
   const pushTurn = useCallback((t: Omit<Turn, 'id' | 'ts'>) => {
@@ -123,7 +127,7 @@ export default function VoiceCoachScreen() {
         };
         recorder.start();
       } catch (e) {
-        console.log('web mic start error', e);
+        console.log('[VoiceCoach] web mic start error', e);
         setState('idle');
       }
     } else {
@@ -153,7 +157,7 @@ export default function VoiceCoachScreen() {
         recordingRef.current = rec;
         await rec.startAsync();
       } catch (e) {
-        console.log('native mic start error', e);
+        console.log('[VoiceCoach] native mic start error', e);
         setState('idle');
       }
     }
@@ -196,7 +200,7 @@ export default function VoiceCoachScreen() {
         }
       }
     } catch (e) {
-      console.log('native mic stop error', e);
+      console.log('[VoiceCoach] native mic stop error', e);
       setState('idle');
     }
   }, [getAssistantReply, pushTurn, state, stopWebRecording]);
@@ -227,6 +231,22 @@ export default function VoiceCoachScreen() {
     pushTurn({ role: 'user', text: safe });
     await getAssistantReply(safe);
   }, [getAssistantReply, pushTurn]);
+
+  useEffect(() => {
+    return () => {
+      try {
+        if (Platform.OS === 'web') {
+          webRecorderRef.current?.stop();
+          webMediaStreamRef.current?.getTracks().forEach((t: MediaStreamTrack) => t.stop());
+        } else if (recordingRef.current) {
+          recordingRef.current.stopAndUnloadAsync().catch(() => {});
+          Audio.setAudioModeAsync({ allowsRecordingIOS: false }).catch(() => {});
+        }
+      } catch (e) {
+        console.log('[VoiceCoach] cleanup error', e);
+      }
+    };
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
@@ -272,6 +292,9 @@ export default function VoiceCoachScreen() {
         <TouchableOpacity
           testID="mic-toggle"
           onPress={onMicPress}
+          onLongPress={Platform.OS !== 'web' ? startRecording : undefined}
+          onPressOut={Platform.OS !== 'web' ? stopRecording : undefined}
+          delayLongPress={120}
           style={[styles.mic, state === 'recording' ? styles.micActive : undefined]}
         >
           {state === 'recording' ? (
@@ -280,7 +303,37 @@ export default function VoiceCoachScreen() {
             <Mic size={36} color={'#FFFFFF'} />
           )}
         </TouchableOpacity>
-        <View style={styles.placeholder} />
+        <View style={styles.textEntry}>
+          <TextInput
+            testID="voicecoach-input"
+            style={styles.input}
+            placeholder="Type a question..."
+            placeholderTextColor={colors.text.secondary}
+            value={inputText}
+            onChangeText={setInputText}
+            returnKeyType="send"
+            onSubmitEditing={() => {
+              const v = (inputText ?? '').trim();
+              if (v.length > 0) {
+                setInputText('');
+                runIntent(v);
+              }
+            }}
+          />
+          <TouchableOpacity
+            testID="send-text"
+            style={styles.sendBtn}
+            onPress={() => {
+              const v = (inputText ?? '').trim();
+              if (v.length > 0) {
+                setInputText('');
+                runIntent(v);
+              }
+            }}
+          >
+            <Send size={20} color={'#FFFFFF'} />
+          </TouchableOpacity>
+        </View>
       </View>
 
     </SafeAreaView>
@@ -380,7 +433,31 @@ const styles = StyleSheet.create({
     backgroundColor: colors.status.error + '20',
   },
   placeholder: {
+    width: 8,
+    height: 48,
+  },
+  textEntry: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginLeft: 12,
+  },
+  input: {
+    flex: 1,
+    height: 48,
+    borderRadius: 24,
+    paddingHorizontal: 14,
+    backgroundColor: colors.background.secondary,
+    color: colors.text.primary,
+    fontSize: 14,
+  },
+  sendBtn: {
     width: 48,
     height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.accent.primary,
   },
 });
