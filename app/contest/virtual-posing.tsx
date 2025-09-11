@@ -230,6 +230,9 @@ export default function VirtualPosingScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background.primary },
+  testContainer: { padding: 20, alignItems: 'center', backgroundColor: colors.accent.primary + '20', margin: 20, borderRadius: 12 },
+  testText: { fontSize: 18, fontWeight: '600', color: colors.accent.primary, marginBottom: 4 },
+  testSubtext: { fontSize: 14, color: colors.text.secondary },
   scroll: { flex: 1 },
   heroCard: { margin: 20 },
   headerRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
