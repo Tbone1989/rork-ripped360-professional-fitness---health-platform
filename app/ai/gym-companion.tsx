@@ -19,6 +19,7 @@ import { Camera, Info, Heart, Brain, Zap, CheckCircle, AlertCircle, Play, Pause,
 import { colors } from '@/constants/colors';
 import * as ImagePicker from 'expo-image-picker';
 import { Audio } from 'expo-av';
+import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 
 const { width } = Dimensions.get('window');
 
@@ -53,6 +54,8 @@ export default function GymCompanionScreen() {
   const [workoutStarted, setWorkoutStarted] = useState(false);
   const [workoutTimer, setWorkoutTimer] = useState(0);
   const [completedExercises, setCompletedExercises] = useState<string[]>([]);
+  const [showAudioDisclaimer, setShowAudioDisclaimer] = useState<boolean>(false);
+  const [acceptedAudioDisclaimer, setAcceptedAudioDisclaimer] = useState<boolean>(false);
 
   const anxietyTips: AnxietyTip[] = [
     {
@@ -180,6 +183,10 @@ export default function GymCompanionScreen() {
   };
 
   const playAnxietyAudio = async (tipId: string) => {
+    if (!acceptedAudioDisclaimer) {
+      setShowAudioDisclaimer(true);
+      return;
+    }
     try {
       if (sound) {
         await sound.unloadAsync();
@@ -548,6 +555,18 @@ export default function GymCompanionScreen() {
           </View>
         </View>
       </Modal>
+
+      <LegalDisclaimer
+        visible={showAudioDisclaimer}
+        type="audio"
+        onClose={() => setShowAudioDisclaimer(false)}
+        onAccept={() => {
+          setAcceptedAudioDisclaimer(true);
+          setShowAudioDisclaimer(false);
+        }}
+        title="Audio Safety & Consent"
+        testID="gymAudioDisclaimerModal"
+      />
     </SafeAreaView>
   );
 }

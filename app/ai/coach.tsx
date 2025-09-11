@@ -29,6 +29,7 @@ import {
 } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { Audio } from 'expo-av';
 
 interface Message {
@@ -65,6 +66,8 @@ export default function AICoachScreen() {
   const webRecorderRef = useRef<MediaRecorder | null>(null);
   const webChunksRef = useRef<BlobPart[]>([]);
   const scrollViewRef = useRef<ScrollView>(null);
+  const [showAudioDisclaimer, setShowAudioDisclaimer] = useState<boolean>(false);
+  const [acceptedAudioDisclaimer, setAcceptedAudioDisclaimer] = useState<boolean>(false);
 
   const quickActions: QuickAction[] = [
     {
@@ -190,6 +193,10 @@ export default function AICoachScreen() {
   };
 
   const toggleRecording = async () => {
+    if (!acceptedAudioDisclaimer) {
+      setShowAudioDisclaimer(true);
+      return;
+    }
     if (isRecording) {
       setIsRecording(false);
       if (Platform.OS === 'web') {
@@ -480,6 +487,18 @@ export default function AICoachScreen() {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
+
+      <LegalDisclaimer
+        visible={showAudioDisclaimer}
+        type="audio"
+        onClose={() => setShowAudioDisclaimer(false)}
+        onAccept={() => {
+          setAcceptedAudioDisclaimer(true);
+          setShowAudioDisclaimer(false);
+        }}
+        title="Audio Safety & Consent"
+        testID="audioDisclaimerModal"
+      />
     </SafeAreaView>
   );
 }

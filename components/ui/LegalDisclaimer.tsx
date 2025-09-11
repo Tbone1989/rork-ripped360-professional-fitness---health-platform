@@ -1,24 +1,83 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Modal } from 'react-native';
-import { Shield, AlertTriangle, X, CheckCircle, FileText, Scale } from 'lucide-react-native';
+import React, { useMemo, useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Modal, NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
+import { Shield, AlertTriangle, X, CheckCircle, FileText, Scale, Stethoscope, Headphones } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Button } from './Button';
 import { Card } from './Card';
 
+type DisclaimerType = 'medical' | 'doctor' | 'audio' | 'coach' | 'product_selling' | 'general';
+
 interface LegalDisclaimerProps {
   visible: boolean;
   onClose: () => void;
   onAccept: () => void;
-  type: 'medical' | 'coach' | 'product_selling' | 'general';
+  type: DisclaimerType;
   title?: string;
+  testID?: string;
 }
 
-export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: LegalDisclaimerProps) {
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+export function LegalDisclaimer({ visible, onClose, onAccept, type, title, testID }: LegalDisclaimerProps) {
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState<boolean>(false);
 
-  const getDisclaimerContent = () => {
+  const disclaimerContent = useMemo(() => {
     switch (type) {
+      case 'doctor':
+        return {
+          title: 'Clinical Use & Telehealth Disclaimer',
+          icon: Stethoscope,
+          color: colors.status.error,
+          sections: [
+            {
+              title: 'Licensed Clinical Use Only',
+              content: 'Clinical features are intended for use by licensed healthcare professionals acting within their scope of practice and in compliance with local laws and regulations.'
+            },
+            {
+              title: 'Not a Substitute for Examination',
+              content: 'Digital assessments, AI outputs, and uploaded data are adjunct tools and do not replace a clinician’s independent judgement, physical examination, or diagnostic testing.'
+            },
+            {
+              title: 'Telehealth Compliance',
+              content: 'You are responsible for obtaining patient consent, documenting encounters, and following telemedicine rules for your jurisdiction, including licensure and cross‑state practice limitations.'
+            },
+            {
+              title: 'PHI Handling (HIPAA/GDPR)',
+              content: 'Store only the minimum necessary patient data. Do not upload sensitive information unless you have consent. We provide encryption-in-transit and at-rest; however, you are responsible for proper access control to your device and account.'
+            },
+            {
+              title: 'Emergency Care',
+              content: 'This platform is not for emergencies. Direct patients to call local emergency services (e.g., 911) for urgent symptoms.'
+            },
+            {
+              title: 'Documentation & EHR',
+              content: 'Export or copy summaries into your official medical record as required. This app is not an EHR and does not replace mandated clinical documentation systems.'
+            }
+          ]
+        };
+      case 'audio':
+        return {
+          title: 'Audio Safety & Recording Consent',
+          icon: Headphones,
+          color: colors.accent.primary,
+          sections: [
+            {
+              title: 'Safe Listening',
+              content: 'Keep volume at a safe level. Be aware of your surroundings when using headphones during workouts. Do not use audio features where they could create safety hazards.'
+            },
+            {
+              title: 'Background Audio',
+              content: 'Music from third‑party apps (e.g., Spotify, Apple Music) may continue while using this app. Manage playback and volume from your device controls.'
+            },
+            {
+              title: 'Recording Consent',
+              content: 'If you choose to record voice notes or sessions, obtain consent from all participants. Recording availability varies by platform, and recordings may be stored on your device or cloud according to your settings.'
+            },
+            {
+              title: 'Privacy',
+              content: 'Do not capture sensitive information in audio unless necessary and lawful. Review files before sharing. You are responsible for compliance with local privacy and wiretapping laws.'
+            }
+          ]
+        };
       case 'medical':
         return {
           title: 'Medical Information Disclaimer',
@@ -27,31 +86,26 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
           sections: [
             {
               title: 'Not Medical Advice',
-              content: 'This application provides informational analysis only and does not constitute medical advice, diagnosis, or treatment recommendations. The AI analysis is for educational purposes and should not replace professional medical consultation.'
+              content: 'Information and AI outputs are for educational purposes and are not medical advice, diagnosis, or treatment.'
             },
             {
               title: 'Consult Healthcare Providers',
-              content: 'Always consult with qualified healthcare professionals before making any medical decisions based on this analysis. Your doctor should be your primary source for medical advice and treatment decisions.'
+              content: 'Always consult a qualified professional before making medical decisions. Do not ignore professional advice because of content in this app.'
             },
             {
               title: 'Data Security & Privacy',
-              content: 'Your medical data is encrypted and stored securely in compliance with HIPAA regulations. We do not share your personal health information with third parties without your explicit consent.'
+              content: 'We implement encryption and access controls; however, no system is perfect. Limit sensitive uploads and review sharing settings.'
             },
             {
               title: 'Accuracy Limitations',
-              content: 'AI analysis may contain errors or inaccuracies. This tool is meant to supplement, not replace, professional medical evaluation. Results should always be verified by healthcare professionals.'
+              content: 'AI may be inaccurate or incomplete. Verify results with licensed professionals.'
             },
             {
               title: 'Emergency Situations',
-              content: 'If you have urgent health concerns or medical emergencies, contact emergency services (911) or your healthcare provider immediately. Do not rely on this app for emergency medical situations.'
-            },
-            {
-              title: 'Liability Limitation',
-              content: 'Ripped360 and its affiliates are not liable for any health decisions made based on this analysis. Users assume full responsibility for their health decisions and outcomes.'
+              content: 'For emergencies, call local emergency services immediately.'
             }
           ]
         };
-        
       case 'coach':
         return {
           title: 'Coach Services Agreement',
@@ -60,27 +114,22 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
           sections: [
             {
               title: 'Professional Standards',
-              content: 'All coaches on this platform are required to maintain current certifications and undergo background checks. However, users should verify credentials independently.'
+              content: 'Coaches must maintain current certifications. Users should verify credentials.'
             },
             {
               title: 'Service Limitations',
-              content: 'Coaching services are for fitness and wellness guidance only. Coaches cannot provide medical advice, diagnose conditions, or prescribe treatments.'
-            },
-            {
-              title: 'Monthly Fees',
-              content: 'Coaches pay monthly fees to use this platform for their business. This fee structure helps maintain platform quality and security.'
+              content: 'Coaching is not medical care and does not diagnose or prescribe.'
             },
             {
               title: 'Communication Guidelines',
-              content: 'All coach-client communications are monitored for safety and compliance. Inappropriate behavior will result in immediate account suspension.'
+              content: 'All communications must remain professional and compliant with community standards.'
             },
             {
               title: 'Results Disclaimer',
-              content: 'Individual results may vary. No guarantee is made regarding specific outcomes from coaching services. Success depends on individual effort and adherence to programs.'
+              content: 'Individual outcomes vary and are not guaranteed.'
             }
           ]
         };
-        
       case 'product_selling':
         return {
           title: 'Product Selling Agreement',
@@ -89,31 +138,18 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
           sections: [
             {
               title: 'Approval Required',
-              content: 'Selling products on this platform requires prior approval and payment of monthly fees. Unauthorized selling will result in account suspension.'
+              content: 'Selling requires prior approval and ongoing compliance.'
             },
             {
               title: 'Prohibited Products',
-              content: 'Prescription medications, illegal substances, unregulated supplements, and products making medical claims are strictly prohibited.'
-            },
-            {
-              title: 'Content Restrictions',
-              content: 'Product descriptions cannot contain false claims, medical advice, or guaranteed results. All content is subject to review and approval.'
+              content: 'No prescription drugs, illegal substances, or items making illegal claims.'
             },
             {
               title: 'Liability & Insurance',
-              content: 'Sellers must maintain appropriate business licenses and liability insurance. Ripped360 is not responsible for product quality or customer disputes.'
-            },
-            {
-              title: 'Fee Structure',
-              content: 'Monthly fees apply for product selling privileges. Additional transaction fees may apply. Failure to pay fees will result in selling privileges being revoked.'
-            },
-            {
-              title: 'Compliance Monitoring',
-              content: 'All product listings are monitored for compliance. Violations may result in immediate removal and account penalties.'
+              content: 'Sellers must maintain appropriate licenses and insurance.'
             }
           ]
         };
-        
       default:
         return {
           title: 'Terms of Service',
@@ -122,32 +158,27 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
           sections: [
             {
               title: 'Acceptance of Terms',
-              content: 'By using this application, you agree to comply with all terms and conditions outlined in our Terms of Service and Privacy Policy.'
+              content: 'By using this application, you agree to our Terms and Privacy Policy.'
             },
             {
               title: 'User Responsibilities',
-              content: 'Users are responsible for maintaining account security, providing accurate information, and using the platform in accordance with community guidelines.'
-            },
-            {
-              title: 'Content Guidelines',
-              content: 'All user-generated content must comply with our community standards. Inappropriate content will be removed and may result in account suspension.'
+              content: 'Keep your account secure and follow community guidelines.'
             },
             {
               title: 'Privacy Protection',
-              content: 'We are committed to protecting your privacy and personal information in accordance with applicable privacy laws and regulations.'
+              content: 'We aim to protect your data; review your settings before sharing.'
             }
           ]
         };
     }
-  };
+  }, [type]);
 
-  const disclaimerContent = getDisclaimerContent();
   const IconComponent = disclaimerContent.icon;
 
-  const handleScroll = (event: any) => {
+  const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     const { layoutMeasurement, contentOffset, contentSize } = event.nativeEvent;
-    const isScrolledToBottom = layoutMeasurement.height + contentOffset.y >= contentSize.height - 20;
-    setHasScrolledToBottom(isScrolledToBottom);
+    const isScrolledToBottom = layoutMeasurement?.height + contentOffset?.y >= (contentSize?.height ?? 0) - 20;
+    setHasScrolledToBottom(!!isScrolledToBottom);
   };
 
   return (
@@ -156,6 +187,8 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={onClose}
+      transparent={false}
+      testID={testID ?? 'legalDisclaimerModal'}
     >
       <View style={styles.container}>
         <View style={styles.header}>
@@ -163,16 +196,17 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
             <IconComponent size={32} color={disclaimerContent.color} />
           </View>
           <Text style={styles.title}>{title || disclaimerContent.title}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton} testID="legalDisclaimerCloseBtn">
             <X size={24} color={colors.text.secondary} />
           </TouchableOpacity>
         </View>
         
         <ScrollView 
           style={styles.content} 
-          showsVerticalScrollIndicator={true}
+          showsVerticalScrollIndicator
           onScroll={handleScroll}
           scrollEventThrottle={16}
+          testID="legalDisclaimerScrollView"
         >
           <View style={styles.warningBox}>
             <AlertTriangle size={20} color={colors.status.warning} />
@@ -184,8 +218,8 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
           </Text>
           
           <View style={styles.sectionsContainer}>
-            {disclaimerContent.sections.map((section, index) => (
-              <Card key={index} style={styles.sectionCard}>
+            {disclaimerContent.sections.map((section: { title: string; content: string }, index: number) => (
+              <Card key={`disclaimer-section-${index}`} style={styles.sectionCard} testID={`disclaimerSection-${index}`}>
                 <Text style={styles.sectionTitle}>{section.title}</Text>
                 <Text style={styles.sectionContent}>{section.content}</Text>
               </Card>
@@ -194,8 +228,7 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
           
           <View style={styles.footerNotice}>
             <Text style={styles.footerText}>
-              By proceeding, you confirm that you understand these terms and agree to use this service 
-              responsibly. This agreement is legally binding and governs your use of our platform.
+              By proceeding, you confirm that you understand these terms and agree to use this service responsibly. This agreement governs your use of our platform.
             </Text>
           </View>
           
@@ -212,6 +245,7 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
             onPress={onAccept}
             disabled={!hasScrolledToBottom}
             style={[styles.acceptButton, !hasScrolledToBottom && styles.disabledButton]}
+            testID="legalDisclaimerAcceptBtn"
             icon={<CheckCircle size={18} color={hasScrolledToBottom ? colors.text.primary : colors.text.tertiary} />}
           />
           <Button
@@ -219,6 +253,7 @@ export function LegalDisclaimer({ visible, onClose, onAccept, type, title }: Leg
             variant="outline"
             onPress={onClose}
             style={styles.cancelButton}
+            testID="legalDisclaimerCancelBtn"
           />
         </View>
       </View>
@@ -248,12 +283,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: colors.text.primary,
-    textAlign: 'center',
+    textAlign: 'center' as const,
   },
   closeButton: {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: 24,
     right: 24,
     padding: 8,
@@ -263,8 +298,8 @@ const styles = StyleSheet.create({
     padding: 24,
   },
   warningBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: 'row' as const,
+    alignItems: 'center' as const,
     backgroundColor: `${colors.status.warning}15`,
     padding: 16,
     borderRadius: 12,
@@ -273,7 +308,7 @@ const styles = StyleSheet.create({
   },
   warningText: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     color: colors.status.warning,
   },
   introText: {
@@ -281,7 +316,7 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     lineHeight: 24,
     marginBottom: 24,
-    textAlign: 'center',
+    textAlign: 'center' as const,
   },
   sectionsContainer: {
     gap: 16,
@@ -292,7 +327,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     color: colors.text.primary,
     marginBottom: 12,
   },
@@ -311,17 +346,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text.secondary,
     lineHeight: 22,
-    textAlign: 'center',
-    fontStyle: 'italic',
+    textAlign: 'center' as const,
+    fontStyle: 'italic' as const,
   },
   scrollIndicator: {
-    alignItems: 'center',
+    alignItems: 'center' as const,
     paddingVertical: 16,
   },
   scrollText: {
     fontSize: 12,
     color: colors.status.warning,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   footer: {
     padding: 24,

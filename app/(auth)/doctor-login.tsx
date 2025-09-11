@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ArrowRight, Stethoscope, Shield } from 'lucide-react-native';
@@ -9,6 +9,7 @@ import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { useUserStore } from '@/store/userStore';
+import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 
 export default function DoctorLoginScreen() {
   const router = useRouter();
@@ -18,6 +19,8 @@ export default function DoctorLoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showDisclaimer, setShowDisclaimer] = useState<boolean>(false);
+  const [acceptedDisclaimer, setAcceptedDisclaimer] = useState<boolean>(false);
 
   const handleLogin = async () => {
     if (Platform.OS !== 'web') {
@@ -26,6 +29,11 @@ export default function DoctorLoginScreen() {
 
     if (!email || !password) {
       setError('Please enter both email and password');
+      return;
+    }
+
+    if (!acceptedDisclaimer) {
+      setShowDisclaimer(true);
       return;
     }
 
@@ -119,6 +127,18 @@ export default function DoctorLoginScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <LegalDisclaimer
+        visible={showDisclaimer}
+        type="doctor"
+        onClose={() => setShowDisclaimer(false)}
+        onAccept={() => {
+          setAcceptedDisclaimer(true);
+          setShowDisclaimer(false);
+          handleLogin();
+        }}
+        title="Provider Compliance Notice"
+      />
     </KeyboardAvoidingView>
   );
 }
