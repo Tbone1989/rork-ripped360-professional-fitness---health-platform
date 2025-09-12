@@ -301,6 +301,14 @@ class DeviceIntegrationService {
     },
     {
       type: 'scale',
+      brand: 'InBody',
+      model: 'InBody H30',
+      capabilities: ['weight', 'body_fat', 'muscle_mass', 'water_percentage', 'segmental_analysis', 'bmi', 'basal_metabolic_rate'],
+      isSupported: true,
+      connectionType: 'bluetooth'
+    },
+    {
+      type: 'scale',
       brand: 'Tanita',
       model: 'RD-545',
       capabilities: ['weight', 'body_fat', 'muscle_mass', 'muscle_quality', 'metabolic_age'],
