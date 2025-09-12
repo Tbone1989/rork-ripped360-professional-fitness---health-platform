@@ -150,7 +150,16 @@ export default function ProfileScreen() {
   };
 
   const showAttachments = user?.role === 'user';
-  const menuItems = [
+  type MenuItem = {
+    icon: React.ReactElement;
+    title: string;
+    onPress: () => void;
+    testID: string;
+    badge?: string;
+    isSpecial?: boolean;
+  };
+
+  const menuItems: MenuItem[] = [
     {
       icon: <User size={20} color={colors.text.secondary} />,
       title: 'Account Settings',
@@ -522,7 +531,7 @@ export default function ProfileScreen() {
               {item.icon}
               <Text style={[
                 styles.menuItemTitle,
-                item.isSpecial && { color: colors.accent.primary }
+                (item.isSpecial ?? false) && { color: colors.accent.primary }
               ]}>{item.title}</Text>
             </View>
             
