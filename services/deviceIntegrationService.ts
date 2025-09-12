@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface DeviceCapability {
@@ -34,6 +34,12 @@ export interface DeviceConnection {
 class DeviceIntegrationService {
   private connectedDevices: Map<string, DeviceConnection> = new Map();
   private syncListeners: Set<(metrics: HealthMetric[]) => void> = new Set();
+  private appState: AppStateStatus = 'active';
+  private autoSync = {
+    enabled: false,
+    intervalMs: 5 * 60 * 1000,
+    timer: null as ReturnType<typeof setInterval> | null,
+  };
 
   // Supported device configurations
   private supportedDevices: DeviceCapability[] = [
@@ -355,6 +361,17 @@ class DeviceIntegrationService {
     }
   ];
 
+  // Initialization (call once at app start)
+  async init(): Promise<void> {
+    console.log('[DeviceIntegration] Initializing');
+    await this.loadConnectedDevices();
+    await this.loadAutoSyncPreference();
+    this.setupAppStateListener();
+    if (this.autoSync.enabled) {
+      this.startAutoSyncTimer();
+    }
+  }
+
   // Get supported devices for current platform
   getSupportedDevices(): DeviceCapability[] {
     return this.supportedDevices.filter(device => device.isSupported);
@@ -370,18 +387,29 @@ class DeviceIntegrationService {
     try {
       const connection: DeviceConnection = {
         id: deviceId,
-        name: deviceInfo.name || 'Unknown Device',
-        type: deviceInfo.type || 'fitness_tracker',
-        brand: deviceInfo.brand || 'Unknown',
+        name: deviceInfo.name ?? 'Unknown Device',
+        type: deviceInfo.type ?? 'fitness_tracker',
+        brand: deviceInfo.brand ?? 'Unknown',
         isConnected: true,
         lastSync: new Date(),
-        batteryLevel: deviceInfo.batteryLevel
+        batteryLevel: deviceInfo.batteryLevel,
       };
 
       this.connectedDevices.set(deviceId, connection);
       await this.saveConnectedDevices();
-      
+
       console.log(`[DeviceIntegration] Connected to ${connection.name}`);
+
+      if (this.autoSync.enabled) {
+        console.log('[DeviceIntegration] Auto-sync enabled: triggering immediate sync for', deviceId);
+        try {
+          await this.syncDeviceData(deviceId);
+        } catch (e) {
+          console.warn('[DeviceIntegration] Initial auto-sync failed for', deviceId, e);
+        }
+        this.startAutoSyncTimer();
+      }
+
       return true;
     } catch (error) {
       console.error('[DeviceIntegration] Connection failed:', error);
@@ -394,6 +422,9 @@ class DeviceIntegrationService {
     this.connectedDevices.delete(deviceId);
     await this.saveConnectedDevices();
     console.log(`[DeviceIntegration] Disconnected device ${deviceId}`);
+    if (this.connectedDevices.size === 0) {
+      this.stopAutoSyncTimer();
+    }
   }
 
   // Get connected devices
@@ -407,6 +438,7 @@ class DeviceIntegrationService {
     if (!device) {
       throw new Error('Device not connected');
     }
+    console.log('[DeviceIntegration] Sync start for', deviceId);
 
     // Simulate data sync based on device type
     const metrics: HealthMetric[] = [];
@@ -601,7 +633,81 @@ class DeviceIntegrationService {
     // Notify listeners
     this.notifySyncListeners(metrics);
 
+    console.log('[DeviceIntegration] Sync complete for', deviceId, 'metrics:', metrics.length);
     return metrics;
+  }
+
+  // Auto-sync API
+  isAutoSyncEnabled(): boolean {
+    return this.autoSync.enabled;
+  }
+
+  async setAutoSyncEnabled(enabled: boolean, intervalMs?: number): Promise<void> {
+    this.autoSync.enabled = enabled;
+    if (typeof intervalMs === 'number' && intervalMs > 0) {
+      this.autoSync.intervalMs = intervalMs;
+    }
+    await AsyncStorage.setItem('auto_sync_enabled', JSON.stringify({ enabled: this.autoSync.enabled, intervalMs: this.autoSync.intervalMs }));
+    console.log('[DeviceIntegration] Auto-sync set to', enabled, 'interval', this.autoSync.intervalMs);
+    if (enabled && this.connectedDevices.size > 0) {
+      this.startAutoSyncTimer();
+    } else {
+      this.stopAutoSyncTimer();
+    }
+  }
+
+  private async loadAutoSyncPreference(): Promise<void> {
+    try {
+      const raw = await AsyncStorage.getItem('auto_sync_enabled');
+      if (raw) {
+        const parsed = JSON.parse(raw) as { enabled?: boolean; intervalMs?: number };
+        this.autoSync.enabled = parsed.enabled ?? this.autoSync.enabled;
+        this.autoSync.intervalMs = parsed.intervalMs ?? this.autoSync.intervalMs;
+      }
+    } catch (e) {
+      console.warn('[DeviceIntegration] Failed to load auto-sync preference', e);
+    }
+  }
+
+  private setupAppStateListener(): void {
+    AppState.addEventListener('change', (next: AppStateStatus) => {
+      this.appState = next;
+      if (next === 'active') {
+        if (this.autoSync.enabled && this.connectedDevices.size > 0) {
+          this.startAutoSyncTimer();
+        }
+      } else {
+        this.stopAutoSyncTimer();
+      }
+    });
+  }
+
+  private startAutoSyncTimer(): void {
+    if (this.autoSync.timer) return;
+    console.log('[DeviceIntegration] Starting auto-sync timer', this.autoSync.intervalMs);
+    this.autoSync.timer = setInterval(async () => {
+      if (!this.autoSync.enabled) return;
+      try {
+        const ids = Array.from(this.connectedDevices.keys());
+        for (const id of ids) {
+          try {
+            await this.syncDeviceData(id);
+          } catch (err) {
+            console.warn('[DeviceIntegration] Auto-sync failed for', id, err);
+          }
+        }
+      } catch (e) {
+        console.warn('[DeviceIntegration] Auto-sync cycle error', e);
+      }
+    }, this.autoSync.intervalMs);
+  }
+
+  private stopAutoSyncTimer(): void {
+    if (this.autoSync.timer) {
+      console.log('[DeviceIntegration] Stopping auto-sync timer');
+      clearInterval(this.autoSync.timer);
+      this.autoSync.timer = null;
+    }
   }
 
   // Add sync listener
@@ -627,6 +733,38 @@ class DeviceIntegrationService {
     } catch (error) {
       console.error('[DeviceIntegration] Failed to save devices:', error);
     }
+  }
+
+  // Bluetooth helpers (mocked in Expo Go/web)
+  isBluetoothAvailable(): boolean {
+    if (Platform.OS === 'web') {
+      // Web Bluetooth is not supported in Expo web reliably
+      return false;
+    }
+    return true;
+  }
+
+  async scanBluetoothDevices(): Promise<DeviceCapability[]> {
+    console.log('[DeviceIntegration] Scanning for Bluetooth devices...');
+    if (!this.isBluetoothAvailable()) {
+      console.warn('[DeviceIntegration] Bluetooth scanning not available on this platform');
+      return [];
+    }
+    return this.supportedDevices.filter(d => d.connectionType === 'bluetooth' && d.isSupported);
+  }
+
+  async pairBluetoothDevice(capability: DeviceCapability): Promise<boolean> {
+    console.log('[DeviceIntegration] Pairing with', capability.brand, capability.model);
+    if (!this.isBluetoothAvailable()) {
+      console.warn('[DeviceIntegration] Bluetooth pairing not available on this platform');
+      return false;
+    }
+    const id = `${capability.brand}-${capability.model}`.toLowerCase().replace(/\s+/g, '-');
+    return this.connectDevice(id, {
+      name: `${capability.brand} ${capability.model}`,
+      type: capability.type,
+      brand: capability.brand,
+    });
   }
 
   // Load connected devices from storage

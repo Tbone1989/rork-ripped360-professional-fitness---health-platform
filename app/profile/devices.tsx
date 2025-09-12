@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,8 @@ import {
   Alert,
   ActivityIndicator,
   RefreshControl,
-  Platform
+  Platform,
+  Switch
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack } from 'expo-router';
@@ -24,7 +25,8 @@ import {
   X,
   Plus,
   RefreshCw,
-  Info
+  Info,
+  Scan
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -40,32 +42,37 @@ import {
 export default function DevicesScreen() {
   const [connectedDevices, setConnectedDevices] = useState<DeviceConnection[]>([]);
   const [supportedDevices, setSupportedDevices] = useState<DeviceCapability[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSyncing, setIsSyncing] = useState<string | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
   const [lastMetrics, setLastMetrics] = useState<HealthMetric[]>([]);
+  const [isAutoSync, setIsAutoSync] = useState<boolean>(false);
+  const [btScanning, setBtScanning] = useState<boolean>(false);
+  const [btAvailable, setBtAvailable] = useState<boolean>(false);
+  const [btList, setBtList] = useState<DeviceCapability[]>([]);
 
   useEffect(() => {
-    loadDevices();
-    
-    // Set up sync listener
+    const init = async () => {
+      await deviceIntegrationService.init();
+      setIsAutoSync(deviceIntegrationService.isAutoSyncEnabled());
+      setBtAvailable(deviceIntegrationService.isBluetoothAvailable());
+      await loadDevices();
+    };
+    init();
     const handleSync = (metrics: HealthMetric[]) => {
       setLastMetrics(metrics);
     };
-    
     deviceIntegrationService.addSyncListener(handleSync);
-    
     return () => {
       deviceIntegrationService.removeSyncListener(handleSync);
     };
   }, []);
 
-  const loadDevices = async () => {
+  const loadDevices = useCallback(async () => {
     try {
       await deviceIntegrationService.loadConnectedDevices();
       const connected = deviceIntegrationService.getConnectedDevices();
       const supported = deviceIntegrationService.getSupportedDevices();
-      
       setConnectedDevices(connected);
       setSupportedDevices(supported);
     } catch (error) {
@@ -74,9 +81,9 @@ export default function DevicesScreen() {
       setIsLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
-  const handleConnectDevice = async (device: DeviceCapability) => {
+  const handleConnectDevice = useCallback(async (device: DeviceCapability) => {
     Alert.alert(
       'Connect Device',
       `Connect to ${device.brand} ${device.model}?`,
@@ -92,7 +99,6 @@ export default function DevicesScreen() {
               brand: device.brand,
               batteryLevel: 85 + Math.random() * 15
             });
-            
             if (success) {
               await loadDevices();
               Alert.alert('Success', 'Device connected successfully');
@@ -103,9 +109,9 @@ export default function DevicesScreen() {
         }
       ]
     );
-  };
+  }, [loadDevices]);
 
-  const handleDisconnectDevice = async (deviceId: string) => {
+  const handleDisconnectDevice = useCallback(async (deviceId: string) => {
     Alert.alert(
       'Disconnect Device',
       'Are you sure you want to disconnect this device?',
@@ -121,9 +127,9 @@ export default function DevicesScreen() {
         }
       ]
     );
-  };
+  }, [loadDevices]);
 
-  const handleSyncDevice = async (deviceId: string) => {
+  const handleSyncDevice = useCallback(async (deviceId: string) => {
     setIsSyncing(deviceId);
     try {
       const metrics = await deviceIntegrationService.syncDeviceData(deviceId);
@@ -137,7 +143,35 @@ export default function DevicesScreen() {
     } finally {
       setIsSyncing(null);
     }
-  };
+  }, [loadDevices]);
+
+  const handleToggleAutoSync = useCallback(async (value: boolean) => {
+    setIsAutoSync(value);
+    await deviceIntegrationService.setAutoSyncEnabled(value);
+  }, []);
+
+  const handleBtScan = useCallback(async () => {
+    if (!btAvailable) return;
+    setBtScanning(true);
+    try {
+      const list = await deviceIntegrationService.scanBluetoothDevices();
+      setBtList(list);
+    } catch (e) {
+      Alert.alert('Bluetooth', 'Failed to scan for devices');
+    } finally {
+      setBtScanning(false);
+    }
+  }, [btAvailable]);
+
+  const handleBtPair = useCallback(async (cap: DeviceCapability) => {
+    const ok = await deviceIntegrationService.pairBluetoothDevice(cap);
+    if (ok) {
+      await loadDevices();
+      Alert.alert('Bluetooth', 'Device paired and connected');
+    } else {
+      Alert.alert('Bluetooth', 'Pairing failed');
+    }
+  }, [loadDevices]);
 
   const getDeviceIcon = (type: DeviceCapability['type']) => {
     switch (type) {
@@ -168,7 +202,7 @@ export default function DevicesScreen() {
   };
 
   const renderConnectedDevice = (device: DeviceConnection) => (
-    <Card key={device.id} style={styles.deviceCard}>
+    <Card key={device.id} style={styles.deviceCard} testID={`connected-device-${device.id}`}>
       <View style={styles.deviceHeader}>
         {getDeviceIcon(device.type)}
         <View style={styles.deviceInfo}>
@@ -198,6 +232,7 @@ export default function DevicesScreen() {
 
       <View style={styles.deviceActions}>
         <TouchableOpacity
+          testID={`sync-${device.id}`}
           style={[styles.actionButton, styles.syncButton]}
           onPress={() => handleSyncDevice(device.id)}
           disabled={isSyncing === device.id}
@@ -211,6 +246,7 @@ export default function DevicesScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity
+          testID={`disconnect-${device.id}`}
           style={[styles.actionButton, styles.disconnectButton]}
           onPress={() => handleDisconnectDevice(device.id)}
         >
@@ -231,7 +267,7 @@ export default function DevicesScreen() {
     if (isConnected) return null;
 
     return (
-      <Card key={`${device.brand}_${device.model}`} style={styles.availableCard}>
+      <Card key={`${device.brand}_${device.model}`} style={styles.availableCard} testID={`available-${device.brand}-${device.model}`}>
         <View style={styles.deviceHeader}>
           {getDeviceIcon(device.type)}
           <View style={styles.deviceInfo}>
@@ -255,6 +291,7 @@ export default function DevicesScreen() {
         </View>
 
         <TouchableOpacity
+          testID={`connect-${device.brand}-${device.model}`}
           style={styles.connectButton}
           onPress={() => handleConnectDevice(device)}
         >
@@ -278,7 +315,6 @@ export default function DevicesScreen() {
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <Stack.Screen options={{ title: 'Connected Devices' }} />
-      
       <ScrollView
         style={styles.scrollView}
         refreshControl={
@@ -292,14 +328,13 @@ export default function DevicesScreen() {
           />
         }
       >
-        {/* Platform Info */}
         <Card style={styles.infoCard}>
           <View style={styles.infoHeader}>
             <Info size={20} color={colors.accent.primary} />
             <Text style={styles.infoTitle}>Device Compatibility</Text>
           </View>
           <Text style={styles.infoText}>
-            Platform: {Platform.OS === 'ios' ? 'iOS' : 'Android'}
+            Platform: {Platform.OS === 'ios' ? 'iOS' : Platform.OS === 'android' ? 'Android' : 'Web'}
           </Text>
           <Text style={styles.infoText}>
             Supported Devices: {compatibilityInfo.totalSupported}
@@ -307,9 +342,18 @@ export default function DevicesScreen() {
           <Text style={styles.infoText}>
             Device Types: {compatibilityInfo.supportedTypes.join(', ')}
           </Text>
+          <View style={styles.autoSyncRow}>
+            <Text style={styles.autoSyncLabel}>Auto Sync</Text>
+            <Switch
+              testID="toggle-auto-sync"
+              value={isAutoSync}
+              onValueChange={handleToggleAutoSync}
+              trackColor={{ true: colors.accent.primary + '80', false: colors.border.light }}
+              thumbColor={isAutoSync ? colors.accent.primary : colors.background.primary}
+            />
+          </View>
         </Card>
 
-        {/* Connected Devices */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Connected Devices</Text>
           {connectedDevices.length > 0 ? (
@@ -324,7 +368,6 @@ export default function DevicesScreen() {
           )}
         </View>
 
-        {/* Last Synced Metrics */}
         {lastMetrics.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Recent Metrics</Text>
@@ -343,7 +386,42 @@ export default function DevicesScreen() {
           </View>
         )}
 
-        {/* Available Devices */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Bluetooth</Text>
+          <Card style={styles.btCard}>
+            <View style={styles.btHeader}>
+              <Bluetooth size={18} color={colors.text.secondary} />
+              <Text style={styles.btLabel}>{btAvailable ? 'Available' : 'Unavailable on this platform'}</Text>
+              <View style={{ flex: 1 }} />
+              <TouchableOpacity
+                testID="bt-scan"
+                onPress={handleBtScan}
+                disabled={!btAvailable || btScanning}
+                style={[styles.btScanButton, (!btAvailable || btScanning) && styles.btScanDisabled]}
+              >
+                {btScanning ? (
+                  <ActivityIndicator size="small" color={colors.background.primary} />
+                ) : (
+                  <Scan size={16} color={colors.background.primary} />
+                )}
+                <Text style={styles.btScanText}>{btScanning ? 'Scanning...' : 'Scan'}</Text>
+              </TouchableOpacity>
+            </View>
+            {btList.length > 0 && (
+              <View style={styles.btList}>
+                {btList.map((cap, idx) => (
+                  <View key={`${cap.brand}-${cap.model}-${idx}`} style={styles.btRow}>
+                    <Text style={styles.btDeviceText}>{cap.brand} {cap.model}</Text>
+                    <TouchableOpacity testID={`bt-pair-${cap.brand}-${cap.model}`} onPress={() => handleBtPair(cap)} style={styles.btPairBtn}>
+                      <Text style={styles.btPairText}>Pair</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+              </View>
+            )}
+          </Card>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Available Devices</Text>
           {supportedDevices.map(renderAvailableDevice)}
@@ -382,6 +460,16 @@ const styles = StyleSheet.create({
   infoCard: {
     margin: 16,
     padding: 16,
+  },
+  autoSyncRow: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  autoSyncLabel: {
+    fontSize: 14,
+    color: colors.text.primary,
+    marginRight: 12,
   },
   infoHeader: {
     flexDirection: 'row',
@@ -469,6 +557,63 @@ const styles = StyleSheet.create({
   availableCard: {
     marginBottom: 12,
     padding: 16,
+  },
+  btCard: {
+    padding: 12,
+    gap: 10,
+  },
+  btHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  btLabel: {
+    fontSize: 14,
+    color: colors.text.secondary,
+    marginLeft: 6,
+  },
+  btScanButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: colors.accent.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+  },
+  btScanDisabled: {
+    opacity: 0.5,
+  },
+  btScanText: {
+    color: colors.background.primary,
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  btList: {
+    gap: 8,
+  },
+  btRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border.light,
+  },
+  btDeviceText: {
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  btPairBtn: {
+    backgroundColor: colors.accent.primary + '20',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  btPairText: {
+    color: colors.accent.primary,
+    fontSize: 12,
+    fontWeight: '600',
   },
   capabilitiesContainer: {
     flexDirection: 'row',
