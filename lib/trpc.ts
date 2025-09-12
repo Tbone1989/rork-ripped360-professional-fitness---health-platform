@@ -138,11 +138,17 @@ export const trpcClient = trpc.createClient({
                 "Content-Type": "application/json",
                 ...(options?.headers ?? {}),
               },
-              // 30s timeout if supported
               signal: typeof AbortSignal !== 'undefined' && (AbortSignal as any).timeout ? (AbortSignal as any).timeout(30000) : options?.signal,
             });
 
             console.log("📡 tRPC Response:", response.status, response.statusText);
+
+            const contentType = (response.headers.get('content-type') || '').toLowerCase();
+            if (contentType.includes('text/html')) {
+              const html = await response.text().catch(() => '');
+              console.warn('tRPC got HTML instead of JSON at', u, 'skipping.');
+              continue;
+            }
 
             if (!response.ok) {
               const responseText = await response.text().catch(() => "");

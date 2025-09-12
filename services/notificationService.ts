@@ -1,6 +1,7 @@
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Constants from 'expo-constants';
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -55,6 +56,23 @@ class NotificationService {
       return;
     }
 
+    // Skip remote notifications setup in Expo Go (SDK 53 limitation)
+    const isExpoGo = (Constants as any)?.appOwnership === 'expo';
+    if (isExpoGo) {
+      try {
+        const { status: existingStatus } = await Notifications.getPermissionsAsync();
+        if (existingStatus !== 'granted') {
+          await Notifications.requestPermissionsAsync();
+        }
+      } catch (e) {
+        console.log('Expo Go notification permission check skipped with error:', (e as any)?.message ?? e);
+      }
+      this.setupListeners();
+      await this.loadPreferences();
+      console.warn('Push notifications are limited in Expo Go on SDK 53. Remote push token registration is disabled.');
+      return;
+    }
+
     try {
       const { status: existingStatus } = await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
@@ -65,18 +83,14 @@ class NotificationService {
       }
       
       if (finalStatus !== 'granted') {
-        console.log('Failed to get push token for push notification!');
+        console.log('Failed to get notification permission');
         return;
       }
 
-      // Get push token
       const token = await Notifications.getExpoPushTokenAsync();
       console.log('Push token:', token);
 
-      // Set up notification listeners
       this.setupListeners();
-
-      // Load preferences
       await this.loadPreferences();
     } catch (error) {
       console.error('Error initializing notifications:', error);
