@@ -14,15 +14,10 @@ import {
   Calendar, 
   Timer, 
   Droplets, 
-  Camera, 
   Plus,
   Target,
   TrendingUp,
-  Clock,
-  Users,
-  Brain,
-  Sparkles,
-  Scale
+  Clock
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -182,42 +177,6 @@ export default function ContestScreen() {
               <Droplets size={24} color={colors.accent.primary} />
               <Text style={styles.actionText}>Posing</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Physique Predictor', feature: 'Physique Predictor' } })}
-              testID="contest-action-physique"
-            >
-              <Brain size={24} color={colors.accent.primary} />
-              <Text style={styles.actionText}>Physique Predictor</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Stage Weight Predictor', feature: 'Stage Weight' } })}
-              testID="contest-action-stage-weight"
-            >
-              <Scale size={24} color={colors.accent.primary} />
-              <Text style={styles.actionText}>Stage Weight</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Virtual Posing Coach', feature: 'Virtual Posing' } })}
-              testID="contest-action-virtual-posing"
-            >
-              <Camera size={24} color={colors.accent.primary} />
-              <Text style={styles.actionText}>Virtual Posing</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Peak Week AI', feature: 'Peak Week AI' } })}
-              testID="contest-action-peak-week-ai"
-            >
-              <Sparkles size={24} color={colors.accent.primary} />
-              <Text style={styles.actionText}>Peak Week AI</Text>
-            </TouchableOpacity>
           </View>
 
           <Card style={styles.phaseCard}>
@@ -226,7 +185,6 @@ export default function ContestScreen() {
               <Badge 
                 label={currentPrep.status} 
                 variant="primary"
-                style={{ backgroundColor: getStatusColor(currentPrep.status) }}
               />
             </View>
             <Text style={styles.phaseName}>{currentPrep.currentPhase.name}</Text>
@@ -265,7 +223,7 @@ export default function ContestScreen() {
               <Text style={styles.activityText}>Weight check-in: Yesterday</Text>
             </View>
             <View style={styles.activityItem}>
-              <Camera size={16} color={colors.text.secondary} />
+              <Calendar size={16} color={colors.text.secondary} />
               <Text style={styles.activityText}>Progress photos: 3 days ago</Text>
             </View>
           </Card>
@@ -323,7 +281,6 @@ export default function ContestScreen() {
                   <Badge 
                     label={prep.status} 
                     variant="default"
-                    style={{ backgroundColor: getStatusColor(prep.status) }}
                   />
                 </TouchableOpacity>
               ))}

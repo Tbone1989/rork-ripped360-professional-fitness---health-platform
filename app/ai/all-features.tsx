@@ -139,6 +139,7 @@ export default function AllAIFeaturesScreen() {
       color: '#8B5CF6',
       route: '/ai/physique-predictor',
       isPremium: true,
+      comingSoon: true,
     },
     {
       id: 'bloodwork-ai',
@@ -176,37 +177,8 @@ export default function AllAIFeaturesScreen() {
     },
   ];
 
-  const competitionFeatures: AIFeature[] = [
-    {
-      id: 'posing-coach',
-      title: 'Virtual Posing Coach',
-      description: 'Perfect your stage presence with AI analysis',
-      icon: Trophy,
-      color: '#FBBF24',
-      route: '/ai/posing',
-      badge: 'CONTEST',
-      isPremium: true,
-    },
-    {
-      id: 'peak-week',
-      title: 'Peak Week AI',
-      description: 'Automated peak week protocols for competitions',
-      icon: Zap,
-      color: '#F97316',
-      route: '/ai/peak-week',
-      badge: 'PRO',
-      isPremium: true,
-    },
-    {
-      id: 'stage-weight',
-      title: 'Stage Weight Predictor',
-      description: 'AI predicts your optimal competition weight',
-      icon: Target,
-      color: '#14B8A6',
-      route: '/ai/stage-weight',
-      isPremium: true,
-    },
-  ];
+  const competitionFeatures: AIFeature[] = [];
+
 
   const socialFeatures: AIFeature[] = [
     {
