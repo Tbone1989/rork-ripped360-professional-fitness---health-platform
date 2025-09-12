@@ -106,20 +106,17 @@ console.log("tRPC endpoint candidates:", endpointCandidates);
 const createFallbackResponse = (error: any) => {
   const message = (error && (error as any).message) ? (error as any).message : "unknown";
   console.warn("tRPC: Using fallback response due to backend unavailability:", message);
-  return {
-    ok: true,
+  return new Response(JSON.stringify({ result: { data: { json: null } } }), {
     status: 200,
     statusText: "OK",
-    headers: new Headers({ "content-type": "application/json" }),
-    text: async () => JSON.stringify({ result: { data: { json: null } } }),
-    json: async () => ({ result: { data: { json: null } } }),
-  } as Response;
+    headers: new Headers({ "content-type": "application/json", "x-trpc-fallback": "1" }),
+  });
 };
 
 export const trpcClient = trpc.createClient({
   links: [
     loggerLink({
-      enabled: () => process.env.NODE_ENV === "development" && Platform.OS !== "web",
+      enabled: () => process.env.NODE_ENV === "development",
     }),
     httpLink({
       url: endpointCandidates[0] ?? "/api/trpc",
@@ -193,7 +190,7 @@ export const trpcClient = trpc.createClient({
           return createFallbackResponse(lastErr);
         }
 
-        console.error("tRPC Request Failed:", lastErr);
+        console.warn("tRPC Request Failed:", (lastErr as any)?.message ?? String(lastErr));
         return createFallbackResponse(lastErr || new Error("Unknown tRPC connection error"));
       },
     }),
