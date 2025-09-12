@@ -82,12 +82,17 @@ export default function ContestScreen() {
       router.push('/contest/posing');
       return;
     }
+    if (key === 'ai') {
+      router.push('/contest/peak-week-ai');
+      return;
+    }
   }, []);
 
   const contestTabs = useMemo(() => [
     { key: 'overview', label: 'Overview', icon: <Trophy size={16} color={colors.text.secondary} /> },
     { key: 'peak-week', label: 'Peak Week', icon: <Calendar size={16} color={colors.text.secondary} /> },
     { key: 'posing', label: 'Posing', icon: <Target size={16} color={colors.text.secondary} /> },
+    { key: 'ai', label: 'Peak Week AI', icon: <Brain size={16} color={colors.text.secondary} /> },
   ], []);
 
   const renderOverview = () => (
@@ -250,6 +255,14 @@ export default function ContestScreen() {
             onPress={handleCreatePrep}
             style={styles.createButton}
           />
+          <TouchableOpacity
+            style={[styles.actionButton, { width: '100%', marginTop: 12 }]}
+            onPress={() => router.push('/contest/peak-week-ai')}
+            testID="empty-try-peak-week-ai"
+          >
+            <Brain size={24} color={colors.accent.primary} />
+            <Text style={styles.actionText}>Try Peak Week AI</Text>
+          </TouchableOpacity>
         </View>
       )}
     </View>
