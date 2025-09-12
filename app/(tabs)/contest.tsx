@@ -17,7 +17,8 @@ import {
   Plus,
   Target,
   TrendingUp,
-  Clock
+  Clock,
+  Brain
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -176,6 +177,15 @@ export default function ContestScreen() {
             >
               <Droplets size={24} color={colors.accent.primary} />
               <Text style={styles.actionText}>Posing</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={() => router.push('/contest/peak-week-ai')}
+              testID="contest-action-peak-week-ai"
+            >
+              <Brain size={24} color={colors.accent.primary} />
+              <Text style={styles.actionText}>Peak Week AI</Text>
             </TouchableOpacity>
           </View>
 
