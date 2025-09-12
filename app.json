@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Ripped360 ",
+    "name": "Ripped360",
     "slug": "ripped360-professional-fitness-health",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -17,12 +17,14 @@
       "supportsTablet": true,
       "bundleIdentifier": "app.rork.ripped360",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "NSLocationWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
+        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos for progress tracking and meal logging",
+        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera for progress photos and form analysis",
+        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone for voice coaching features",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location for gym finder and workout tracking",
+        "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location for continuous fitness tracking",
+        "NSLocationWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location for gym finder and workout mapping",
+        "NSHealthShareUsageDescription": "Allow $(PRODUCT_NAME) to read health data for comprehensive fitness tracking",
+        "NSHealthUpdateUsageDescription": "Allow $(PRODUCT_NAME) to update health data with workout and nutrition information",
         "UIBackgroundModes": [
           "location",
           "audio"
@@ -49,7 +51,11 @@
         "ACCESS_BACKGROUND_LOCATION",
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.SCHEDULE_EXACT_ALARM",
-        "INTERNET"
+        "INTERNET",
+        "ACTIVITY_RECOGNITION",
+        "BLUETOOTH",
+        "BLUETOOTH_ADMIN",
+        "READ_PHONE_STATE"
       ],
       "versionCode": 1
     },
@@ -66,14 +72,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "photosPermission": "The app accesses your photos to let you track fitness progress and log meals."
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
+          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera for progress photos and form analysis",
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice coaching features",
           "recordAudioAndroid": true
         }
       ],
@@ -83,7 +89,7 @@
           "isAndroidForegroundServiceEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
           "isIosBackgroundLocationEnabled": true,
-          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location for gym finder and workout tracking"
         }
       ],
       [
@@ -101,13 +107,15 @@
       [
         "expo-av",
         {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
+          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice coaching features"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
     },
-    "privacy": "https://rippedcityinc.com/privacy-policy"
+    "extra": {
+      "privacyPolicyUrl": "https://rippedcityinc.com/privacy-policy"
+    }
   }
 }
