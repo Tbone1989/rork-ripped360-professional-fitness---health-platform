@@ -558,7 +558,7 @@ export default function ProfileScreen() {
 
       <View style={styles.footer}>
         <Text style={styles.version}>Version 1.0.0</Text>
-        <Text style={styles.copyright}>© 2023 Ripped360. All rights reserved.</Text>
+        <Text style={styles.copyright}>© 2025 Ripped360. All rights reserved.</Text>
       </View>
     </ScrollView>
   );
