@@ -8,7 +8,7 @@ import { colors } from '@/constants/colors';
 
 export default function PeakWeekAIScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="peak-week-ai-coming-soon">
       <Stack.Screen 
         options={{ 
           title: 'Peak Week AI',
@@ -21,8 +21,8 @@ export default function PeakWeekAIScreen() {
           <Zap size={80} color={colors.accent.secondary} />
         </View>
         
-        <Text style={styles.title}>Coming Soon</Text>
-        <Text style={styles.subtitle}>Peak Week AI Planner</Text>
+        <Text style={styles.title} testID="peak-week-ai-title">Coming Soon</Text>
+        <Text style={styles.subtitle} testID="peak-week-ai-subtitle">Peak Week AI Planner</Text>
         
         <View style={styles.card}>
           <Clock size={24} color={colors.accent.primary} />

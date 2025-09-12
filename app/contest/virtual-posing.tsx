@@ -8,7 +8,7 @@ import { colors } from '@/constants/colors';
 
 export default function VirtualPosingScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="virtual-posing-coming-soon">
       <Stack.Screen 
         options={{ 
           title: 'Virtual Posing Coach',
@@ -21,8 +21,8 @@ export default function VirtualPosingScreen() {
           <Trophy size={80} color={colors.accent.secondary} />
         </View>
         
-        <Text style={styles.title}>Coming Soon</Text>
-        <Text style={styles.subtitle}>Virtual Posing Coach</Text>
+        <Text style={styles.title} testID="virtual-posing-title">Coming Soon</Text>
+        <Text style={styles.subtitle} testID="virtual-posing-subtitle">Virtual Posing Coach</Text>
         
         <View style={styles.card}>
           <Clock size={24} color={colors.accent.primary} />

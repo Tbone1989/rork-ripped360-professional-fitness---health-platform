@@ -8,7 +8,7 @@ import { colors } from '@/constants/colors';
 
 export default function StageWeightPredictorScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="stage-weight-coming-soon">
       <Stack.Screen 
         options={{ 
           title: 'Stage Weight Predictor',
@@ -21,8 +21,8 @@ export default function StageWeightPredictorScreen() {
           <Target size={80} color={colors.accent.secondary} />
         </View>
         
-        <Text style={styles.title}>Coming Soon</Text>
-        <Text style={styles.subtitle}>Stage Weight Predictor</Text>
+        <Text style={styles.title} testID="stage-weight-title">Coming Soon</Text>
+        <Text style={styles.subtitle} testID="stage-weight-subtitle">Stage Weight Predictor</Text>
         
         <View style={styles.card}>
           <Clock size={24} color={colors.accent.primary} />

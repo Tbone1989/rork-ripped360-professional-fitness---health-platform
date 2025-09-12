@@ -8,7 +8,7 @@ import { colors } from '@/constants/colors';
 
 export default function PhysiquePredictorScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} testID="physique-predictor-coming-soon">
       <Stack.Screen 
         options={{ 
           title: 'Physique Predictor',
@@ -21,8 +21,8 @@ export default function PhysiquePredictorScreen() {
           <TrendingUp size={80} color={colors.accent.secondary} />
         </View>
         
-        <Text style={styles.title}>Coming Soon</Text>
-        <Text style={styles.subtitle}>Physique Predictor</Text>
+        <Text style={styles.title} testID="physique-predictor-title">Coming Soon</Text>
+        <Text style={styles.subtitle} testID="physique-predictor-subtitle">Physique Predictor</Text>
         
         <View style={styles.card}>
           <Clock size={24} color={colors.accent.primary} />
