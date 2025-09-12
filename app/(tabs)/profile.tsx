@@ -830,9 +830,9 @@ const styles = StyleSheet.create({
     gap: 8 as unknown as number,
   },
   orgLogoSmall: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
+    width: 26,
+    height: 26,
+    borderRadius: 6,
   },
   founderContent: {
     flex: 1,
