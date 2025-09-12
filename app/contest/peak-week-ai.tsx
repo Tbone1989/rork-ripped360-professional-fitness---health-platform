@@ -38,7 +38,7 @@ interface PeakWeekPlanItem {
   notes: string;
 }
 
-export default function PeakWeekAI(): JSX.Element {
+export default function PeakWeekAI(): React.ReactElement {
   const insets = useSafeAreaInsets();
   const user = useUserStore((s) => s.user);
 
