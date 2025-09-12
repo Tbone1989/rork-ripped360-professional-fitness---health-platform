@@ -15,7 +15,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.ripped360-professional-fitness-health",
+      "bundleIdentifier": "app.rork.ripped360",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
@@ -35,7 +35,7 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.ripped360-professional-fitness-health",
+      "package": "app.rork.ripped360",
       "permissions": [
         "android.permission.VIBRATE",
         "CAMERA",
