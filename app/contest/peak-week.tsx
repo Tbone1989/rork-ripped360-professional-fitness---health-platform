@@ -19,7 +19,8 @@ import {
   CheckCircle,
   Circle,
   TrendingUp,
-  AlertTriangle
+  AlertTriangle,
+  Brain
 } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -252,6 +253,24 @@ export default function PeakWeekScreen() {
             Contest: {new Date(currentPrep.contestDate).toLocaleDateString()}
           </Text>
         </View>
+
+        <Card style={styles.protocolCard}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Brain size={22} color={colors.accent.primary} />
+              <Text style={[styles.protocolTitle, { marginLeft: 8 }]}>Peak Week AI Assistant</Text>
+            </View>
+            <Button
+              testID="open-peak-week-ai"
+              title="Open"
+              onPress={() => router.push('/contest/peak-week-ai')}
+              style={{ paddingHorizontal: 14, paddingVertical: 8 }}
+            />
+          </View>
+          <Text style={styles.protocolDescription}>
+            Generate a personalized 7-day protocol for water, sodium, carbs and training with AI.
+          </Text>
+        </Card>
 
         {renderProtocolCard()}
 
