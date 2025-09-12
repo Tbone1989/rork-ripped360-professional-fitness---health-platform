@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
-import { View, Platform } from "react-native";
+import { View, Platform, StyleSheet } from "react-native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -40,8 +40,11 @@ function RootLayoutNav() {
         headerTitleStyle: {
           fontWeight: '600',
         },
+        headerTitleAlign: Platform.OS === 'web' ? 'center' : undefined,
         contentStyle: {
           backgroundColor: colors.background.primary,
+          paddingHorizontal: Platform.OS === 'web' ? 24 : 0,
+          paddingVertical: Platform.OS === 'web' ? 16 : 0,
         },
       }}
     >
@@ -185,6 +188,13 @@ function RootLayoutNav() {
   );
 }
 
+const styles = StyleSheet.create({
+  gestureRoot: { flex: 1 },
+  root: { flex: 1, backgroundColor: colors.background.primary },
+  centerWrap: { flex: 1, alignItems: 'center' },
+  contentMax: { flex: 1, width: '100%', maxWidth: 1180, paddingHorizontal: 24, paddingVertical: 16 },
+});
+
 export default function RootLayout() {
   useEffect(() => {
     // Initialize services
@@ -224,11 +234,19 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <WellnessProvider>
           <DisclaimerProvider>
-            <GestureHandlerRootView style={{ flex: 1 }}>
-              <View style={{ flex: 1, backgroundColor: colors.background.primary }} testID="root-layout">
+            <GestureHandlerRootView style={styles.gestureRoot}>
+              <View style={styles.root} testID="root-layout">
                 <StatusBar style="light" />
                 <DisclaimerGuard />
-                <RootLayoutNav />
+                {Platform.OS === 'web' ? (
+                  <View style={styles.centerWrap} testID="web-center-wrap">
+                    <View style={styles.contentMax} testID="web-content-max">
+                      <RootLayoutNav />
+                    </View>
+                  </View>
+                ) : (
+                  <RootLayoutNav />
+                )}
                 <DisclaimerHost />
               </View>
             </GestureHandlerRootView>
