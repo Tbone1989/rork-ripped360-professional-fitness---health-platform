@@ -223,7 +223,7 @@ export default function AIWorkoutPartnerScreen() {
         {
           text: 'Send Message',
           onPress: () => {
-            router.push('/coaching/message/new');
+            router.push('/coaching');
           },
         },
       ]
