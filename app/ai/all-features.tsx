@@ -311,14 +311,6 @@ export default function AllAIFeaturesScreen() {
           </View>
         </View>
 
-        {/* Competition Features */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Competition Prep</Text>
-          <Text style={styles.sectionSubtitle}>Professional bodybuilding tools</Text>
-          <View style={styles.featuresGrid}>
-            {competitionFeatures.map(renderFeatureCard)}
-          </View>
-        </View>
 
         {/* Social Features */}
         <View style={styles.section}>
