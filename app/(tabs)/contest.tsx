@@ -185,7 +185,7 @@ export default function ContestScreen() {
 
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/physique-predictor')}
+              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Physique Predictor', feature: 'Physique Predictor' } })}
               testID="contest-action-physique"
             >
               <Brain size={24} color={colors.accent.primary} />
@@ -194,7 +194,7 @@ export default function ContestScreen() {
 
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/stage-weight-predictor')}
+              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Stage Weight Predictor', feature: 'Stage Weight' } })}
               testID="contest-action-stage-weight"
             >
               <Scale size={24} color={colors.accent.primary} />
@@ -203,7 +203,7 @@ export default function ContestScreen() {
 
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/virtual-posing')}
+              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Virtual Posing Coach', feature: 'Virtual Posing' } })}
               testID="contest-action-virtual-posing"
             >
               <Camera size={24} color={colors.accent.primary} />
@@ -212,7 +212,7 @@ export default function ContestScreen() {
 
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/peak-week-ai')}
+              onPress={() => router.push({ pathname: '/contest/coming-soon', params: { title: 'Peak Week AI', feature: 'Peak Week AI' } })}
               testID="contest-action-peak-week-ai"
             >
               <Sparkles size={24} color={colors.accent.primary} />

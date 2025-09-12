@@ -177,6 +177,13 @@ function RootLayoutNav() {
         }} 
       />
       <Stack.Screen 
+        name="contest/coming-soon" 
+        options={{ 
+          title: "Coming Soon",
+          presentation: "card",
+        }} 
+      />
+      <Stack.Screen 
         name="contest/physique-predictor" 
         options={{ 
           title: "Physique Predictor",
