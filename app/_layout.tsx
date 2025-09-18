@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
-import { View, Platform, StyleSheet } from "react-native";
+import { View, Platform, StyleSheet, useColorScheme } from "react-native";
+import { ThemeProvider, DarkTheme, DefaultTheme, Theme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -34,6 +35,9 @@ function RootLayoutNav() {
 }
 
 export default function RootLayout() {
+  const colorScheme = useColorScheme();
+  const navTheme: Theme = useMemo(() => (colorScheme === 'dark' ? DarkTheme : DefaultTheme), [colorScheme]);
+
   useEffect(() => {
     const initializeServices = async () => {
       try {
@@ -60,7 +64,6 @@ export default function RootLayout() {
 
   console.log('[RootLayout] Mounted');
 
-
   const content = (
     Platform.OS === 'web' ? (
       <View style={styles.centerWrap} testID="web-center-wrap">
@@ -76,7 +79,8 @@ export default function RootLayout() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <WellnessProvider>
+        <ThemeProvider value={navTheme}>
+          <WellnessProvider>
             <DisclaimerProvider>
               <GestureHandlerRootView style={styles.gestureRoot}>
                 <View style={styles.root} testID="root-layout">
@@ -88,6 +92,7 @@ export default function RootLayout() {
               </GestureHandlerRootView>
             </DisclaimerProvider>
           </WellnessProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );
