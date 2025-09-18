@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Slot } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -30,18 +30,7 @@ const styles = StyleSheet.create({
 });
 
 function RootLayoutNav() {
-  const content = (
-    Platform.OS === 'web' ? (
-      <View style={styles.centerWrap} testID="web-center-wrap">
-        <View style={styles.contentMax} testID="web-content-max">
-          <Slot />
-        </View>
-      </View>
-    ) : (
-      <Slot />
-    )
-  );
-  return content;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 export default function RootLayout() {
