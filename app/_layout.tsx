@@ -1,6 +1,6 @@
 import { Stack } from "expo-router";
 import React from "react";
-import { ThemeProvider, DefaultTheme, Theme } from "@react-navigation/native";
+import { NavigationContainer, DefaultTheme, Theme } from "@react-navigation/native";
 
 function RootLayoutNav() {
   return <Stack screenOptions={{ headerShown: false }} />;
@@ -9,8 +9,8 @@ function RootLayoutNav() {
 export default function RootLayout() {
   const theme: Theme = DefaultTheme;
   return (
-    <ThemeProvider value={theme}>
+    <NavigationContainer theme={theme}>
       <RootLayoutNav />
-    </ThemeProvider>
+    </NavigationContainer>
   );
 }
