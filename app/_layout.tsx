@@ -9,6 +9,7 @@ import { View, Platform, StyleSheet } from "react-native";
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
 import { DisclaimerProvider, DisclaimerGuard, DisclaimerHost } from "@/store/legalDisclaimerProvider";
+import { ThemeProvider, useTheme } from "@/store/themeProvider";
 import { trpc, trpcClient } from "@/lib/trpc";
 import notificationService from "@/services/notificationService";
 import calendarService from "@/services/calendarService";
@@ -28,6 +29,17 @@ const styles = StyleSheet.create({
   centerWrap: { flex: 1, alignItems: 'center' },
   contentMax: { flex: 1, width: '100%', maxWidth: 1180, paddingHorizontal: 24, paddingVertical: 16 },
 });
+
+function ThemedRoot({ children }: { children: React.ReactNode }) {
+  const { theme } = useTheme();
+  const barStyle = theme.mode === 'dark' ? 'light' : 'dark';
+  return (
+    <View style={[styles.root, { backgroundColor: theme.colors.background.primary }]} testID="root-layout">
+      <StatusBar style={barStyle} />
+      {children}
+    </View>
+  );
+}
 
 function RootLayoutNav() {
   return <Stack screenOptions={{ headerShown: false }} />;
@@ -63,18 +75,19 @@ export default function RootLayout() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <WellnessProvider>
-          <DisclaimerProvider>
-            <GestureHandlerRootView style={styles.gestureRoot}>
-              <View style={styles.root} testID="root-layout">
-                <StatusBar style="light" />
-                <RootLayoutNav />
-                <DisclaimerGuard />
-                <DisclaimerHost />
-              </View>
-            </GestureHandlerRootView>
-          </DisclaimerProvider>
-        </WellnessProvider>
+        <ThemeProvider>
+          <WellnessProvider>
+            <DisclaimerProvider>
+              <GestureHandlerRootView style={styles.gestureRoot}>
+                <ThemedRoot>
+                  <RootLayoutNav />
+                  <DisclaimerGuard />
+                  <DisclaimerHost />
+                </ThemedRoot>
+              </GestureHandlerRootView>
+            </DisclaimerProvider>
+          </WellnessProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );
