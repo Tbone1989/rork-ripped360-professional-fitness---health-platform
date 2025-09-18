@@ -5,7 +5,7 @@ import React, { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
-import { ThemeProvider, Theme, DarkTheme, DefaultTheme } from "@react-navigation/native";
+import { NavigationContainer, Theme, DefaultTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -96,14 +96,14 @@ export default function RootLayout() {
         <WellnessProvider>
           <DisclaimerProvider>
             <GestureHandlerRootView style={styles.gestureRoot}>
-              <ThemeProvider value={navTheme}>
+              <NavigationContainer theme={navTheme}>
                 <View style={styles.root} testID="root-layout">
                   <StatusBar style="light" />
                   <DisclaimerGuard />
                   {content}
                   <DisclaimerHost />
                 </View>
-              </ThemeProvider>
+              </NavigationContainer>
             </GestureHandlerRootView>
           </DisclaimerProvider>
         </WellnessProvider>
