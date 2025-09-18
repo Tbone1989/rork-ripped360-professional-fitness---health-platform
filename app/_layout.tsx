@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { NavigationContainer } from '@react-navigation/native';
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
@@ -31,11 +30,7 @@ const styles = StyleSheet.create({
 });
 
 function RootLayoutNav() {
-  return (
-    <NavigationContainer>
-      <Stack screenOptions={{ headerShown: false }} />
-    </NavigationContainer>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 export default function RootLayout() {
