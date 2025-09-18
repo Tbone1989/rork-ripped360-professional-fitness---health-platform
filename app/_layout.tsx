@@ -5,7 +5,6 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
-import { ThemeProvider, DefaultTheme, DarkTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -77,8 +76,7 @@ export default function RootLayout() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider value={DefaultTheme}>
-          <WellnessProvider>
+        <WellnessProvider>
             <DisclaimerProvider>
               <GestureHandlerRootView style={styles.gestureRoot}>
                 <View style={styles.root} testID="root-layout">
@@ -90,7 +88,6 @@ export default function RootLayout() {
               </GestureHandlerRootView>
             </DisclaimerProvider>
           </WellnessProvider>
-        </ThemeProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );
