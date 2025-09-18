@@ -5,7 +5,6 @@ import React, { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
-import { ThemeProvider, Theme, DefaultTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -61,22 +60,7 @@ export default function RootLayout() {
 
   console.log('[RootLayout] Mounted');
 
-  const navTheme: Theme = useMemo(() => {
-    const base = DefaultTheme;
-    return {
-      ...base,
-      dark: false,
-      colors: {
-        ...base.colors,
-        primary: colors.accent.primary,
-        background: colors.background.primary,
-        card: colors.background.secondary,
-        text: colors.text.primary,
-        border: colors.border.light,
-        notification: colors.accent.secondary,
-      },
-    };
-  }, []);
+  const navTheme = undefined as const;
 
   const content = (
     Platform.OS === 'web' ? (
@@ -96,14 +80,12 @@ export default function RootLayout() {
         <WellnessProvider>
           <DisclaimerProvider>
             <GestureHandlerRootView style={styles.gestureRoot}>
-              <ThemeProvider value={navTheme}>
-                <View style={styles.root} testID="root-layout">
-                  <StatusBar style="light" />
-                  <DisclaimerGuard />
-                  {content}
-                  <DisclaimerHost />
-                </View>
-              </ThemeProvider>
+              <View style={styles.root} testID="root-layout">
+                <StatusBar style="light" />
+                <DisclaimerGuard />
+                {content}
+                <DisclaimerHost />
+              </View>
             </GestureHandlerRootView>
           </DisclaimerProvider>
         </WellnessProvider>
