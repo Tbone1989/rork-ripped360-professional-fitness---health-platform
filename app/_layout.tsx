@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Slot } from "expo-router";
+import { Slot, Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
+import { ThemeProvider, Theme, DarkTheme, DefaultTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -30,7 +31,7 @@ const styles = StyleSheet.create({
 });
 
 function RootLayoutNav() {
-  return <Slot />;
+  return <Stack screenOptions={{ headerShown: false }} />;
 }
 
 export default function RootLayout() {
@@ -60,6 +61,23 @@ export default function RootLayout() {
 
   console.log('[RootLayout] Mounted');
 
+  const navTheme: Theme = useMemo(() => {
+    const base = DefaultTheme;
+    return {
+      ...base,
+      dark: false,
+      colors: {
+        ...base.colors,
+        primary: colors.accent.primary,
+        background: colors.background.primary,
+        card: colors.background.secondary,
+        text: colors.text.primary,
+        border: colors.border.light,
+        notification: colors.accent.secondary,
+      },
+    };
+  }, []);
+
   const content = (
     Platform.OS === 'web' ? (
       <View style={styles.centerWrap} testID="web-center-wrap">
@@ -78,12 +96,14 @@ export default function RootLayout() {
         <WellnessProvider>
           <DisclaimerProvider>
             <GestureHandlerRootView style={styles.gestureRoot}>
-              <View style={styles.root} testID="root-layout">
-                <StatusBar style="light" />
-                <DisclaimerGuard />
-                {content}
-                <DisclaimerHost />
-              </View>
+              <ThemeProvider value={navTheme}>
+                <View style={styles.root} testID="root-layout">
+                  <StatusBar style="light" />
+                  <DisclaimerGuard />
+                  {content}
+                  <DisclaimerHost />
+                </View>
+              </ThemeProvider>
             </GestureHandlerRootView>
           </DisclaimerProvider>
         </WellnessProvider>
