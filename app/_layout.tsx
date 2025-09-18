@@ -81,8 +81,8 @@ export default function RootLayout() {
               <GestureHandlerRootView style={styles.gestureRoot}>
                 <View style={styles.root} testID="root-layout">
                   <StatusBar style="light" />
-                  <DisclaimerGuard />
                   {content}
+                  <DisclaimerGuard />
                   <DisclaimerHost />
                 </View>
               </GestureHandlerRootView>
