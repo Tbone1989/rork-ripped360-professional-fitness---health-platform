@@ -60,7 +60,6 @@ export default function RootLayout() {
 
   console.log('[RootLayout] Mounted');
 
-  const navTheme = undefined as const;
 
   const content = (
     Platform.OS === 'web' ? (
