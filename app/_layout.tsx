@@ -1,10 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
+import { ThemeProvider, DefaultTheme, DarkTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -76,18 +77,20 @@ export default function RootLayout() {
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
       <QueryClientProvider client={queryClient}>
-        <WellnessProvider>
-          <DisclaimerProvider>
-            <GestureHandlerRootView style={styles.gestureRoot}>
-              <View style={styles.root} testID="root-layout">
-                <StatusBar style="light" />
-                <DisclaimerGuard />
-                {content}
-                <DisclaimerHost />
-              </View>
-            </GestureHandlerRootView>
-          </DisclaimerProvider>
-        </WellnessProvider>
+        <ThemeProvider value={DefaultTheme}>
+          <WellnessProvider>
+            <DisclaimerProvider>
+              <GestureHandlerRootView style={styles.gestureRoot}>
+                <View style={styles.root} testID="root-layout">
+                  <StatusBar style="light" />
+                  <DisclaimerGuard />
+                  {content}
+                  <DisclaimerHost />
+                </View>
+              </GestureHandlerRootView>
+            </DisclaimerProvider>
+          </WellnessProvider>
+        </ThemeProvider>
       </QueryClientProvider>
     </trpc.Provider>
   );
