@@ -5,7 +5,7 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
-import { ThemeProvider, DefaultTheme } from "@react-navigation/native";
+
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -239,7 +239,7 @@ export default function RootLayout() {
               <View style={styles.root} testID="root-layout">
                 <StatusBar style="light" />
                 <DisclaimerGuard />
-                <ThemeProvider value={DefaultTheme}>
+
                   {Platform.OS === 'web' ? (
                     <View style={styles.centerWrap} testID="web-center-wrap">
                       <View style={styles.contentMax} testID="web-content-max">
@@ -249,7 +249,7 @@ export default function RootLayout() {
                   ) : (
                     <RootLayoutNav />
                   )}
-                </ThemeProvider>
+
                 <DisclaimerHost />
               </View>
             </GestureHandlerRootView>

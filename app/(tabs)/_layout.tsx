@@ -1,14 +1,12 @@
 import { Tabs } from "expo-router";
 import React from "react";
 import { Home, Dumbbell, UtensilsCrossed, Users, Activity, User, ShoppingBag, Trophy } from "lucide-react-native";
-import { Platform, View } from "react-native";
+import { Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
-import { ShortcutButton } from "@/components/ui/ShortcutButton";
 
 export default function TabLayout() {
   return (
-    <View style={{ flex: 1 }}>
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: colors.accent.primary,
@@ -129,7 +127,5 @@ export default function TabLayout() {
           }}
         />
       </Tabs>
-      <ShortcutButton testID="global-shortcut" />
-    </View>
   );
 }
