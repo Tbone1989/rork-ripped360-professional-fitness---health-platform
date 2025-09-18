@@ -1,11 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Slot, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect, useMemo } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
-import { NavigationContainer, Theme, DefaultTheme } from "@react-navigation/native";
+import { ThemeProvider, Theme, DefaultTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -96,14 +96,14 @@ export default function RootLayout() {
         <WellnessProvider>
           <DisclaimerProvider>
             <GestureHandlerRootView style={styles.gestureRoot}>
-              <NavigationContainer theme={navTheme}>
+              <ThemeProvider value={navTheme}>
                 <View style={styles.root} testID="root-layout">
                   <StatusBar style="light" />
                   <DisclaimerGuard />
                   {content}
                   <DisclaimerHost />
                 </View>
-              </NavigationContainer>
+              </ThemeProvider>
             </GestureHandlerRootView>
           </DisclaimerProvider>
         </WellnessProvider>
