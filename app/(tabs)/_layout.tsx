@@ -9,6 +9,7 @@ export default function TabLayout() {
   return (
       <Tabs
         screenOptions={{
+          headerShown: false,
           tabBarActiveTintColor: colors.accent.primary,
           tabBarInactiveTintColor: colors.text.tertiary,
           tabBarHideOnKeyboard: true,
@@ -35,13 +36,6 @@ export default function TabLayout() {
           },
           tabBarIconStyle: {
             marginBottom: 2,
-          },
-          headerStyle: {
-            backgroundColor: colors.background.primary,
-          },
-          headerTintColor: colors.text.primary,
-          headerTitleStyle: {
-            fontWeight: '600',
           },
         }}
       >
