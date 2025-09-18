@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, Slot } from "expo-router";
+import { NavigationContainer } from '@react-navigation/native';
+import { Stack } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -30,7 +31,11 @@ const styles = StyleSheet.create({
 });
 
 function RootLayoutNav() {
-  return <Slot />;
+  return (
+    <NavigationContainer>
+      <Stack screenOptions={{ headerShown: false }} />
+    </NavigationContainer>
+  );
 }
 
 export default function RootLayout() {
