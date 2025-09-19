@@ -5,6 +5,7 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
+import { ThemeProvider as NavThemeProvider, DefaultTheme as NavDefaultTheme, DarkTheme as NavDarkTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -13,6 +14,7 @@ import { ThemeProvider, useTheme } from "@/store/themeProvider";
 import { trpc, trpcClient } from "@/lib/trpc";
 import notificationService from "@/services/notificationService";
 import calendarService from "@/services/calendarService";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -34,10 +36,12 @@ function ThemedRoot({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
   const barStyle = theme.mode === 'dark' ? 'light' : 'dark';
   return (
-    <View style={[styles.root, { backgroundColor: theme.colors.background.primary }]} testID="root-layout">
-      <StatusBar style={barStyle} />
-      {children}
-    </View>
+    <NavThemeProvider value={theme.mode === 'dark' ? NavDarkTheme : NavDefaultTheme}>
+      <View style={[styles.root, { backgroundColor: theme.colors.background.primary }]} testID="root-layout">
+        <StatusBar style={barStyle} />
+        {children}
+      </View>
+    </NavThemeProvider>
   );
 }
 
@@ -80,9 +84,11 @@ export default function RootLayout() {
             <DisclaimerProvider>
               <GestureHandlerRootView style={styles.gestureRoot}>
                 <ThemedRoot>
-                  <RootLayoutNav />
-                  <DisclaimerGuard />
-                  <DisclaimerHost />
+                  <ErrorBoundary>
+                    <RootLayoutNav />
+                    <DisclaimerGuard />
+                    <DisclaimerHost />
+                  </ErrorBoundary>
                 </ThemedRoot>
               </GestureHandlerRootView>
             </DisclaimerProvider>
