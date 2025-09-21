@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Home, Dumbbell, UtensilsCrossed, Activity, User, Ellipsis } from "lucide-react-native";
+import { Home, Dumbbell, UtensilsCrossed, Activity, User, Ellipsis, ShoppingBag } from "lucide-react-native";
 import { Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
@@ -18,8 +18,8 @@ export default function TabLayout() {
             backgroundColor: colors.background.secondary,
             borderTopColor: colors.border.light,
             borderTopWidth: 1,
-            paddingBottom: Platform.OS === 'ios' ? 12 : 6,
-            paddingTop: 6,
+            paddingBottom: Platform.OS === 'ios' ? 10 : 4,
+            paddingTop: 4,
             elevation: 6,
             shadowColor: colors.text.primary,
             shadowOffset: { width: 0, height: -2 },
@@ -27,15 +27,15 @@ export default function TabLayout() {
             shadowRadius: 6,
           },
           tabBarItemStyle: {
-            paddingVertical: 2,
+            paddingVertical: 0,
           },
           tabBarLabelStyle: {
-            fontSize: 11,
-            fontWeight: '600',
-            marginTop: 2,
+            fontSize: 10,
+            fontWeight: '500',
+            marginTop: 0,
           },
           tabBarIconStyle: {
-            marginBottom: 2,
+            marginBottom: 0,
           },
         }}
       >
@@ -44,25 +44,34 @@ export default function TabLayout() {
           options={{
             title: "Home",
             tabBarIcon: ({ color, focused }) => (
-              <Home testID="tab-icon-home" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <Home testID="tab-icon-home" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
         <Tabs.Screen
           name="workouts"
           options={{
-            title: "Workouts",
+            title: "Train",
             tabBarIcon: ({ color, focused }) => (
-              <Dumbbell testID="tab-icon-workouts" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <Dumbbell testID="tab-icon-workouts" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
         <Tabs.Screen
           name="meals"
           options={{
-            title: "Nutrition",
+            title: "Meals",
             tabBarIcon: ({ color, focused }) => (
-              <UtensilsCrossed testID="tab-icon-nutrition" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <UtensilsCrossed testID="tab-icon-nutrition" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="shop"
+          options={{
+            title: "Shop",
+            tabBarIcon: ({ color, focused }) => (
+              <ShoppingBag testID="tab-icon-shop" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
@@ -71,16 +80,16 @@ export default function TabLayout() {
           options={{
             title: "Health",
             tabBarIcon: ({ color, focused }) => (
-              <Activity testID="tab-icon-health" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <Activity testID="tab-icon-health" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
-            title: "Profile",
+            title: "Me",
             tabBarIcon: ({ color, focused }) => (
-              <User testID="tab-icon-profile" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <User testID="tab-icon-profile" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
@@ -89,7 +98,7 @@ export default function TabLayout() {
           options={{
             title: "More",
             tabBarIcon: ({ color, focused }) => (
-              <Ellipsis testID="tab-icon-more" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <Ellipsis testID="tab-icon-more" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
