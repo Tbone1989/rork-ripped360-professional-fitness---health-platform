@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Home, Dumbbell, UtensilsCrossed, Activity, User, Ellipsis, ShoppingBag } from "lucide-react-native";
+import { Home, Dumbbell, UtensilsCrossed, Ellipsis } from "lucide-react-native";
 import { Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
@@ -63,33 +63,6 @@ export default function TabLayout() {
             title: "Meals",
             tabBarIcon: ({ color, focused }) => (
               <UtensilsCrossed testID="tab-icon-nutrition" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="shop"
-          options={{
-            title: "Shop",
-            tabBarIcon: ({ color, focused }) => (
-              <ShoppingBag testID="tab-icon-shop" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="medical"
-          options={{
-            title: "Health",
-            tabBarIcon: ({ color, focused }) => (
-              <Activity testID="tab-icon-health" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="profile"
-          options={{
-            title: "Me",
-            tabBarIcon: ({ color, focused }) => (
-              <User testID="tab-icon-profile" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
