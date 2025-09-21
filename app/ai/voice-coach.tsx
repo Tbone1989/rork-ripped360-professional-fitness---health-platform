@@ -6,6 +6,7 @@ import { colors } from '@/constants/colors';
 import { Mic, StopCircle, Bot, User, RotateCcw, Sparkles, Send } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Audio } from 'expo-av';
+import * as Speech from 'expo-speech';
 import { useDisclaimer } from '@/store/legalDisclaimerProvider';
 
 interface Turn {
@@ -55,7 +56,39 @@ export default function VoiceCoachScreen() {
     setTurns(prev => [...prev, { id: String(Date.now() + Math.random()), ts: Date.now(), ...t }]);
   }, []);
 
+  const speakOut = useCallback(async (text: string) => {
+    try {
+      const safe = (text ?? '').trim();
+      if (!safe) return;
+      if (Platform.OS === 'web') {
+        try {
+          const g: any = globalThis as any;
+          if (g && g.speechSynthesis && typeof g.SpeechSynthesisUtterance !== 'undefined') {
+            const utter = new g.SpeechSynthesisUtterance(safe);
+            utter.rate = 1.02;
+            utter.pitch = 1.0;
+            g.speechSynthesis.cancel();
+            g.speechSynthesis.speak(utter);
+          }
+        } catch (e) {
+          console.log('[VoiceCoach] Web speech synthesis error', e);
+        }
+        return;
+      }
+      try {
+        if (Speech && typeof Speech.speak === 'function') {
+          Speech.speak(safe, { rate: 1.02, pitch: 1.0 });
+        }
+      } catch (e) {
+        console.log('[VoiceCoach] TTS not available', e);
+      }
+    } catch (e) {
+      console.log('[VoiceCoach] speak error', e);
+    }
+  }, []);
+
   const getAssistantReply = useCallback(async (text: string) => {
+    console.log('[VoiceCoach] getAssistantReply', text);
     setState('responding');
     try {
       const response = await fetch('https://toolkit.rork.com/text/llm/', {
@@ -76,15 +109,17 @@ export default function VoiceCoachScreen() {
       const data = await response.json();
       const reply: string = data?.completion ?? "Let's keep going. What would you like to focus on next?";
       pushTurn({ role: 'assistant', text: reply });
+      await speakOut(reply);
     } catch (e) {
       console.log('llm error', e);
       pushTurn({ role: 'assistant', text: 'Connection issue. Try again in a moment.' });
     } finally {
       setState('idle');
     }
-  }, [turns, pushTurn]);
+  }, [turns, pushTurn, speakOut]);
 
   const transcribeBlob = useCallback(async (blob: Blob) => {
+    console.log('[VoiceCoach] transcribeBlob size', blob.size);
     setState('transcribing');
     try {
       const form = new FormData();
@@ -93,9 +128,13 @@ export default function VoiceCoachScreen() {
       const res = await fetch('https://toolkit.rork.com/stt/transcribe/', { method: 'POST', body: form });
       const data = await res.json();
       const text: string = data?.text ?? '';
-      if (text) {
+      console.log('[VoiceCoach] STT result (web):', text);
+      if (text && text.trim().length > 0) {
         pushTurn({ role: 'user', text });
         await getAssistantReply(text);
+      } else {
+        pushTurn({ role: 'assistant', text: "I didn't catch that. Please try again and speak clearly." });
+        setState('idle');
       }
     } catch (e) {
       console.log('stt web error', e);
@@ -104,19 +143,20 @@ export default function VoiceCoachScreen() {
     }
   }, [pushTurn, getAssistantReply]);
 
-
-
   const startRecording = useCallback(async () => {
     if (state === 'recording') return;
+    console.log('[VoiceCoach] startRecording');
     setState('recording');
     if (Platform.OS === 'web') {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         webMediaStreamRef.current = stream;
-        // @ts-ignore
-        const recorder: MediaRecorder = new MediaRecorder(stream);
+        const mimeType = 'audio/webm';
+        // @ts-ignore web-only API
+        const recorder: MediaRecorder = new MediaRecorder(stream, { mimeType } as any);
         webRecorderRef.current = recorder;
         webChunksRef.current = [];
+        // @ts-ignore web-only API types
         recorder.ondataavailable = (e: BlobEvent) => {
           if (e.data && e.data.size > 0) webChunksRef.current.push(e.data);
         };
@@ -138,7 +178,9 @@ export default function VoiceCoachScreen() {
         await rec.prepareToRecordAsync({
           android: {
             extension: '.m4a',
+            // @ts-ignore constants typed any
             outputFormat: 2 as any,
+            // @ts-ignore constants typed any
             audioEncoder: 3 as any,
             sampleRate: 44100,
             numberOfChannels: 1,
@@ -146,7 +188,9 @@ export default function VoiceCoachScreen() {
           },
           ios: {
             extension: '.wav',
+            // @ts-ignore constants typed any
             outputFormat: 1 as any,
+            // @ts-ignore constants typed any
             audioQuality: 0 as any,
             sampleRate: 44100,
             numberOfChannels: 1,
@@ -165,10 +209,13 @@ export default function VoiceCoachScreen() {
 
   const stopRecording = useCallback(async () => {
     if (state !== 'recording') return;
+    console.log('[VoiceCoach] stopRecording');
     if (Platform.OS === 'web') {
       try {
         stopWebRecording();
-      } catch {}
+      } catch {
+        // noop
+      }
       return;
     }
     try {
@@ -179,20 +226,25 @@ export default function VoiceCoachScreen() {
         recordingRef.current = null;
         try {
           await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
-        } catch {}
+        } catch {
+          // noop
+        }
         if (uri) {
           const uriParts = uri.split('.');
-          const fileType = uriParts[uriParts.length - 1];
+          const fileType = uriParts[uriParts.length - 1] ?? 'm4a';
           const form = new FormData();
-          form.append('audio', { uri, name: 'voice.' + fileType, type: 'audio/' + fileType } as any);
+          // @ts-expect-error RN File type
+          form.append('audio', { uri, name: 'voice.' + fileType, type: 'audio/' + fileType });
           setState('transcribing');
           const res = await fetch('https://toolkit.rork.com/stt/transcribe/', { method: 'POST', body: form });
           const data = await res.json();
           const text: string = data?.text ?? '';
-          if (text) {
+          console.log('[VoiceCoach] STT result (native):', text);
+          if (text && text.trim().length > 0) {
             pushTurn({ role: 'user', text });
             await getAssistantReply(text);
           } else {
+            pushTurn({ role: 'assistant', text: "I didn't catch that. Please try again and speak clearly." });
             setState('idle');
           }
         } else {
