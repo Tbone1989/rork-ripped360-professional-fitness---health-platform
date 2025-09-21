@@ -4,6 +4,7 @@ import { ShoppingBag, Gift, Plus, CalendarCheck2 } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { brandAssets } from '@/constants/brand';
 
 export default function HomeScreen() {
   const today = useMemo(() => new Date().toDateString(), []);
@@ -24,7 +25,7 @@ export default function HomeScreen() {
         <Card style={styles.brandCard} testID="brand-card" title={undefined}>
           <View style={styles.heroTop}>
             <Image
-              source={require('../../assets/images/icon.png')}
+              source={{ uri: brandAssets.rippedCityIncLogo }}
               style={styles.logo}
               resizeMode="contain"
               accessibilityIgnoresInvertColors
@@ -112,33 +113,38 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logo: {
-    width: 84,
-    height: 84,
-    borderRadius: 42,
+    width: 110,
+    height: 110,
+    borderRadius: 16,
   },
   brandHeadline: {
     color: colors.text.primary,
     fontSize: 28,
     fontWeight: '900',
     marginBottom: 10,
+    textAlign: 'center',
   },
   brandTitle: {
     color: colors.accent.secondary,
     fontSize: 22,
     fontWeight: '800',
     marginBottom: 6,
+    textAlign: 'center',
   },
   brandSub: {
     color: colors.text.secondary,
     marginBottom: 6,
+    textAlign: 'center',
   },
   brandBody: {
     color: colors.text.tertiary,
+    textAlign: 'center',
   },
   mutedDate: {
     color: colors.text.tertiary,
     marginTop: 12,
     fontSize: 12,
+    textAlign: 'center',
   },
   actionsRow: {
     flexDirection: 'row',
