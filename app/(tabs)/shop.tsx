@@ -28,6 +28,7 @@ type ShopProduct = {
   url: string;
   image?: string;
   price?: number;
+  category?: string;
 };
 
 const normalizeImageUrl = (src?: string): string | undefined => {
@@ -83,6 +84,7 @@ const ProductCard = ({ item }: { item: ShopProduct }) => {
 
 export default function ShopScreen() {
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const { data, isLoading, error, refetch } = trpc.shop.products.useQuery({});
   const [fallback, setFallback] = useState<ShopProduct[]>([]);
   const [isFallbackLoading, setIsFallbackLoading] = useState<boolean>(false);
@@ -113,7 +115,10 @@ export default function ShopScreen() {
       const handle = p.handle ?? undefined;
       const url = handle ? `https://www.rippedcityinc.com/products/${handle}` : typeof p.url === 'string' ? p.url : `https://www.rippedcityinc.com`;
       const title = String(p.title ?? '');
-      return { id, title, url, image, price } as ShopProduct;
+      const categoryRaw = p.product_type ?? p.type ?? p.collections?.[0]?.title ?? p.collection ?? undefined;
+      const category = typeof categoryRaw === 'string' ? categoryRaw.trim() : undefined;
+      const product: ShopProduct = { id, title, url, image, price, category };
+      return product;
     }).filter((p: ShopProduct) => !!p.title);
   }, []);
 
@@ -152,12 +157,21 @@ export default function ShopScreen() {
     return dedup;
   }, [data, fallback]);
 
+  const categories: string[] = useMemo(() => {
+    const uniq = Array.from(new Set(sourceList.map(p => (p.category ?? '').trim()).filter(Boolean)));
+    const sorted = uniq.sort((a, b) => a.localeCompare(b));
+    return ['all', ...sorted];
+  }, [sourceList]);
+
   const products: ShopProduct[] = useMemo(() => {
-    const list = sourceList;
+    let list = sourceList;
+    if (selectedCategory && selectedCategory !== 'all') {
+      list = list.filter((p) => (p.category ?? '').toLowerCase() === selectedCategory.toLowerCase());
+    }
     if (!searchQuery) return list;
     const q = searchQuery.toLowerCase();
     return list.filter((p) => p.title.toLowerCase().includes(q));
-  }, [sourceList, searchQuery]);
+  }, [sourceList, searchQuery, selectedCategory]);
 
   const renderProduct = ({ item }: { item: ShopProduct }) => (
     <ProductCard item={item} />
@@ -201,6 +215,7 @@ export default function ShopScreen() {
         <View style={styles.searchInputContainer}>
           <Search size={20} color={colors.text.secondary} />
           <TextInput
+            testID="shop-search-input"
             style={styles.searchInput}
             placeholder="Search products..."
             placeholderTextColor={colors.text.secondary}
@@ -209,6 +224,30 @@ export default function ShopScreen() {
           />
         </View>
       </View>
+
+      {categories.length > 1 && (
+        <View style={styles.categoriesContainer}>
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={categories}
+            keyExtractor={(c) => c}
+            contentContainerStyle={styles.categoriesList}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                testID={`category-${item}`}
+                onPress={() => setSelectedCategory(item)}
+                activeOpacity={0.8}
+                style={[styles.categoryChip, selectedCategory === item && styles.categoryChipSelected]}
+              >
+                <Text style={[styles.categoryChipText, selectedCategory === item && styles.categoryChipTextSelected]}>
+                  {item === 'all' ? 'All' : item}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        </View>
+      )}
 
       {(isLoading || isFallbackLoading) && (
         <View style={styles.loadingContainer}>
@@ -230,6 +269,9 @@ export default function ShopScreen() {
             <Text style={styles.resultsText}>
               {products.length} product{products.length !== 1 ? 's' : ''} found
             </Text>
+            {selectedCategory !== 'all' ? (
+              <Text style={styles.resultsCategory}>in {selectedCategory}</Text>
+            ) : null}
           </View>
 
           <FlatList
@@ -320,6 +362,11 @@ const styles = StyleSheet.create({
   resultsText: {
     fontSize: 14,
     color: colors.text.secondary,
+  },
+  resultsCategory: {
+    fontSize: 12,
+    color: colors.text.tertiary,
+    marginTop: 2,
   },
   productsContainer: {
     padding: 16,
@@ -460,5 +507,33 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: colors.text.primary,
+  },
+  categoriesContainer: {
+    paddingHorizontal: 12,
+    paddingBottom: 4,
+  },
+  categoriesList: {
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+    gap: 8,
+  },
+  categoryChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 16,
+    backgroundColor: colors.background.secondary,
+    marginHorizontal: 4,
+  },
+  categoryChipSelected: {
+    backgroundColor: colors.accent.primary,
+  },
+  categoryChipText: {
+    color: colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  categoryChipTextSelected: {
+    color: colors.text.primary,
+    fontWeight: '700',
   },
 });
