@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, PlusCircle, FileText, Pill, Camera, Brain, Leaf, Info } from 'lucide-react-native';
+import { Search, Filter, PlusCircle, FileText, Pill, Camera, Brain, Leaf, Info, Droplets } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -91,14 +91,22 @@ export default function MedicalScreen() {
         {activeTab === 'supplements' && (
           <>
             <View style={styles.actionSection}>
-              <Button
-                title="Holistic Care"
-                icon={<Leaf size={18} color={colors.text.primary} />}
-                onPress={() => router.push('/medical/holistic')}
-                style={[styles.actionButton]}
-                testID="btn-holistic-care"
-                fullWidth
-              />
+              <View style={styles.actionButtons}>
+                <Button
+                  title="Holistic Care"
+                  icon={<Leaf size={18} color={colors.text.primary} />}
+                  onPress={() => router.push('/medical/holistic')}
+                  style={[styles.actionButton, styles.actionButtonHalf]}
+                  testID="btn-holistic-care"
+                />
+                <Button
+                  title="Homeopathic Remedies"
+                  icon={<Droplets size={18} color={colors.text.primary} />}
+                  onPress={() => router.push('/medical/homeopathy')}
+                  style={[styles.actionButton, styles.actionButtonHalf]}
+                  testID="btn-homeopathy"
+                />
+              </View>
             </View>
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Popular Supplements</Text>
