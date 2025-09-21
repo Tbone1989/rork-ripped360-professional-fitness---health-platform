@@ -1,13 +1,16 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
-import { ShoppingBag, Gift, Plus, CalendarCheck2 } from 'lucide-react-native';
+import { ShoppingBag, Gift, CalendarCheck2 } from 'lucide-react-native';
 import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { brandAssets } from '@/constants/brand';
+import { ShortcutButton } from '@/components/ui/ShortcutButton';
+import { useRouter } from 'expo-router';
 
 export default function HomeScreen() {
   const today = useMemo(() => new Date().toDateString(), []);
+  const router = useRouter();
 
   return (
     <View style={styles.container} testID="home-container">
@@ -15,7 +18,7 @@ export default function HomeScreen() {
         <View style={styles.headerWrap}>
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Ripped City 360</Text>
-            <TouchableOpacity accessibilityLabel="Open store" testID="home-store-btn">
+            <TouchableOpacity accessibilityLabel="Open store" testID="home-store-btn" onPress={() => router.push('/shop')}>
               <ShoppingBag size={24} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
@@ -66,11 +69,10 @@ export default function HomeScreen() {
             <Gift size={18} color={colors.accent.primary} />
             <Text style={styles.rewardsText}>View Rewards Calendar</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.fab} activeOpacity={0.9} testID="home-fab">
-            <Plus size={28} color={colors.text.primary} />
-          </TouchableOpacity>
         </Card>
       </ScrollView>
+
+      <ShortcutButton testID="home-shortcuts" />
     </View>
   );
 }
@@ -209,21 +211,5 @@ const styles = StyleSheet.create({
     color: '#FFA4A4',
     fontSize: 14,
     fontWeight: '600',
-  },
-  fab: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: colors.accent.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
   },
 });

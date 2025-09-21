@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Home, Dumbbell, UtensilsCrossed, Users, Activity, User, ShoppingBag, Trophy } from "lucide-react-native";
+import { Home, Dumbbell, UtensilsCrossed, Activity, User, Ellipsis } from "lucide-react-native";
 import { Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
@@ -76,47 +76,20 @@ export default function TabLayout() {
           }}
         />
         <Tabs.Screen
-          name="shop"
-          options={{
-            title: "Shop",
-            tabBarIcon: ({ color, focused }) => (
-              <ShoppingBag testID="tab-icon-shop" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="community"
-          options={{
-            title: "Community",
-            tabBarIcon: ({ color, focused }) => (
-              <Users testID="tab-icon-community" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="contest"
-          options={{
-            title: "Contest",
-            tabBarIcon: ({ color, focused }) => (
-              <Trophy testID="tab-icon-contest" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-        <Tabs.Screen
-          name="coaching"
-          options={{
-            title: "Coaching",
-            tabBarIcon: ({ color, focused }) => (
-              <Users testID="tab-icon-coaching" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
-            ),
-          }}
-        />
-        <Tabs.Screen
           name="profile"
           options={{
             title: "Profile",
             tabBarIcon: ({ color, focused }) => (
               <User testID="tab-icon-profile" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="more"
+          options={{
+            title: "More",
+            tabBarIcon: ({ color, focused }) => (
+              <Ellipsis testID="tab-icon-more" size={focused ? 24 : 22} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
