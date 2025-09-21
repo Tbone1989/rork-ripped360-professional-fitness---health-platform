@@ -1,122 +1,39 @@
 {
   "expo": {
     "name": "Ripped360",
-    "slug": "ripped360-professional-fitness-health",
+    "slug": "ripped360",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "icon": "./assets/icon.png",
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "updates": {
+      "fallbackToCacheTimeout": 0,
+      "url": "https://u.expo.dev/YOUR_PROJECT_ID"
+    },
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "app.rork.ripped360",
-      "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos for progress tracking and meal logging",
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera for progress photos and form analysis",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone for voice coaching features",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location for gym finder and workout tracking",
-        "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location for continuous fitness tracking",
-        "NSLocationWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location for gym finder and workout mapping",
-        "NSHealthShareUsageDescription": "Allow $(PRODUCT_NAME) to read health data for comprehensive fitness tracking",
-        "NSHealthUpdateUsageDescription": "Allow $(PRODUCT_NAME) to update health data with workout and nutrition information",
-        "UIBackgroundModes": [
-          "location",
-          "audio"
-        ]
-      },
-      "buildNumber": "1"
+      "bundleIdentifier": "com.ripped360.app"
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "app.rork.ripped360",
-      "permissions": [
-        "android.permission.VIBRATE",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "RECORD_AUDIO",
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION",
-        "FOREGROUND_SERVICE",
-        "FOREGROUND_SERVICE_LOCATION",
-        "ACCESS_BACKGROUND_LOCATION",
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.SCHEDULE_EXACT_ALARM",
-        "INTERNET",
-        "ACTIVITY_RECOGNITION",
-        "BLUETOOTH",
-        "BLUETOOTH_ADMIN",
-        "READ_PHONE_STATE"
-      ],
-      "versionCode": 1
-    },
-    "web": {
-      "favicon": "./assets/images/favicon.png"
+      "package": "com.ripped360.app"
     },
     "plugins": [
       [
-        "expo-router",
-        {
-          "origin": "https://rork.com/"
-        }
-      ],
-      [
-        "expo-image-picker",
-        {
-          "photosPermission": "The app accesses your photos to let you track fitness progress and log meals."
-        }
-      ],
-      [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera for progress photos and form analysis",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice coaching features",
-          "recordAudioAndroid": true
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "isAndroidForegroundServiceEnabled": true,
-          "isAndroidBackgroundLocationEnabled": true,
-          "isIosBackgroundLocationEnabled": true,
-          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location.",
-          "locationAlwaysAndWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location for gym finder and workout tracking"
-        }
-      ],
-      [
-        "expo-av",
-        {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone for voice coaching features"
-        }
-      ],
-      [
         "expo-notifications",
         {
-          "icon": "./local/assets/notification_icon.png",
           "color": "#ffffff",
-          "defaultChannel": "default",
-          "sounds": [
-            "./local/assets/notification_sound.wav"
-          ],
           "enableBackgroundRemoteNotifications": false
         }
       ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "privacyPolicyUrl": "https://rippedcityinc.com/privacy-policy"
-    }
+    ]
   }
 }
