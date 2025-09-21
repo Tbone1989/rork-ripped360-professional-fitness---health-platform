@@ -1,6 +1,6 @@
 import { Tabs } from "expo-router";
 import React from "react";
-import { Home, Dumbbell, UtensilsCrossed, Ellipsis } from "lucide-react-native";
+import { Home, Dumbbell, UtensilsCrossed, ShoppingBag, HeartPulse, User, Ellipsis } from "lucide-react-native";
 import { Platform } from "react-native";
 
 import { colors } from "@/constants/colors";
@@ -53,7 +53,7 @@ export default function TabLayout() {
           options={{
             title: "Train",
             tabBarIcon: ({ color, focused }) => (
-              <Dumbbell testID="tab-icon-workouts" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <Dumbbell testID="tab-icon-train" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
@@ -62,7 +62,34 @@ export default function TabLayout() {
           options={{
             title: "Meals",
             tabBarIcon: ({ color, focused }) => (
-              <UtensilsCrossed testID="tab-icon-nutrition" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
+              <UtensilsCrossed testID="tab-icon-meals" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="shop"
+          options={{
+            title: "Shop",
+            tabBarIcon: ({ color, focused }) => (
+              <ShoppingBag testID="tab-icon-shop" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="medical"
+          options={{
+            title: "Health",
+            tabBarIcon: ({ color, focused }) => (
+              <HeartPulse testID="tab-icon-health" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: "Me",
+            tabBarIcon: ({ color, focused }) => (
+              <User testID="tab-icon-me" size={focused ? 22 : 20} color={color} strokeWidth={focused ? 2.5 : 2} />
             ),
           }}
         />
