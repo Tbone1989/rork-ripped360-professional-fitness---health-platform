@@ -2,7 +2,7 @@ import React, { useMemo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 import { colors } from '@/constants/colors';
-import { ShoppingBag, Users, Trophy, Activity, HeartHandshake, User, Store } from 'lucide-react-native';
+import { ShoppingBag, Users, Trophy, Activity, HeartHandshake, User, Store, Brain } from 'lucide-react-native';
 
 interface LinkItem {
   key: string;
@@ -15,6 +15,7 @@ export default function MoreScreen() {
   const router = useRouter();
 
   const links = useMemo<LinkItem[]>(() => [
+    { key: 'ai', title: 'AI Features', href: '/ai/all-features' as Href<string>, icon: <Brain size={18} color={colors.text.primary} /> },
     { key: 'shop', title: 'Shop', href: '/shop' as Href<string>, icon: <ShoppingBag size={18} color={colors.text.primary} /> },
     { key: 'community', title: 'Community', href: '/community' as Href<string>, icon: <Users size={18} color={colors.text.primary} /> },
     { key: 'contest', title: 'Contest', href: '/contest' as Href<string>, icon: <Trophy size={18} color={colors.text.primary} /> },
@@ -46,7 +47,7 @@ export default function MoreScreen() {
 
         <View style={styles.supportCard}>
           <Store size={18} color={colors.accent.primary} />
-          <Text style={styles.supportText}>Looking for something else? Check Shop categories, Community feed, or open Coaching.</Text>
+          <Text style={styles.supportText}>Looking for something else? Explore AI Features, check Shop categories, Community feed, or open Coaching.</Text>
         </View>
       </ScrollView>
     </View>
