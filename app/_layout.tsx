@@ -5,7 +5,6 @@ import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
 import { View, Platform, StyleSheet } from "react-native";
-import { ThemeProvider as NavThemeProvider, DefaultTheme as NavDefaultTheme, DarkTheme as NavDarkTheme } from "@react-navigation/native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -28,20 +27,20 @@ const queryClient = new QueryClient({
 const styles = StyleSheet.create({
   gestureRoot: { flex: 1 },
   root: { flex: 1, backgroundColor: colors.background.primary },
-  centerWrap: { flex: 1, alignItems: 'center' },
-  contentMax: { flex: 1, width: '100%', maxWidth: 1180, paddingHorizontal: 24, paddingVertical: 16 },
 });
 
 function ThemedRoot({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
-  const barStyle = theme.mode === 'dark' ? 'light' : 'dark';
+  const barStyle = theme.mode === "dark" ? "light" : "dark";
+
   return (
-    <NavThemeProvider value={theme.mode === 'dark' ? NavDarkTheme : NavDefaultTheme}>
-      <View style={[styles.root, { backgroundColor: theme.colors.background.primary }]} testID="root-layout">
-        <StatusBar style={barStyle} />
-        {children}
-      </View>
-    </NavThemeProvider>
+    <View
+      style={[styles.root, { backgroundColor: theme.colors.background.primary }]}
+      testID="root-layout"
+    >
+      <StatusBar style={barStyle} />
+      {children}
+    </View>
   );
 }
 
@@ -53,13 +52,13 @@ export default function RootLayout() {
   useEffect(() => {
     const initializeServices = async () => {
       try {
-        if (Platform.OS !== 'web') {
+        if (Platform.OS !== "web") {
           await notificationService.initialize();
         }
         await calendarService.initialize();
-        console.log('[RootLayout] Services initialized');
+        console.log("[RootLayout] Services initialized");
       } catch (error) {
-        console.error('[RootLayout] Error initializing services:', error);
+        console.error("[RootLayout] Error initializing services:", error);
       } finally {
         await SplashScreen.hideAsync();
       }
@@ -68,13 +67,13 @@ export default function RootLayout() {
     initializeServices();
 
     return () => {
-      if (Platform.OS !== 'web') {
+      if (Platform.OS !== "web") {
         notificationService.cleanup();
       }
     };
   }, []);
 
-  console.log('[RootLayout] Mounted');
+  console.log("[RootLayout] Mounted");
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
