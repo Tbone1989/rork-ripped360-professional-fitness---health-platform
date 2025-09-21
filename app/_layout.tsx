@@ -15,8 +15,6 @@ import notificationService from "@/services/notificationService";
 import calendarService from "@/services/calendarService";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
-SplashScreen.preventAutoHideAsync();
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: { staleTime: 5 * 60 * 1000, retry: 1, gcTime: 10 * 60 * 1000 },
@@ -50,8 +48,11 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   useEffect(() => {
+    let isMounted = true;
+
     const initializeServices = async () => {
       try {
+        await SplashScreen.preventAutoHideAsync();
         if (Platform.OS !== "web") {
           await notificationService.initialize();
         }
@@ -60,13 +61,16 @@ export default function RootLayout() {
       } catch (error) {
         console.error("[RootLayout] Error initializing services:", error);
       } finally {
-        await SplashScreen.hideAsync();
+        if (isMounted) {
+          await SplashScreen.hideAsync();
+        }
       }
     };
 
     initializeServices();
 
     return () => {
+      isMounted = false;
       if (Platform.OS !== "web") {
         notificationService.cleanup();
       }
