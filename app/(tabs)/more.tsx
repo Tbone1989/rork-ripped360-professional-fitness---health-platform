@@ -1,13 +1,13 @@
 import React, { useMemo } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, ScrollView } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { colors } from '@/constants/colors';
 import { ShoppingBag, Users, Trophy, Activity, HeartHandshake, User, Store } from 'lucide-react-native';
 
 interface LinkItem {
   key: string;
   title: string;
-  href: string;
+  href: Href<string>;
   icon: React.ReactNode;
 }
 
@@ -15,12 +15,12 @@ export default function MoreScreen() {
   const router = useRouter();
 
   const links = useMemo<LinkItem[]>(() => [
-    { key: 'shop', title: 'Shop', href: '/shop', icon: <ShoppingBag size={18} color={colors.text.primary} /> },
-    { key: 'community', title: 'Community', href: '/community', icon: <Users size={18} color={colors.text.primary} /> },
-    { key: 'contest', title: 'Contest', href: '/contest', icon: <Trophy size={18} color={colors.text.primary} /> },
-    { key: 'coaching', title: 'Coaching', href: '/coaching', icon: <HeartHandshake size={18} color={colors.text.primary} /> },
-    { key: 'health', title: 'Health', href: '/medical', icon: <Activity size={18} color={colors.text.primary} /> },
-    { key: 'profile', title: 'Profile', href: '/profile', icon: <User size={18} color={colors.text.primary} /> },
+    { key: 'shop', title: 'Shop', href: '/shop' as Href<string>, icon: <ShoppingBag size={18} color={colors.text.primary} /> },
+    { key: 'community', title: 'Community', href: '/community' as Href<string>, icon: <Users size={18} color={colors.text.primary} /> },
+    { key: 'contest', title: 'Contest', href: '/contest' as Href<string>, icon: <Trophy size={18} color={colors.text.primary} /> },
+    { key: 'coaching', title: 'Coaching', href: '/coaching' as Href<string>, icon: <HeartHandshake size={18} color={colors.text.primary} /> },
+    { key: 'health', title: 'Health', href: '/medical' as Href<string>, icon: <Activity size={18} color={colors.text.primary} /> },
+    { key: 'profile', title: 'Profile', href: '/profile' as Href<string>, icon: <User size={18} color={colors.text.primary} /> },
   ], []);
 
   return (
