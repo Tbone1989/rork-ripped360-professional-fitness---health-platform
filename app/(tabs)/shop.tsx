@@ -85,6 +85,7 @@ const ProductCard = ({ item }: { item: ShopProduct }) => {
 export default function ShopScreen() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedAudience, setSelectedAudience] = useState<'all' | 'men' | 'women' | 'kids'>('all');
   const { data, isLoading, error, refetch } = trpc.shop.products.useQuery({});
   const [fallback, setFallback] = useState<ShopProduct[]>([]);
   const [isFallbackLoading, setIsFallbackLoading] = useState<boolean>(false);
@@ -163,8 +164,25 @@ export default function ShopScreen() {
     return ['all', ...sorted];
   }, [sourceList]);
 
+  const detectAudience = (p: ShopProduct): 'men' | 'women' | 'kids' | 'all' => {
+    const title = (p.title ?? '').toLowerCase();
+    const category = (p.category ?? '').toLowerCase();
+    const url = (p.url ?? '').toLowerCase();
+    const text = `${title} ${category} ${url}`;
+    const isWomen = /(\bwomen\b|\bwoman\b|ladies|female|\bgirls\b)/.test(text);
+    const isMen = /(\bmen\b|\bman\b|male|guys\b)/.test(text);
+    const isKids = /(\bkid\b|\bkids\b|youth|\bboy\b|\bgirl\b|junior|toddler)/.test(text);
+    if (isKids) return 'kids';
+    if (isWomen && !isMen) return 'women';
+    if (isMen && !isWomen) return 'men';
+    return 'all';
+  };
+
   const products: ShopProduct[] = useMemo(() => {
     let list = sourceList;
+    if (selectedAudience !== 'all') {
+      list = list.filter((p) => detectAudience(p) === selectedAudience);
+    }
     if (selectedCategory && selectedCategory !== 'all') {
       list = list.filter((p) => (p.category ?? '').toLowerCase() === selectedCategory.toLowerCase());
     }
@@ -225,6 +243,22 @@ export default function ShopScreen() {
         </View>
       </View>
 
+      <View style={styles.audienceContainer}>
+        {(['all','men','women','kids'] as const).map((aud) => (
+          <TouchableOpacity
+            key={aud}
+            testID={`audience-${aud}`}
+            onPress={() => setSelectedAudience(aud)}
+            activeOpacity={0.8}
+            style={[styles.audienceChip, selectedAudience === aud && styles.audienceChipSelected]}
+          >
+            <Text style={[styles.audienceChipText, selectedAudience === aud && styles.audienceChipTextSelected]}>
+              {aud === 'all' ? 'All' : aud.charAt(0).toUpperCase() + aud.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
+
       {categories.length > 1 && (
         <View style={styles.categoriesContainer}>
           <FlatList
@@ -269,6 +303,9 @@ export default function ShopScreen() {
             <Text style={styles.resultsText}>
               {products.length} product{products.length !== 1 ? 's' : ''} found
             </Text>
+            {selectedAudience !== 'all' ? (
+              <Text style={styles.resultsCategory}>for {selectedAudience}</Text>
+            ) : null}
             {selectedCategory !== 'all' ? (
               <Text style={styles.resultsCategory}>in {selectedCategory}</Text>
             ) : null}
@@ -507,6 +544,30 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '600',
     color: colors.text.primary,
+  },
+  audienceContainer: {
+    paddingHorizontal: 12,
+    paddingBottom: 8,
+    flexDirection: 'row',
+    gap: 8,
+  },
+  audienceChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 18,
+    backgroundColor: colors.background.secondary,
+  },
+  audienceChipSelected: {
+    backgroundColor: colors.accent.primary,
+  },
+  audienceChipText: {
+    color: colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  audienceChipTextSelected: {
+    color: colors.text.primary,
+    fontWeight: '700',
   },
   categoriesContainer: {
     paddingHorizontal: 12,
