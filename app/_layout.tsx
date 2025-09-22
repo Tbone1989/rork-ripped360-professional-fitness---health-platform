@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
-import { View, Platform, StyleSheet } from "react-native";
+import { View, Platform, StyleSheet, InteractionManager } from "react-native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -51,33 +51,38 @@ export default function RootLayout() {
     let isMounted = true;
 
     const initializeServices = async () => {
+      const t0 = Date.now();
       try {
-        await SplashScreen.preventAutoHideAsync();
         if (Platform.OS !== "web") {
           await notificationService.initialize();
         }
         await calendarService.initialize();
-        console.log("[RootLayout] Services initialized");
+        console.log("[RootLayout] Services initialized in", Date.now() - t0, "ms");
       } catch (error) {
         console.error("[RootLayout] Error initializing services:", error);
-      } finally {
-        if (isMounted) {
-          await SplashScreen.hideAsync();
-        }
       }
     };
 
-    initializeServices();
+    SplashScreen.hideAsync().catch(() => {});
+
+    const task = InteractionManager.runAfterInteractions(() => {
+      if (!isMounted) return;
+      setTimeout(() => {
+        if (!isMounted) return;
+        initializeServices();
+      }, 0);
+    });
 
     return () => {
       isMounted = false;
+      task.cancel?.();
       if (Platform.OS !== "web") {
         notificationService.cleanup();
       }
     };
   }, []);
 
-  console.log("[RootLayout] Mounted");
+  console.log("[RootLayout] Mounted at", new Date().toISOString());
 
   return (
     <trpc.Provider client={trpcClient} queryClient={queryClient}>
