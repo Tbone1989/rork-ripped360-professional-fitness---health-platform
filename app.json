@@ -6,11 +6,16 @@
     "sdkVersion": "53.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+
+    // ✅ Required app icon
+    "icon": "./assets/icon.png",
+
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
@@ -26,6 +31,7 @@
         ]
       }
     },
+
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
@@ -53,6 +59,7 @@
         "defaultChannel": "default"
       }
     },
+
     "plugins": [
       [
         "expo-notifications",
@@ -96,6 +103,12 @@
           "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
         }
       ]
+    ],
+
+    // ✅ Ensures all assets get bundled (icons, sounds, splash, etc.)
+    "assetBundlePatterns": [
+      "assets/*",
+      "assets/notifications/*"
     ]
   }
 }
