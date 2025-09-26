@@ -99,8 +99,7 @@
       ]
     ],
     "assetBundlePatterns": [
-      "assets/*",
-      "assets/notifications/*"
+      "assets/**"
     ]
   }
 }
