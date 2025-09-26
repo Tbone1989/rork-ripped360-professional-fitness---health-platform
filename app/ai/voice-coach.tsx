@@ -6,7 +6,6 @@ import { colors } from '@/constants/colors';
 import { Mic, StopCircle, Bot, User, RotateCcw, Sparkles, Send } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
 import { Audio } from 'expo-av';
-import * as Speech from 'expo-speech';
 import { useDisclaimer } from '@/store/legalDisclaimerProvider';
 
 interface Turn {
@@ -75,13 +74,7 @@ export default function VoiceCoachScreen() {
         }
         return;
       }
-      try {
-        if (Speech && typeof Speech.speak === 'function') {
-          Speech.speak(safe, { rate: 1.02, pitch: 1.0 });
-        }
-      } catch (e) {
-        console.log('[VoiceCoach] TTS not available', e);
-      }
+      
     } catch (e) {
       console.log('[VoiceCoach] speak error', e);
     }
