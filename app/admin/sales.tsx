@@ -1,21 +1,20 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
-  ActivityIndicator,
+
+
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '@/constants/colors';
-import { TrendingUp, TrendingDown, DollarSign, Users, Package, Calendar, Download, Filter } from 'lucide-react-native';
-import { trpc } from '@/lib/trpc';
-import { LineChart, BarChart, PieChart } from 'react-native-chart-kit';
+import { TrendingUp, TrendingDown, DollarSign, Users, Package, Calendar, Download } from 'lucide-react-native';
 
-const { width } = Dimensions.get('window');
+
+
 
 interface SalesData {
   totalRevenue: number;
@@ -96,29 +95,12 @@ export default function SalesScreen() {
     setTimeout(() => setRefreshing(false), 2000);
   };
 
-  const chartConfig = {
-    backgroundColor: colors.background.card,
-    backgroundGradientFrom: colors.background.card,
-    backgroundGradientTo: colors.background.secondary,
-    decimalPlaces: 0,
-    color: (opacity = 1) => `rgba(255, 0, 0, ${opacity})`,
-    labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-    style: {
-      borderRadius: 16,
-    },
-    propsForDots: {
-      r: '6',
-      strokeWidth: '2',
-      stroke: colors.accent.primary,
-    },
-  };
+
 
   const pieData = salesData.revenueByCategory.map((item, index) => ({
     name: item.category,
     population: item.revenue,
-    color: ['#FF0000', '#FF4444', '#FF6666', '#FF8888'][index],
-    legendFontColor: colors.text.secondary,
-    legendFontSize: 12,
+    color: ['#FF0000', '#FF4444', '#FF6666', '#FF8888'][index % 4],
   }));
 
   return (
@@ -198,37 +180,56 @@ export default function SalesScreen() {
           </View>
         </View>
 
-        {/* Revenue Chart */}
         <View style={styles.chartContainer}>
           <Text style={styles.chartTitle}>Revenue Trend</Text>
-          <LineChart
-            data={{
-              labels: salesData.revenueHistory.map(item => item.date),
-              datasets: [{
-                data: salesData.revenueHistory.map(item => item.revenue),
-              }],
-            }}
-            width={width - 32}
-            height={220}
-            chartConfig={chartConfig}
-            bezier
-            style={styles.chart}
-          />
+          <View style={styles.simpleChart} testID="revenue-trend-chart">
+            {(() => {
+              try {
+                console.log('Rendering simple revenue chart');
+                const values = salesData.revenueHistory.map((i) => i.revenue);
+                const max = Math.max(...values);
+                return (
+                  <View style={styles.barRow}>
+                    {salesData.revenueHistory.map((item, idx) => {
+                      const barHeight = Math.max(6, Math.round((item.revenue / (max || 1)) * 160));
+                      return (
+                        <View key={item.date + idx} style={styles.barWrapper}>
+                          <View style={[styles.bar, { height: barHeight }]} />
+                          <Text style={styles.barLabel}>{item.date}</Text>
+                        </View>
+                      );
+                    })}
+                  </View>
+                );
+              } catch (e) {
+                console.error('Revenue chart render error', e);
+                return (
+                  <View style={styles.fallbackBox}>
+                    <Text style={styles.fallbackText}>Unable to render chart</Text>
+                  </View>
+                );
+              }
+            })()}
+          </View>
         </View>
 
-        {/* Category Breakdown */}
         <View style={styles.chartContainer}>
           <Text style={styles.chartTitle}>Revenue by Category</Text>
-          <PieChart
-            data={pieData}
-            width={width - 32}
-            height={220}
-            chartConfig={chartConfig}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-          />
+          <View style={styles.simpleChart} testID="category-breakdown">
+            {pieData.map((p, idx) => {
+              const pct = Math.round(((p.population as number) / salesData.revenueByCategory.reduce((a, b) => a + b.revenue, 0)) * 100);
+              return (
+                <View key={String(p.name) + idx} style={styles.catRow}>
+                  <View style={[styles.colorDot, { backgroundColor: String(p.color) }]} />
+                  <Text style={styles.catLabel}>{String(p.name)}</Text>
+                  <View style={styles.catBarTrack}>
+                    <View style={[styles.catBarFill, { width: `${pct}%`, backgroundColor: String(p.color) }]} />
+                  </View>
+                  <Text style={styles.catPct}>{pct}%</Text>
+                </View>
+              );
+            })}
+          </View>
         </View>
 
         {/* Top Products */}
@@ -354,6 +355,75 @@ const styles = StyleSheet.create({
   chart: {
     marginVertical: 8,
     borderRadius: 16,
+  },
+  simpleChart: {
+    backgroundColor: colors.background.card,
+    borderRadius: 12,
+    padding: 12,
+  },
+  barRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    gap: 12,
+    height: 180,
+  },
+  barWrapper: {
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flex: 1,
+  },
+  bar: {
+    width: 18,
+    backgroundColor: colors.accent.primary,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  barLabel: {
+    marginTop: 8,
+    fontSize: 12,
+    color: colors.text.secondary,
+  },
+  fallbackBox: {
+    height: 180,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  fallbackText: {
+    color: colors.text.secondary,
+  },
+  catRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 6,
+  },
+  colorDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+  },
+  catLabel: {
+    flex: 1,
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  catBarTrack: {
+    flex: 2,
+    height: 8,
+    backgroundColor: colors.background.secondary,
+    borderRadius: 4,
+    overflow: 'hidden',
+  },
+  catBarFill: {
+    height: 8,
+    borderRadius: 4,
+  },
+  catPct: {
+    width: 40,
+    textAlign: 'right',
+    color: colors.text.secondary,
+    fontSize: 12,
   },
   section: {
     padding: 16,
