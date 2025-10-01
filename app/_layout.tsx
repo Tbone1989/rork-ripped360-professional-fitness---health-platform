@@ -10,7 +10,7 @@ import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
 import { DisclaimerProvider, DisclaimerGuard, DisclaimerHost } from "@/store/legalDisclaimerProvider";
 import { ThemeProvider, useTheme } from "@/store/themeProvider";
-import { trpc, trpcClient } from "@/lib/trpc";
+import { trpc } from "@/lib/trpc";
 import notificationService from "@/services/notificationService";
 import calendarService from "@/services/calendarService";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
@@ -85,7 +85,7 @@ export default function RootLayout() {
   console.log("[RootLayout] Mounted at", new Date().toISOString());
 
   return (
-    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+    <trpc.Provider>
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <WellnessProvider>
