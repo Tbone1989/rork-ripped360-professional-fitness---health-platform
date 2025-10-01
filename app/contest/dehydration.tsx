@@ -7,19 +7,16 @@ import {
   StyleSheet,
   Alert,
   TextInput,
-  Dimensions
 } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { 
   Droplets, 
   Plus, 
-  TrendingUp, 
   AlertTriangle,
-  Clock,
   Scale,
   Thermometer
 } from 'lucide-react-native';
-import { LineChart } from 'react-native-chart-kit';
 
 import { colors } from '@/constants/colors';
 import { useContestStore } from '@/store/contestStore';
@@ -28,7 +25,6 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { DehydrationLog } from '@/types/contest';
 
-const { width } = Dimensions.get('window');
 
 const URINE_COLORS = [
   { value: 1, label: 'Pale Yellow', color: '#FFF9C4', status: 'excellent' },
@@ -53,6 +49,7 @@ const SYMPTOMS = [
 ];
 
 export default function DehydrationScreen() {
+  const insets = useSafeAreaInsets();
   const { currentPrep, addDehydrationLog } = useContestStore();
   const [showAddLog, setShowAddLog] = useState(false);
   const [newLog, setNewLog] = useState({
@@ -133,13 +130,13 @@ export default function DehydrationScreen() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'excellent':
-      case 'good': return colors.success;
-      case 'fair': return colors.warning;
+      case 'good': return colors.status.success;
+      case 'fair': return colors.status.warning;
       case 'poor':
       case 'dehydrated': return '#FF8F00';
       case 'severely-dehydrated':
       case 'dangerously-dehydrated':
-      case 'medical-attention': return colors.error;
+      case 'medical-attention': return colors.status.error;
       default: return colors.text.tertiary;
     }
   };
@@ -148,44 +145,31 @@ export default function DehydrationScreen() {
     if (logs.length < 2) return null;
 
     const chartData = logs.slice(0, 7).reverse();
-    
+    const values = chartData.map(l => l.waterIntake / 1000);
+    const max = Math.max(...values, 1);
+
     return (
       <Card style={styles.chartCard}>
         <Text style={styles.sectionTitle}>Hydration Trend (Last 7 Days)</Text>
-        <LineChart
-          data={{
-            labels: chartData.map(log => 
-              new Date(log.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-            ),
-            datasets: [
-              {
-                data: chartData.map(log => log.waterIntake / 1000), // Convert to liters
-                color: (opacity = 1) => colors.accent.primary,
-                strokeWidth: 3
-              }
-            ]
-          }}
-          width={width - 80}
-          height={200}
-          chartConfig={{
-            backgroundColor: colors.background.secondary,
-            backgroundGradientFrom: colors.background.secondary,
-            backgroundGradientTo: colors.background.secondary,
-            decimalPlaces: 1,
-            color: (opacity = 1) => colors.text.primary,
-            labelColor: (opacity = 1) => colors.text.secondary,
-            style: {
-              borderRadius: 16
-            },
-            propsForDots: {
-              r: "4",
-              strokeWidth: "2",
-              stroke: colors.accent.primary
-            }
-          }}
-          bezier
-          style={styles.chart}
-        />
+        <View style={styles.barChart} testID="hydration-bar-chart">
+          {values.map((v, i) => {
+            const heightPct = (v / max) * 100;
+            const label = new Date(chartData[i].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return (
+              <View key={`${chartData[i].date}-${i}`} style={styles.barItem}>
+                <View
+                  style={[
+                    styles.bar,
+                    { height: `${heightPct}%`, backgroundColor: colors.accent.primary },
+                  ]}
+                />
+                <Text style={styles.barLabel} numberOfLines={1}>
+                  {label}
+                </Text>
+              </View>
+            );
+          })}
+        </View>
       </Card>
     );
   };
@@ -235,7 +219,7 @@ export default function DehydrationScreen() {
             />
             <Text style={styles.urineColorText}>{urineColorData?.label}</Text>
             <Badge 
-              text={status.replace('-', ' ')} 
+              label={status.replace('-', ' ')} 
               variant="secondary"
               style={{ backgroundColor: statusColor }}
             />
@@ -249,7 +233,7 @@ export default function DehydrationScreen() {
               {latestLog.symptoms.map((symptom, index) => (
                 <Badge 
                   key={index}
-                  text={symptom} 
+                  label={symptom} 
                   variant="secondary"
                   style={styles.symptomBadge}
                 />
@@ -415,7 +399,7 @@ export default function DehydrationScreen() {
                     ]} 
                   />
                   <Badge 
-                    text={status.replace('-', ' ')} 
+                    label={status.replace('-', ' ')} 
                     variant="secondary"
                     style={{ backgroundColor: statusColor }}
                   />
@@ -451,7 +435,11 @@ export default function DehydrationScreen() {
         }} 
       />
       
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.scrollView}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 16 }}
+      >
         <View style={styles.header}>
           <Text style={styles.contestName}>{currentPrep.contestName}</Text>
           <Text style={styles.headerDescription}>
@@ -466,7 +454,7 @@ export default function DehydrationScreen() {
 
         <Card style={styles.warningCard}>
           <View style={styles.warningHeader}>
-            <AlertTriangle size={20} color={colors.error} />
+            <AlertTriangle size={20} color={colors.status.error} />
             <Text style={styles.warningTitle}>Important Warning</Text>
           </View>
           <Text style={styles.warningText}>
@@ -586,6 +574,33 @@ const styles = StyleSheet.create({
   chart: {
     marginVertical: 8,
     borderRadius: 16,
+  },
+  barChart: {
+    height: 200,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    justifyContent: 'space-between',
+    backgroundColor: colors.background.secondary,
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  barItem: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 4,
+  },
+  bar: {
+    width: '100%',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+  },
+  barLabel: {
+    marginTop: 6,
+    fontSize: 10,
+    color: colors.text.secondary,
   },
   addLogCard: {
     margin: 20,
@@ -722,7 +737,7 @@ const styles = StyleSheet.create({
   },
   logSymptoms: {
     fontSize: 12,
-    color: colors.warning,
+    color: colors.status.warning,
     marginBottom: 4,
   },
   logNotes: {
@@ -733,8 +748,8 @@ const styles = StyleSheet.create({
   warningCard: {
     margin: 20,
     marginTop: 0,
-    backgroundColor: colors.error + '10',
-    borderColor: colors.error,
+    backgroundColor: colors.status.error + '10',
+    borderColor: colors.status.error,
     borderWidth: 1,
   },
   warningHeader: {
@@ -745,7 +760,7 @@ const styles = StyleSheet.create({
   warningTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.error,
+    color: colors.status.error,
     marginLeft: 8,
   },
   warningText: {
