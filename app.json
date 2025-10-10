@@ -106,4 +106,9 @@
       "policy": "sdkVersion"
     },
     "extra": {
-      "ea
+      "eas": {
+        "projectId": "rork-app-prod"
+      }
+    }
+  }
+}
