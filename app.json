@@ -3,7 +3,7 @@
     "name": "Rork App",
     "slug": "rork-app",
     "version": "1.0.0",
-    "sdkVersion": "53.0.0",
+    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
@@ -14,6 +14,7 @@
     },
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.rork.app",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
         "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
@@ -21,13 +22,11 @@
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
         "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
         "NSLocationWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "UIBackgroundModes": [
-          "location",
-          "audio"
-        ]
+        "UIBackgroundModes": ["location", "audio"]
       }
     },
     "android": {
+      "package": "com.rork.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -48,21 +47,20 @@
         "INTERNET"
       ],
       "notification": {
+        "icon": "./assets/notifications/notification_icon.png",
         "color": "#ffffff",
         "sound": true,
-        "defaultChannel": "default"
+        "defaultChannel": "custom"
       }
     },
     "plugins": [
       [
         "expo-notifications",
         {
-          "icon": "./local/assets/notification_icon.png",
+          "icon": "./assets/notifications/notification_icon.png",
           "color": "#ffffff",
           "defaultChannel": "custom",
-          "sounds": [
-            "./local/assets/notification_sound.wav"
-          ],
+          "sounds": ["./assets/notifications/notification_sound.wav"],
           "enableBackgroundRemoteNotifications": false
         }
       ],
@@ -98,7 +96,14 @@
       ]
     ],
     "assetBundlePatterns": [
-      "assets/**"
-    ]
-  }
-}
+      "assets/*",
+      "assets/notifications/*"
+    ],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "runtimeVersion": {
+      "policy": "sdkVersion"
+    },
+    "extra": {
+      "ea
