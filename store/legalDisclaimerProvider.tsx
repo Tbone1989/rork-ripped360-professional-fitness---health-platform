@@ -3,7 +3,6 @@ import createContextHook from '@nkzw/create-context-hook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
-import { usePathname } from 'expo-router';
 
 export type DisclaimerType = 'medical' | 'doctor' | 'audio' | 'coach' | 'product_selling' | 'general';
 
@@ -81,38 +80,11 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
     pendingResolve.current = null;
   }, []);
 
-  const Guard: React.FC = React.memo(() => {
-    const pathname = usePathname();
-
-    useEffect(() => {
-      let cancelled = false;
-      const run = async () => {
-        try {
-          if (cancelled) return;
-          if (state.visible) return;
-          if (pathname?.includes('doctor') || pathname?.startsWith('/medical')) {
-            if (!acceptance?.doctor) {
-              await ensureAccepted('doctor');
-            }
-            if (!acceptance?.medical) {
-              await ensureAccepted('medical');
-            }
-          }
-        } catch (e) {
-          console.error('[DisclaimerGuard] error', e);
-        }
-      };
-      void run();
-      return () => {
-        cancelled = true;
-      };
-      // re-check when route changes or acceptance updates
-    }, [pathname, acceptance?.doctor, acceptance?.medical, state.visible, state.type]);
-
+  const Guard = React.memo(function DisclaimerGuardComponent() {
     return null;
   });
 
-  const Host: React.FC = React.memo(() => {
+  const Host = React.memo(function DisclaimerHostComponent() {
     const visible = state.visible && !!state.type;
     if (!visible) return null;
     return (

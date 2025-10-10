@@ -9,21 +9,20 @@ import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { Image } from 'expo-image';
 import { apiService } from '@/services/api';
 import securityService from '@/services/securityService';
+import { useDisclaimer } from '@/store/legalDisclaimerProvider';
 
 export default function UploadBloodworkScreen() {
   const router = useRouter();
+  const { ensureAccepted } = useDisclaimer();
   const [labName, setLabName] = useState('');
   const [date, setDate] = useState('');
   const [notes, setNotes] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [disclaimerAccepted, setDisclaimerAccepted] = useState(false);
-  const [showDisclaimer, setShowDisclaimer] = useState(false);
 
   const pickImage = async () => {
     if (Platform.OS !== 'web') {
@@ -84,8 +83,8 @@ export default function UploadBloodworkScreen() {
       return;
     }
     
-    if (!disclaimerAccepted) {
-      setShowDisclaimer(true);
+    const accepted = await ensureAccepted('medical');
+    if (!accepted) {
       return;
     }
     
@@ -261,17 +260,7 @@ export default function UploadBloodworkScreen() {
         )}
       </View>
 
-      <LegalDisclaimer
-        visible={showDisclaimer}
-        onClose={() => setShowDisclaimer(false)}
-        onAccept={() => {
-          setDisclaimerAccepted(true);
-          setShowDisclaimer(false);
-          // Proceed with upload
-          setTimeout(() => handleUpload(), 100);
-        }}
-        type="medical"
-      />
+
     </ScrollView>
   );
 }
