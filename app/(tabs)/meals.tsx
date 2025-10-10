@@ -392,7 +392,7 @@ export default function MealsScreen() {
       <Card style={styles.groceryCard}>
         <View style={styles.groceryHeader}>
           <Text style={styles.groceryTitle}>Food Label Reader</Text>
-          <Text style={styles.grocerySubtitle}>Yuka-style analysis + Dr. Sebi alkaline principles</Text>
+          <Text style={styles.grocerySubtitle}>Comprehensive health & nutrition analysis</Text>
         </View>
         <Button
           title="Scan Food Labels"

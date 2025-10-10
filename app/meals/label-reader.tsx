@@ -39,8 +39,8 @@ interface ParsedLabel {
 interface HealthAnalysis {
   overallScore: number;
   rating: 'excellent' | 'good' | 'fair' | 'poor' | 'avoid';
-  alkalineScore: number;
-  isAlkaline: boolean;
+  phBalance: number;
+  isBalanced: boolean;
   isPlantBased: boolean;
   isProcessed: boolean;
   healthImpacts: {
@@ -48,8 +48,8 @@ interface HealthAnalysis {
     negative: string[];
     concerns: string[];
   };
-  drSebiAlignment: {
-    approved: boolean;
+  dietAlignment: {
+    wholeFoodBased: boolean;
     reasons: string[];
   };
   alternatives?: string[];
@@ -190,7 +190,7 @@ Be thorough with ingredients list. Include everything. Identify harmful additive
     setAnalyzing(true);
     setErrorText(undefined);
     try {
-      const prompt = `Analyze this food product for health impact using Yuka-style scoring combined with Dr. Sebi's alkaline diet principles.
+      const prompt = `Analyze this food product for comprehensive health impact assessment.
 
 Product: ${parsed.productName ?? 'Unknown'}
 Brand: ${parsed.brand ?? 'Unknown'}
@@ -207,8 +207,8 @@ Provide comprehensive analysis as JSON:
 {
   "overallScore": 0-100,
   "rating": "excellent" | "good" | "fair" | "poor" | "avoid",
-  "alkalineScore": 0-100,
-  "isAlkaline": boolean,
+  "phBalance": 0-100,
+  "isBalanced": boolean,
   "isPlantBased": boolean,
   "isProcessed": boolean,
   "healthImpacts": {
@@ -216,19 +216,19 @@ Provide comprehensive analysis as JSON:
     "negative": ["list negative health aspects"],
     "concerns": ["list specific health concerns with dosage context"]
   },
-  "drSebiAlignment": {
-    "approved": boolean,
-    "reasons": ["why it aligns or doesn't with Dr. Sebi principles"]
+  "dietAlignment": {
+    "wholeFoodBased": boolean,
+    "reasons": ["assessment of whole food vs processed food characteristics"]
   },
   "alternatives": ["suggest 3-5 healthier alternatives"],
-  "detailedAnalysis": "2-3 paragraph detailed explanation of health impact, ingredient risks with dosage context, alkaline vs acidic nature, processing level, and recommendations"
+  "detailedAnalysis": "2-3 paragraph detailed explanation of health impact, ingredient risks with dosage context, pH balance, processing level, and recommendations"
 }
 
 Consider:
 - Ingredient quantity and dosage (not just presence)
-- Alkaline vs acidic forming foods
+- pH balance of foods
 - Natural vs processed ingredients
-- Dr. Sebi approved foods (alkaline, plant-based, non-hybrid)
+- Whole food vs refined ingredients
 - Harmful additives and their actual risk levels
 - Nutritional density
 - Environmental impact
@@ -242,8 +242,8 @@ Return only valid JSON.`;
         const healthAnalysis: HealthAnalysis = {
           overallScore: typeof analysisJson.overallScore === 'number' ? analysisJson.overallScore : 50,
           rating: ['excellent', 'good', 'fair', 'poor', 'avoid'].includes(analysisJson.rating) ? analysisJson.rating : 'fair',
-          alkalineScore: typeof analysisJson.alkalineScore === 'number' ? analysisJson.alkalineScore : 50,
-          isAlkaline: analysisJson.isAlkaline === true,
+          phBalance: typeof analysisJson.phBalance === 'number' ? analysisJson.phBalance : 50,
+          isBalanced: analysisJson.isBalanced === true,
           isPlantBased: analysisJson.isPlantBased === true,
           isProcessed: analysisJson.isProcessed === true,
           healthImpacts: {
@@ -251,9 +251,9 @@ Return only valid JSON.`;
             negative: Array.isArray(analysisJson.healthImpacts?.negative) ? analysisJson.healthImpacts.negative : [],
             concerns: Array.isArray(analysisJson.healthImpacts?.concerns) ? analysisJson.healthImpacts.concerns : [],
           },
-          drSebiAlignment: {
-            approved: analysisJson.drSebiAlignment?.approved === true,
-            reasons: Array.isArray(analysisJson.drSebiAlignment?.reasons) ? analysisJson.drSebiAlignment.reasons : [],
+          dietAlignment: {
+            wholeFoodBased: analysisJson.dietAlignment?.wholeFoodBased === true,
+            reasons: Array.isArray(analysisJson.dietAlignment?.reasons) ? analysisJson.dietAlignment.reasons : [],
           },
           alternatives: Array.isArray(analysisJson.alternatives) ? analysisJson.alternatives : undefined,
           detailedAnalysis: typeof analysisJson.detailedAnalysis === 'string' ? analysisJson.detailedAnalysis : 'Analysis unavailable',
@@ -276,8 +276,8 @@ Return only valid JSON.`;
       const summary = [
         parsed.productName ? `${parsed.productName}${parsed.brand ? ' by ' + parsed.brand : ''}` : undefined,
         analysis ? `Health score: ${analysis.overallScore} out of 100. Rating: ${analysis.rating}` : undefined,
-        analysis?.isAlkaline ? 'This is an alkaline food' : 'This is an acidic food',
-        analysis?.drSebiAlignment.approved ? 'Approved by Dr. Sebi principles' : 'Not aligned with Dr. Sebi principles',
+        analysis?.isBalanced ? 'This is a pH balanced food' : 'This food may be acidic',
+        analysis?.dietAlignment.wholeFoodBased ? 'Whole food based' : 'Contains processed ingredients',
         parsed.ingredients && parsed.ingredients.length ? `Ingredients: ${parsed.ingredients.slice(0, 5).join(', ')}` : undefined,
       ].filter(Boolean).join('. ');
 
@@ -333,7 +333,7 @@ Return only valid JSON.`;
           </View>
           <View style={styles.rightSpacer} />
         </View>
-        <Text style={styles.subtitle}>Yuka-style analysis + Dr. Sebi principles</Text>
+        <Text style={styles.subtitle}>Comprehensive health & nutrition analysis</Text>
       </LinearGradient>
 
       <View style={styles.content}>
@@ -433,10 +433,10 @@ Return only valid JSON.`;
               </View>
 
               <View style={styles.badgesRow}>
-                {analysis.isAlkaline && (
+                {analysis.isBalanced && (
                   <View style={[styles.badge, { backgroundColor: colors.status.success + '20' }]}>
                     <Droplet color={colors.status.success} size={14} />
-                    <Text style={[styles.badgeText, { color: colors.status.success }]}>Alkaline</Text>
+                    <Text style={[styles.badgeText, { color: colors.status.success }]}>pH Balanced</Text>
                   </View>
                 )}
                 {analysis.isPlantBased && (
@@ -445,10 +445,10 @@ Return only valid JSON.`;
                     <Text style={[styles.badgeText, { color: colors.status.success }]}>Plant-Based</Text>
                   </View>
                 )}
-                {analysis.drSebiAlignment.approved && (
+                {analysis.dietAlignment.wholeFoodBased && (
                   <View style={[styles.badge, { backgroundColor: colors.brand.PREMIUM + '20' }]}>
                     <CheckCircle color={colors.brand.PREMIUM} size={14} />
-                    <Text style={[styles.badgeText, { color: colors.brand.PREMIUM }]}>Dr. Sebi Approved</Text>
+                    <Text style={[styles.badgeText, { color: colors.brand.PREMIUM }]}>Whole Food Based</Text>
                   </View>
                 )}
                 {analysis.isProcessed && (
@@ -459,12 +459,12 @@ Return only valid JSON.`;
                 )}
               </View>
 
-              <View style={styles.alkalineSection}>
-                <Text style={styles.alkalineLabel}>Alkaline Score</Text>
-                <View style={styles.alkalineBar}>
-                  <View style={[styles.alkalineFill, { width: `${analysis.alkalineScore}%`, backgroundColor: getScoreColor(analysis.alkalineScore) }]} />
+              <View style={styles.phSection}>
+                <Text style={styles.phLabel}>pH Balance Score</Text>
+                <View style={styles.phBar}>
+                  <View style={[styles.phFill, { width: `${analysis.phBalance}%`, backgroundColor: getScoreColor(analysis.phBalance) }]} />
                 </View>
-                <Text style={styles.alkalineValue}>{analysis.alkalineScore}/100</Text>
+                <Text style={styles.phValue}>{analysis.phBalance}/100</Text>
               </View>
             </Card>
 
@@ -513,14 +513,14 @@ Return only valid JSON.`;
               </Card>
             )}
 
-            {analysis.drSebiAlignment.reasons.length > 0 && (
-              <Card style={styles.impactCard} testID="dr-sebi-alignment">
+            {analysis.dietAlignment.reasons.length > 0 && (
+              <Card style={styles.impactCard} testID="diet-alignment">
                 <View style={styles.impactHeader}>
                   <Info color={colors.brand.PREMIUM} size={18} />
-                  <Text style={styles.impactTitle}>Dr. Sebi Principles</Text>
+                  <Text style={styles.impactTitle}>Diet Quality Assessment</Text>
                 </View>
-                {analysis.drSebiAlignment.reasons.map((item, idx) => (
-                  <View key={`sebi-${idx}`} style={styles.impactItem}>
+                {analysis.dietAlignment.reasons.map((item, idx) => (
+                  <View key={`diet-${idx}`} style={styles.impactItem}>
                     <Text style={styles.impactBullet}>•</Text>
                     <Text style={styles.impactText}>{item}</Text>
                   </View>
@@ -759,11 +759,11 @@ const styles = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
   badgeText: { fontSize: 12, fontWeight: '600' as const },
 
-  alkalineSection: { marginTop: 8 },
-  alkalineLabel: { fontSize: 14, color: colors.text.secondary, marginBottom: 8 },
-  alkalineBar: { height: 8, backgroundColor: colors.background.tertiary, borderRadius: 4, overflow: 'hidden', marginBottom: 4 },
-  alkalineFill: { height: '100%', borderRadius: 4 },
-  alkalineValue: { fontSize: 12, color: colors.text.secondary, textAlign: 'right' },
+  phSection: { marginTop: 8 },
+  phLabel: { fontSize: 14, color: colors.text.secondary, marginBottom: 8 },
+  phBar: { height: 8, backgroundColor: colors.background.tertiary, borderRadius: 4, overflow: 'hidden', marginBottom: 4 },
+  phFill: { height: '100%', borderRadius: 4 },
+  phValue: { fontSize: 12, color: colors.text.secondary, textAlign: 'right' },
 
   impactCard: { marginTop: 12, padding: 16 },
   impactHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
