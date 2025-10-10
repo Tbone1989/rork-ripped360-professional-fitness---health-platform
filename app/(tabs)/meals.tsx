@@ -388,6 +388,21 @@ export default function MealsScreen() {
         />
       </View>
       
+      {/* Food Label Reader */}
+      <Card style={styles.groceryCard}>
+        <View style={styles.groceryHeader}>
+          <Text style={styles.groceryTitle}>Food Label Reader</Text>
+          <Text style={styles.grocerySubtitle}>Yuka-style analysis + Dr. Sebi alkaline principles</Text>
+        </View>
+        <Button
+          title="Scan Food Labels"
+          onPress={() => router.push('/meals/label-reader')}
+          icon={<Camera size={18} color={colors.text.primary} />}
+          style={styles.groceryButton}
+          testID="btn-food-label-reader"
+        />
+      </Card>
+
       {/* Guides & Education */}
       <Card style={styles.groceryCard}>
         <View style={styles.groceryHeader}>

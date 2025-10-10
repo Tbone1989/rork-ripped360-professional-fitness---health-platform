@@ -1,361 +1,798 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Image, ActivityIndicator, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { Stack } from 'expo-router';
-import { CameraView, useCameraPermissions } from 'expo-camera';
+import React, { useCallback, useMemo, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { CircleAlert, Camera, ImageIcon, Trash2, CheckCircle2, XCircle, Info, Sparkles } from 'lucide-react-native';
+import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
-import { Card } from '@/components/ui/Card';
-import { Chip } from '@/components/ui/Chip';
 import { Badge } from '@/components/ui/Badge';
-import { ProgressBar } from '@/components/ui/ProgressBar';
-import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { Card } from '@/components/ui/Card';
+import { Input } from '@/components/ui/Input';
+import { LinearGradient } from 'expo-linear-gradient';
+import { ScanLine, Camera, Upload, Volume2, Trash2, Info, ShieldAlert, ListChecks, AlertTriangle, CheckCircle, XCircle, Leaf, Droplet } from 'lucide-react-native';
 import { generateText } from '@rork/toolkit-sdk';
 
-interface AnalysisResult {
-  verdict: 'good' | 'moderate' | 'avoid';
-  score: number;
-  category: string;
-  summary: string;
-  positives: string[];
-  negatives: string[];
-  warnings: string[];
-  reasons: string[];
-  keyNutrients: { name: string; amount: string; dailyValue?: string }[];
-  additives: string[];
-  allergens: string[];
-  betterAlternatives: string[];
+interface ParsedLabel {
+  productName?: string;
+  brand?: string;
+  servingSize?: string;
+  servingsPerContainer?: string;
+  calories?: number;
+  totalFat?: string;
+  saturatedFat?: string;
+  transFat?: string;
+  cholesterol?: string;
+  sodium?: string;
+  totalCarbs?: string;
+  fiber?: string;
+  sugars?: string;
+  addedSugars?: string;
+  protein?: string;
+  ingredients: string[];
+  allergens?: string[];
+  warnings?: string[];
+  additives?: string[];
+  preservatives?: string[];
+  artificialIngredients?: string[];
 }
 
-const initialResult: AnalysisResult = {
-  verdict: 'moderate',
-  score: 50,
-  category: 'unknown',
-  summary: '',
-  positives: [],
-  negatives: [],
-  warnings: [],
-  reasons: [],
-  keyNutrients: [],
-  additives: [],
-  allergens: [],
-  betterAlternatives: [],
-};
+interface HealthAnalysis {
+  overallScore: number;
+  rating: 'excellent' | 'good' | 'fair' | 'poor' | 'avoid';
+  alkalineScore: number;
+  isAlkaline: boolean;
+  isPlantBased: boolean;
+  isProcessed: boolean;
+  healthImpacts: {
+    positive: string[];
+    negative: string[];
+    concerns: string[];
+  };
+  drSebiAlignment: {
+    approved: boolean;
+    reasons: string[];
+  };
+  alternatives?: string[];
+  detailedAnalysis: string;
+}
 
-export default function MealsLabelReaderScreen(): React.ReactElement {
-  const [permission, requestPermission] = useCameraPermissions();
-  const [cameraActive, setCameraActive] = useState<boolean>(false);
-  const [imageUri, setImageUri] = useState<string | null>(null);
+const emptyParsed: ParsedLabel = { ingredients: [] };
+
+export default function FoodLabelReader() {
+  const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const [imageBase64, setImageBase64] = useState<string | undefined>(undefined);
+  const [imageUri, setImageUri] = useState<string | undefined>(undefined);
+  const [manualText, setManualText] = useState<string>('');
+  const [parsed, setParsed] = useState<ParsedLabel>(emptyParsed);
+  const [analysis, setAnalysis] = useState<HealthAnalysis | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
-  const [errorText, setErrorText] = useState<string | null>(null);
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const cameraRef = useRef<CameraView | null>(null);
+  const [analyzing, setAnalyzing] = useState<boolean>(false);
+  const [errorText, setErrorText] = useState<string | undefined>(undefined);
 
-  const handleRequestPermission = useCallback(async () => {
+  const takePhoto = useCallback(async () => {
     try {
-      console.log('[LabelReader] Requesting camera permission');
-      const res = await requestPermission();
-      console.log('[LabelReader] Permission result', res);
-      if (res?.granted) setCameraActive(true);
-      else Alert.alert('Permission needed', 'Camera access is required to scan labels.');
+      setErrorText(undefined);
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission needed', 'Camera permission is required to scan labels.');
+        return;
+      }
+      const res = await ImagePicker.launchCameraAsync({ base64: true, quality: 0.8 });
+      if (!res.canceled && res.assets && res.assets[0]) {
+        const asset = res.assets[0];
+        setImageBase64(asset.base64 ?? undefined);
+        setImageUri(asset.uri ?? undefined);
+      }
     } catch (e) {
-      console.error('[LabelReader] Permission error', e);
-      Alert.alert('Error', 'Unable to request camera permission.');
+      console.log('[FoodLabelReader] takePhoto error', e);
+      setErrorText('Failed to capture photo. Please try again.');
     }
-  }, [requestPermission]);
-
-  const openCamera = useCallback(async () => {
-    if (!permission?.granted) {
-      await handleRequestPermission();
-      return;
-    }
-    setCameraActive(true);
-    setErrorText(null);
-  }, [permission?.granted, handleRequestPermission]);
+  }, []);
 
   const pickImage = useCallback(async () => {
     try {
-      console.log('[LabelReader] Opening image library');
-      const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1, base64: true });
-      if (res.canceled) return;
-      const asset = res.assets?.[0];
-      if (asset?.uri) {
-        setImageUri(asset.uri);
-        setResult(null);
+      setErrorText(undefined);
+      const res = await ImagePicker.launchImageLibraryAsync({ base64: true, quality: 0.9 });
+      if (!res.canceled && res.assets && res.assets[0]) {
+        const asset = res.assets[0];
+        setImageBase64(asset.base64 ?? undefined);
+        setImageUri(asset.uri ?? undefined);
       }
     } catch (e) {
-      console.error('[LabelReader] Image pick error', e);
-      setErrorText('Failed to open the photo library.');
+      console.log('[FoodLabelReader] pickImage error', e);
+      setErrorText('Failed to pick image.');
     }
   }, []);
 
-  const analyze = useCallback(async () => {
-    if (!imageUri) {
-      setErrorText('Please capture or select a label image first.');
-      return;
-    }
+  const reset = useCallback(() => {
+    setImageBase64(undefined);
+    setImageUri(undefined);
+    setManualText('');
+    setParsed(emptyParsed);
+    setAnalysis(undefined);
+    setErrorText(undefined);
+  }, []);
+
+  const canAnalyze = useMemo(() => !!imageBase64 || manualText.trim().length > 10, [imageBase64, manualText]);
+
+  const extractLabel = useCallback(async () => {
+    if (!canAnalyze) return;
+    setLoading(true);
+    setErrorText(undefined);
     try {
-      setLoading(true);
-      setErrorText(null);
-      setResult(null);
-      console.log('[LabelReader] Analyzing image', imageUri);
+      const messages = [] as (
+        | { role: 'user'; content: string }
+        | { role: 'user'; content: ({ type: 'text'; text: string } | { type: 'image'; image: string })[] }
+        | { role: 'assistant'; content: { type: 'text'; text: string }[] }
+      )[];
 
-      const system =
-        'You are a nutrition label analyst. Return STRICT JSON only. No prose. Keys: verdict (good|moderate|avoid), score (0-100), category, summary, positives[], negatives[], warnings[], reasons[], keyNutrients[{name, amount, dailyValue?}], additives[], allergens[], betterAlternatives[]. Keep arrays concise and user-safe. Consider sodium, added sugar, refined grains, seed oils, artificial additives, fiber, protein quality, serving size.';
+      const parts: ({ type: 'text'; text: string } | { type: 'image'; image: string })[] = [];
+      parts.push({ 
+        type: 'text', 
+        text: `Extract food product label into JSON with these fields: productName, brand, servingSize, servingsPerContainer, calories (number), totalFat, saturatedFat, transFat, cholesterol, sodium, totalCarbs, fiber, sugars, addedSugars, protein, ingredients[] (list all ingredients in order), allergens[], warnings[], additives[] (artificial colors, flavors, sweeteners), preservatives[] (BHA, BHT, sodium benzoate, etc), artificialIngredients[] (anything synthetic or highly processed). 
 
-      const prompt = `Analyze this nutrition label photo. Output JSON only. If unreadable, set verdict:"moderate", summary:"Image unclear" and include warnings. Provide everyday language.`;
-
-      const jsonTemplate =
-        '{"verdict":"good","score":80,"category":"cereal","summary":"...","positives":["..."],"negatives":["..."],"warnings":["..."],"reasons":["..."],"keyNutrients":[{"name":"Calories","amount":"190"},{"name":"Protein","amount":"6g"}],"additives":["BHT"],"allergens":["wheat"],"betterAlternatives":["Whole grain cereal with <6g sugar/serving"]}';
-
-      const text = await generateText({
-        messages: [
-          { role: 'user', content: [ { type: 'text', text: system }, { type: 'image', image: imageUri } ] },
-          { role: 'user', content: [ { type: 'text', text: prompt } ] },
-          { role: 'assistant', content: jsonTemplate },
-        ],
+Be thorough with ingredients list. Include everything. Identify harmful additives, preservatives, artificial ingredients. If information is missing, omit the field. Return only valid JSON.` 
       });
-
-      console.log('[LabelReader] Raw AI response', text);
-      let parsed: AnalysisResult | null = null;
-      try {
-        parsed = JSON.parse(text) as AnalysisResult;
-      } catch (e) {
-        console.warn('[LabelReader] JSON parse failed, attempting to extract JSON');
-        const match = text.match(/\{[\s\S]*\}$/);
-        if (match) {
-          try { parsed = JSON.parse(match[0]) as AnalysisResult; } catch {}
-        }
+      
+      if (manualText.trim().length > 0) {
+        parts.push({ type: 'text', text: manualText.trim() });
       }
-      if (!parsed) throw new Error('AI returned an unexpected format');
+      if (imageBase64) {
+        parts.push({ type: 'image', image: `data:image/jpeg;base64,${imageBase64}` });
+      }
+      messages.push({ role: 'user', content: parts });
 
-      const normalized: AnalysisResult = {
-        ...initialResult,
-        ...parsed,
-        verdict: parsed.verdict === 'good' || parsed.verdict === 'avoid' ? parsed.verdict : 'moderate',
-        score: typeof parsed.score === 'number' ? Math.max(0, Math.min(100, parsed.score)) : 50,
-        positives: parsed.positives ?? [],
-        negatives: parsed.negatives ?? [],
-        warnings: parsed.warnings ?? [],
-        reasons: parsed.reasons ?? [],
-        keyNutrients: parsed.keyNutrients?.map((k) => ({ name: k.name, amount: k.amount, dailyValue: k.dailyValue })) ?? [],
-        additives: parsed.additives ?? [],
-        allergens: parsed.allergens ?? [],
-        betterAlternatives: parsed.betterAlternatives ?? [],
-      };
+      const text = await generateText({ messages });
 
-      setResult(normalized);
+      let r: ParsedLabel = emptyParsed;
+      try {
+        const parsedJson = JSON.parse(text as unknown as string);
+        r = {
+          productName: typeof parsedJson.productName === 'string' ? parsedJson.productName : undefined,
+          brand: typeof parsedJson.brand === 'string' ? parsedJson.brand : undefined,
+          servingSize: typeof parsedJson.servingSize === 'string' ? parsedJson.servingSize : undefined,
+          servingsPerContainer: typeof parsedJson.servingsPerContainer === 'string' ? parsedJson.servingsPerContainer : undefined,
+          calories: typeof parsedJson.calories === 'number' ? parsedJson.calories : undefined,
+          totalFat: typeof parsedJson.totalFat === 'string' ? parsedJson.totalFat : undefined,
+          saturatedFat: typeof parsedJson.saturatedFat === 'string' ? parsedJson.saturatedFat : undefined,
+          transFat: typeof parsedJson.transFat === 'string' ? parsedJson.transFat : undefined,
+          cholesterol: typeof parsedJson.cholesterol === 'string' ? parsedJson.cholesterol : undefined,
+          sodium: typeof parsedJson.sodium === 'string' ? parsedJson.sodium : undefined,
+          totalCarbs: typeof parsedJson.totalCarbs === 'string' ? parsedJson.totalCarbs : undefined,
+          fiber: typeof parsedJson.fiber === 'string' ? parsedJson.fiber : undefined,
+          sugars: typeof parsedJson.sugars === 'string' ? parsedJson.sugars : undefined,
+          addedSugars: typeof parsedJson.addedSugars === 'string' ? parsedJson.addedSugars : undefined,
+          protein: typeof parsedJson.protein === 'string' ? parsedJson.protein : undefined,
+          ingredients: Array.isArray(parsedJson.ingredients) ? parsedJson.ingredients.filter((x: unknown) => typeof x === 'string') : [],
+          allergens: Array.isArray(parsedJson.allergens) ? parsedJson.allergens.filter((x: unknown) => typeof x === 'string') : undefined,
+          warnings: Array.isArray(parsedJson.warnings) ? parsedJson.warnings.filter((x: unknown) => typeof x === 'string') : undefined,
+          additives: Array.isArray(parsedJson.additives) ? parsedJson.additives.filter((x: unknown) => typeof x === 'string') : undefined,
+          preservatives: Array.isArray(parsedJson.preservatives) ? parsedJson.preservatives.filter((x: unknown) => typeof x === 'string') : undefined,
+          artificialIngredients: Array.isArray(parsedJson.artificialIngredients) ? parsedJson.artificialIngredients.filter((x: unknown) => typeof x === 'string') : undefined,
+        };
+      } catch (parseErr) {
+        console.log('[FoodLabelReader] JSON parse failed, got text:', text);
+        setErrorText('Could not parse label. Try another photo or paste the text.');
+      }
+
+      setParsed(r);
     } catch (e) {
-      console.error('[LabelReader] Analyze error', e);
-      setErrorText('Could not analyze the label. Please try a clearer photo.');
+      console.log('[FoodLabelReader] extractLabel error', e);
+      setErrorText('Could not analyze the label. Please try a clearer photo or paste the text.');
     } finally {
       setLoading(false);
     }
-  }, [imageUri]);
+  }, [canAnalyze, imageBase64, manualText]);
 
-  const capture = useCallback(async () => {
+  const analyzeHealth = useCallback(async () => {
+    if (!parsed || parsed.ingredients.length === 0) return;
+    setAnalyzing(true);
+    setErrorText(undefined);
     try {
-      if (!cameraRef.current) return;
-      console.log('[LabelReader] Capturing photo');
-      const photo = await cameraRef.current.takePictureAsync?.({ quality: 1, base64: false });
-      const uri = (photo as unknown as { uri?: string })?.uri ?? null;
-      if (uri) {
-        setImageUri(uri);
-        setCameraActive(false);
-        setResult(null);
+      const prompt = `Analyze this food product for health impact using Yuka-style scoring combined with Dr. Sebi's alkaline diet principles.
+
+Product: ${parsed.productName ?? 'Unknown'}
+Brand: ${parsed.brand ?? 'Unknown'}
+Ingredients: ${parsed.ingredients.join(', ')}
+${parsed.additives && parsed.additives.length > 0 ? `Additives: ${parsed.additives.join(', ')}` : ''}
+${parsed.preservatives && parsed.preservatives.length > 0 ? `Preservatives: ${parsed.preservatives.join(', ')}` : ''}
+${parsed.artificialIngredients && parsed.artificialIngredients.length > 0 ? `Artificial: ${parsed.artificialIngredients.join(', ')}` : ''}
+${parsed.sodium ? `Sodium: ${parsed.sodium}` : ''}
+${parsed.sugars ? `Sugars: ${parsed.sugars}` : ''}
+${parsed.addedSugars ? `Added Sugars: ${parsed.addedSugars}` : ''}
+${parsed.fiber ? `Fiber: ${parsed.fiber}` : ''}
+
+Provide comprehensive analysis as JSON:
+{
+  "overallScore": 0-100,
+  "rating": "excellent" | "good" | "fair" | "poor" | "avoid",
+  "alkalineScore": 0-100,
+  "isAlkaline": boolean,
+  "isPlantBased": boolean,
+  "isProcessed": boolean,
+  "healthImpacts": {
+    "positive": ["list positive health aspects"],
+    "negative": ["list negative health aspects"],
+    "concerns": ["list specific health concerns with dosage context"]
+  },
+  "drSebiAlignment": {
+    "approved": boolean,
+    "reasons": ["why it aligns or doesn't with Dr. Sebi principles"]
+  },
+  "alternatives": ["suggest 3-5 healthier alternatives"],
+  "detailedAnalysis": "2-3 paragraph detailed explanation of health impact, ingredient risks with dosage context, alkaline vs acidic nature, processing level, and recommendations"
+}
+
+Consider:
+- Ingredient quantity and dosage (not just presence)
+- Alkaline vs acidic forming foods
+- Natural vs processed ingredients
+- Dr. Sebi approved foods (alkaline, plant-based, non-hybrid)
+- Harmful additives and their actual risk levels
+- Nutritional density
+- Environmental impact
+
+Return only valid JSON.`;
+
+      const text = await generateText(prompt);
+      
+      try {
+        const analysisJson = JSON.parse(text as unknown as string);
+        const healthAnalysis: HealthAnalysis = {
+          overallScore: typeof analysisJson.overallScore === 'number' ? analysisJson.overallScore : 50,
+          rating: ['excellent', 'good', 'fair', 'poor', 'avoid'].includes(analysisJson.rating) ? analysisJson.rating : 'fair',
+          alkalineScore: typeof analysisJson.alkalineScore === 'number' ? analysisJson.alkalineScore : 50,
+          isAlkaline: analysisJson.isAlkaline === true,
+          isPlantBased: analysisJson.isPlantBased === true,
+          isProcessed: analysisJson.isProcessed === true,
+          healthImpacts: {
+            positive: Array.isArray(analysisJson.healthImpacts?.positive) ? analysisJson.healthImpacts.positive : [],
+            negative: Array.isArray(analysisJson.healthImpacts?.negative) ? analysisJson.healthImpacts.negative : [],
+            concerns: Array.isArray(analysisJson.healthImpacts?.concerns) ? analysisJson.healthImpacts.concerns : [],
+          },
+          drSebiAlignment: {
+            approved: analysisJson.drSebiAlignment?.approved === true,
+            reasons: Array.isArray(analysisJson.drSebiAlignment?.reasons) ? analysisJson.drSebiAlignment.reasons : [],
+          },
+          alternatives: Array.isArray(analysisJson.alternatives) ? analysisJson.alternatives : undefined,
+          detailedAnalysis: typeof analysisJson.detailedAnalysis === 'string' ? analysisJson.detailedAnalysis : 'Analysis unavailable',
+        };
+        setAnalysis(healthAnalysis);
+      } catch (parseErr) {
+        console.log('[FoodLabelReader] Analysis JSON parse failed:', text);
+        setErrorText('Could not parse health analysis. Please try again.');
       }
     } catch (e) {
-      console.error('[LabelReader] Capture error', e);
-      setErrorText('Failed to capture photo.');
+      console.log('[FoodLabelReader] analyzeHealth error', e);
+      setErrorText('Could not analyze health impact. Please try again.');
+    } finally {
+      setAnalyzing(false);
     }
-  }, []);
+  }, [parsed]);
 
-  const verdictInfo = useMemo(() => {
-    const v = result?.verdict ?? 'moderate';
-    switch (v) {
-      case 'good':
-        return { color: '#10b981', Icon: CheckCircle2 };
-      case 'avoid':
-        return { color: '#ef4444', Icon: XCircle };
-      default:
-        return { color: '#f59e0b', Icon: Info };
+  const readAloud = useCallback(() => {
+    try {
+      const summary = [
+        parsed.productName ? `${parsed.productName}${parsed.brand ? ' by ' + parsed.brand : ''}` : undefined,
+        analysis ? `Health score: ${analysis.overallScore} out of 100. Rating: ${analysis.rating}` : undefined,
+        analysis?.isAlkaline ? 'This is an alkaline food' : 'This is an acidic food',
+        analysis?.drSebiAlignment.approved ? 'Approved by Dr. Sebi principles' : 'Not aligned with Dr. Sebi principles',
+        parsed.ingredients && parsed.ingredients.length ? `Ingredients: ${parsed.ingredients.slice(0, 5).join(', ')}` : undefined,
+      ].filter(Boolean).join('. ');
+
+      if (Platform.OS === 'web' && typeof window !== 'undefined' && 'speechSynthesis' in window) {
+        const utter = new SpeechSynthesisUtterance(summary);
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utter);
+      } else {
+        Alert.alert('Read aloud', summary.length > 0 ? summary : 'No details to read yet.');
+      }
+    } catch (e) {
+      console.log('[FoodLabelReader] readAloud error', e);
     }
-  }, [result?.verdict]);
+  }, [parsed, analysis]);
+
+  const renderImage = () => {
+    if (!imageUri) return null;
+    return (
+      <View style={styles.previewBox}>
+        <Image source={{ uri: imageUri }} style={styles.previewImage} resizeMode="cover" />
+      </View>
+    );
+  };
+
+  const getScoreColor = (score: number) => {
+    if (score >= 80) return colors.status.success;
+    if (score >= 60) return colors.status.info;
+    if (score >= 40) return colors.status.warning;
+    return colors.status.error;
+  };
+
+  const getRatingIcon = (rating: string) => {
+    switch (rating) {
+      case 'excellent': return <CheckCircle color={colors.status.success} size={24} />;
+      case 'good': return <CheckCircle color={colors.status.info} size={24} />;
+      case 'fair': return <AlertTriangle color={colors.status.warning} size={24} />;
+      case 'poor': return <XCircle color={colors.status.error} size={24} />;
+      case 'avoid': return <ShieldAlert color={colors.status.error} size={24} />;
+      default: return <Info color={colors.text.secondary} size={24} />;
+    }
+  };
 
   return (
-    <ErrorBoundary>
-      <Stack.Screen options={{ title: 'Food Label Reader' }} />
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.container} testID="labelReaderContainer">
-          <View style={styles.actionsRow}>
-            <Button testID="openCameraBtn" onPress={openCamera} variant="secondary" title="Scan with Camera" leftIcon={<Camera size={18} color="#111827" />} />
-            <Button testID="pickImageBtn" onPress={pickImage} title="Upload Photo" leftIcon={<ImageIcon size={18} color="#ffffff" />} />
+    <ScrollView contentContainerStyle={[styles.container, { paddingBottom: Math.max(16, insets.bottom) }]} testID="food-label-reader-screen">
+      <LinearGradient colors={colors.gradient.primary} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.header, { paddingTop: 14 + insets.top }]}>
+        <View style={styles.headerRow}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backBtn} accessibilityRole="button" testID="back-button">
+            <Text style={styles.backText}>Back</Text>
+          </TouchableOpacity>
+          <View style={styles.titleWrap}>
+            <ScanLine color={colors.text.primary} size={20} />
+            <Text style={styles.title}>Food Label Reader</Text>
           </View>
+          <View style={styles.rightSpacer} />
+        </View>
+        <Text style={styles.subtitle}>Yuka-style analysis + Dr. Sebi principles</Text>
+      </LinearGradient>
 
-          {cameraActive && (
-            <View style={styles.cameraWrap} testID="cameraWrap">
-              <CameraView ref={cameraRef as unknown as React.RefObject<CameraView>} style={styles.camera} facing={'back'}>
-                <View style={styles.cameraOverlay}>
-                  <TouchableOpacity accessibilityRole="button" testID="captureBtn" onPress={capture} style={styles.shutter}>
-                    <View style={styles.shutterInner} />
-                  </TouchableOpacity>
-                  <TouchableOpacity accessibilityRole="button" testID="closeCameraBtn" onPress={() => setCameraActive(false)} style={styles.closeCamera}>
-                    <XCircle color="#fff" size={28} />
-                  </TouchableOpacity>
-                </View>
-              </CameraView>
-            </View>
+      <View style={styles.content}>
+        {renderImage()}
+
+        <View style={styles.actionsRow}>
+          <Button
+            title="Scan with Camera"
+            onPress={takePhoto}
+            leftIcon={<Camera color={colors.text.primary} size={18} />}
+            fullWidth
+            testID="scan-camera"
+          />
+          <View style={{ height: 12 }} />
+          <Button
+            title="Upload Label Photo"
+            variant="secondary"
+            onPress={pickImage}
+            leftIcon={<Upload color={colors.text.primary} size={18} />}
+            fullWidth
+            testID="upload-photo"
+          />
+        </View>
+
+        <Card style={styles.manualBox}>
+          <Text style={styles.label}>Or paste label text</Text>
+          <Input
+            value={manualText}
+            onChangeText={setManualText}
+            placeholder="e.g., Ingredients: Whole grain oats, sugar, salt..."
+            multiline
+            numberOfLines={5}
+            testID="manual-text-input"
+          />
+        </Card>
+
+        {errorText ? (
+          <Text style={styles.errorText} testID="error-text">{errorText}</Text>
+        ) : null}
+
+        <View style={styles.primaryActions}>
+          <Button
+            title={loading ? 'Extracting…' : 'Extract Label'}
+            onPress={extractLabel}
+            disabled={!canAnalyze || loading}
+            fullWidth
+            testID="extract-button"
+            rightIcon={loading ? <ActivityIndicator color={colors.text.primary} /> : undefined}
+          />
+          {parsed && parsed.ingredients.length > 0 && (
+            <>
+              <View style={{ height: 12 }} />
+              <Button
+                title={analyzing ? 'Analyzing Health…' : 'Analyze Health Impact'}
+                onPress={analyzeHealth}
+                variant="secondary"
+                disabled={analyzing}
+                fullWidth
+                testID="analyze-health-button"
+                rightIcon={analyzing ? <ActivityIndicator color={colors.text.primary} /> : undefined}
+              />
+            </>
           )}
+          <View style={{ height: 12 }} />
+          <Button
+            title="Read Aloud"
+            variant="outline"
+            onPress={readAloud}
+            disabled={!parsed || parsed.ingredients.length === 0}
+            leftIcon={<Volume2 color={colors.accent.primary} size={18} />}
+            fullWidth
+            testID="read-aloud-button"
+          />
+          <View style={{ height: 12 }} />
+          <Button
+            title="Clear"
+            variant="ghost"
+            onPress={reset}
+            leftIcon={<Trash2 color={colors.accent.primary} size={18} />}
+            fullWidth
+            testID="clear-button"
+          />
+        </View>
 
-          {imageUri && !cameraActive && (
-            <Card testID="previewCard" style={styles.previewCard}>
-              <Image source={{ uri: imageUri }} style={styles.preview} resizeMode="contain" />
-              <View style={styles.previewActions}>
-                <Button testID="analyzeBtn" title={loading ? 'Analyzing…' : 'Analyze Label'} onPress={analyze} disabled={loading} leftIcon={<Sparkles size={18} color="#ffffff" />} />
-                <Button testID="removeImageBtn" title="Remove" onPress={() => { setImageUri(null); setResult(null); }} variant="ghost" leftIcon={<Trash2 size={18} color="#111827" />} />
+        {analysis && (
+          <View style={styles.analysisWrap}>
+            <Card style={styles.scoreCard} testID="score-card">
+              <View style={styles.scoreHeader}>
+                {getRatingIcon(analysis.rating)}
+                <View style={styles.scoreInfo}>
+                  <Text style={styles.scoreTitle}>Health Score</Text>
+                  <Text style={[styles.scoreValue, { color: getScoreColor(analysis.overallScore) }]}>
+                    {analysis.overallScore}/100
+                  </Text>
+                  <Text style={styles.scoreRating}>{analysis.rating.toUpperCase()}</Text>
+                </View>
               </View>
-              {loading && (
-                <View style={styles.loadingRow}>
-                  <ActivityIndicator color="#111827" />
-                  <Text style={styles.loadingText}>Reading nutrition facts…</Text>
-                </View>
-              )}
-            </Card>
-          )}
 
-          {errorText && (
-            <View style={styles.errorBox} testID="errorBox">
-              <CircleAlert color="#ef4444" size={18} />
-              <Text style={styles.errorText}>{errorText}</Text>
-            </View>
-          )}
-
-          {result && (
-            <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} testID="resultScroll">
-              <Card style={styles.resultCard} testID="resultCard">
-                <View style={styles.verdictRow}>
-                  {React.createElement(verdictInfo.Icon, { color: verdictInfo.color, size: 20 })}
-                  <Text style={[styles.verdictText, { color: verdictInfo.color }]}>{result.verdict.toUpperCase()}</Text>
-                  <View style={styles.scoreWrap}>
-                    <Text style={styles.scoreLabel}>Score</Text>
-                    <ProgressBar progress={result.score / 100} />
+              <View style={styles.badgesRow}>
+                {analysis.isAlkaline && (
+                  <View style={[styles.badge, { backgroundColor: colors.status.success + '20' }]}>
+                    <Droplet color={colors.status.success} size={14} />
+                    <Text style={[styles.badgeText, { color: colors.status.success }]}>Alkaline</Text>
                   </View>
+                )}
+                {analysis.isPlantBased && (
+                  <View style={[styles.badge, { backgroundColor: colors.status.success + '20' }]}>
+                    <Leaf color={colors.status.success} size={14} />
+                    <Text style={[styles.badgeText, { color: colors.status.success }]}>Plant-Based</Text>
+                  </View>
+                )}
+                {analysis.drSebiAlignment.approved && (
+                  <View style={[styles.badge, { backgroundColor: colors.brand.PREMIUM + '20' }]}>
+                    <CheckCircle color={colors.brand.PREMIUM} size={14} />
+                    <Text style={[styles.badgeText, { color: colors.brand.PREMIUM }]}>Dr. Sebi Approved</Text>
+                  </View>
+                )}
+                {analysis.isProcessed && (
+                  <View style={[styles.badge, { backgroundColor: colors.status.warning + '20' }]}>
+                    <AlertTriangle color={colors.status.warning} size={14} />
+                    <Text style={[styles.badgeText, { color: colors.status.warning }]}>Processed</Text>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.alkalineSection}>
+                <Text style={styles.alkalineLabel}>Alkaline Score</Text>
+                <View style={styles.alkalineBar}>
+                  <View style={[styles.alkalineFill, { width: `${analysis.alkalineScore}%`, backgroundColor: getScoreColor(analysis.alkalineScore) }]} />
                 </View>
-                {result.summary ? <Text style={styles.summary}>{result.summary}</Text> : null}
-                <View style={styles.chipsRow}>
-                  <Badge label={result.category || 'food'} />
-                  {result.allergens?.slice(0, 3).map((a, i) => (
-                    <Chip key={`allergen-${i}`} label={`Allergen: ${a}`} />
+                <Text style={styles.alkalineValue}>{analysis.alkalineScore}/100</Text>
+              </View>
+            </Card>
+
+            {analysis.healthImpacts.positive.length > 0 && (
+              <Card style={styles.impactCard} testID="positive-impacts">
+                <View style={styles.impactHeader}>
+                  <CheckCircle color={colors.status.success} size={18} />
+                  <Text style={styles.impactTitle}>Positive Health Impacts</Text>
+                </View>
+                {analysis.healthImpacts.positive.map((item, idx) => (
+                  <View key={`pos-${idx}`} style={styles.impactItem}>
+                    <Text style={styles.impactBullet}>•</Text>
+                    <Text style={styles.impactText}>{item}</Text>
+                  </View>
+                ))}
+              </Card>
+            )}
+
+            {analysis.healthImpacts.negative.length > 0 && (
+              <Card style={styles.impactCard} testID="negative-impacts">
+                <View style={styles.impactHeader}>
+                  <XCircle color={colors.status.error} size={18} />
+                  <Text style={styles.impactTitle}>Negative Health Impacts</Text>
+                </View>
+                {analysis.healthImpacts.negative.map((item, idx) => (
+                  <View key={`neg-${idx}`} style={styles.impactItem}>
+                    <Text style={styles.impactBullet}>•</Text>
+                    <Text style={styles.impactText}>{item}</Text>
+                  </View>
+                ))}
+              </Card>
+            )}
+
+            {analysis.healthImpacts.concerns.length > 0 && (
+              <Card style={styles.impactCard} testID="concerns">
+                <View style={styles.impactHeader}>
+                  <AlertTriangle color={colors.status.warning} size={18} />
+                  <Text style={styles.impactTitle}>Health Concerns</Text>
+                </View>
+                {analysis.healthImpacts.concerns.map((item, idx) => (
+                  <View key={`concern-${idx}`} style={styles.impactItem}>
+                    <Text style={styles.impactBullet}>•</Text>
+                    <Text style={styles.impactText}>{item}</Text>
+                  </View>
+                ))}
+              </Card>
+            )}
+
+            {analysis.drSebiAlignment.reasons.length > 0 && (
+              <Card style={styles.impactCard} testID="dr-sebi-alignment">
+                <View style={styles.impactHeader}>
+                  <Info color={colors.brand.PREMIUM} size={18} />
+                  <Text style={styles.impactTitle}>Dr. Sebi Principles</Text>
+                </View>
+                {analysis.drSebiAlignment.reasons.map((item, idx) => (
+                  <View key={`sebi-${idx}`} style={styles.impactItem}>
+                    <Text style={styles.impactBullet}>•</Text>
+                    <Text style={styles.impactText}>{item}</Text>
+                  </View>
+                ))}
+              </Card>
+            )}
+
+            {analysis.alternatives && analysis.alternatives.length > 0 && (
+              <Card style={styles.impactCard} testID="alternatives">
+                <View style={styles.impactHeader}>
+                  <Leaf color={colors.status.success} size={18} />
+                  <Text style={styles.impactTitle}>Healthier Alternatives</Text>
+                </View>
+                {analysis.alternatives.map((item, idx) => (
+                  <View key={`alt-${idx}`} style={styles.alternativeItem}>
+                    <CheckCircle color={colors.status.success} size={14} />
+                    <Text style={styles.alternativeText}>{item}</Text>
+                  </View>
+                ))}
+              </Card>
+            )}
+
+            <Card style={styles.detailedCard} testID="detailed-analysis">
+              <View style={styles.impactHeader}>
+                <ListChecks color={colors.accent.primary} size={18} />
+                <Text style={styles.impactTitle}>Detailed Analysis</Text>
+              </View>
+              <Text style={styles.detailedText}>{analysis.detailedAnalysis}</Text>
+            </Card>
+          </View>
+        )}
+
+        {parsed && parsed.ingredients.length > 0 && (
+          <View style={styles.resultWrap}>
+            {(parsed.productName || parsed.brand) && (
+              <Card style={styles.productCard} testID="product-card">
+                <Text style={styles.productTitle}>{parsed.productName ?? 'Food Product'}</Text>
+                {parsed.brand ? <Text style={styles.productBrand}>{parsed.brand}</Text> : null}
+                <View style={styles.productMetaRow}>
+                  {parsed.servingSize ? <Badge label={`Serving: ${parsed.servingSize}`} /> : null}
+                  {parsed.servingsPerContainer ? <Badge label={`${parsed.servingsPerContainer} servings`} /> : null}
+                  {parsed.calories ? <Badge label={`${parsed.calories} cal`} /> : null}
+                </View>
+              </Card>
+            )}
+
+            {(parsed.totalFat || parsed.sodium || parsed.totalCarbs || parsed.protein) && (
+              <Card style={styles.nutritionCard} testID="nutrition-facts">
+                <Text style={styles.sectionTitle}>Nutrition Facts</Text>
+                <View style={styles.nutritionGrid}>
+                  {parsed.totalFat && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Total Fat</Text>
+                      <Text style={styles.nutritionValue}>{parsed.totalFat}</Text>
+                    </View>
+                  )}
+                  {parsed.saturatedFat && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Saturated Fat</Text>
+                      <Text style={styles.nutritionValue}>{parsed.saturatedFat}</Text>
+                    </View>
+                  )}
+                  {parsed.transFat && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Trans Fat</Text>
+                      <Text style={styles.nutritionValue}>{parsed.transFat}</Text>
+                    </View>
+                  )}
+                  {parsed.cholesterol && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Cholesterol</Text>
+                      <Text style={styles.nutritionValue}>{parsed.cholesterol}</Text>
+                    </View>
+                  )}
+                  {parsed.sodium && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Sodium</Text>
+                      <Text style={styles.nutritionValue}>{parsed.sodium}</Text>
+                    </View>
+                  )}
+                  {parsed.totalCarbs && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Total Carbs</Text>
+                      <Text style={styles.nutritionValue}>{parsed.totalCarbs}</Text>
+                    </View>
+                  )}
+                  {parsed.fiber && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Fiber</Text>
+                      <Text style={styles.nutritionValue}>{parsed.fiber}</Text>
+                    </View>
+                  )}
+                  {parsed.sugars && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Sugars</Text>
+                      <Text style={styles.nutritionValue}>{parsed.sugars}</Text>
+                    </View>
+                  )}
+                  {parsed.addedSugars && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Added Sugars</Text>
+                      <Text style={styles.nutritionValue}>{parsed.addedSugars}</Text>
+                    </View>
+                  )}
+                  {parsed.protein && (
+                    <View style={styles.nutritionItem}>
+                      <Text style={styles.nutritionLabel}>Protein</Text>
+                      <Text style={styles.nutritionValue}>{parsed.protein}</Text>
+                    </View>
+                  )}
+                </View>
+              </Card>
+            )}
+
+            {parsed.ingredients.length > 0 && (
+              <Card style={styles.sectionCard} testID="ingredients-card">
+                <View style={styles.sectionHeader}>
+                  <ListChecks color={colors.accent.primary} size={18} />
+                  <Text style={styles.sectionTitle}>Ingredients</Text>
+                </View>
+                <View style={styles.tagsWrap}>
+                  {parsed.ingredients.map((t, idx) => (
+                    <Badge key={`ing-${idx}`} label={t} style={styles.tag} />
                   ))}
                 </View>
               </Card>
+            )}
 
-              {result.keyNutrients?.length > 0 && (
-                <Card style={styles.section}>
-                  <Text style={styles.sectionTitle}>Key nutrients</Text>
-                  <View style={styles.listWrap}>
-                    {result.keyNutrients.map((n, i) => (
-                      <View key={`nut-${i}`} style={styles.kvRow}>
-                        <Text style={styles.kvKey}>{n.name}</Text>
-                        <Text style={styles.kvVal}>
-                          {n.amount}
-                          {n.dailyValue ? ` • ${n.dailyValue}` : ''}
-                        </Text>
-                      </View>
-                    ))}
-                  </View>
-                </Card>
-              )}
-
-              {result.positives?.length > 0 && (
-                <Card style={styles.section}>
-                  <Text style={styles.sectionTitle}>Positives</Text>
-                  {result.positives.map((p, i) => (
-                    <Text key={`pos-${i}`} style={styles.bullet}>• {p}</Text>
-                  ))}
-                </Card>
-              )}
-
-              {result.negatives?.length > 0 && (
-                <Card style={styles.section}>
-                  <Text style={styles.sectionTitle}>Concerns</Text>
-                  {result.negatives.map((n, i) => (
-                    <Text key={`neg-${i}`} style={styles.bullet}>• {n}</Text>
-                  ))}
-                </Card>
-              )}
-
-              {result.warnings?.length > 0 && (
-                <Card style={styles.warningCard}>
-                  <Text style={styles.sectionTitle}>Warnings</Text>
-                  {result.warnings.map((w, i) => (
-                    <Text key={`warn-${i}`} style={styles.warningText}>• {w}</Text>
-                  ))}
-                </Card>
-              )}
-
-              {(result.additives?.length ?? 0) > 0 && (
-                <Card style={styles.section}>
+            {parsed.additives && parsed.additives.length > 0 && (
+              <Card style={styles.sectionCard} testID="additives-card">
+                <View style={styles.sectionHeader}>
+                  <AlertTriangle color={colors.status.warning} size={18} />
                   <Text style={styles.sectionTitle}>Additives</Text>
-                  <View style={styles.chipsRowWrap}>
-                    {result.additives.map((a, i) => (
-                      <Chip key={`add-${i}`} label={a} />
-                    ))}
-                  </View>
-                </Card>
-              )}
-
-              {(result.betterAlternatives?.length ?? 0) > 0 && (
-                <Card style={styles.section}>
-                  <Text style={styles.sectionTitle}>Better alternatives</Text>
-                  {result.betterAlternatives.map((alt, i) => (
-                    <Text key={`alt-${i}`} style={styles.bullet}>• {alt}</Text>
+                </View>
+                <View style={styles.tagsWrap}>
+                  {parsed.additives.map((t, idx) => (
+                    <Badge key={`add-${idx}`} label={t} style={styles.tag} />
                   ))}
-                </Card>
-              )}
-            </ScrollView>
-          )}
-        </View>
-      </SafeAreaView>
-    </ErrorBoundary>
+                </View>
+              </Card>
+            )}
+
+            {parsed.preservatives && parsed.preservatives.length > 0 && (
+              <Card style={styles.sectionCard} testID="preservatives-card">
+                <View style={styles.sectionHeader}>
+                  <ShieldAlert color={colors.status.error} size={18} />
+                  <Text style={styles.sectionTitle}>Preservatives</Text>
+                </View>
+                <View style={styles.tagsWrap}>
+                  {parsed.preservatives.map((t, idx) => (
+                    <Badge key={`pres-${idx}`} label={t} style={styles.tag} />
+                  ))}
+                </View>
+              </Card>
+            )}
+
+            {parsed.artificialIngredients && parsed.artificialIngredients.length > 0 && (
+              <Card style={styles.sectionCard} testID="artificial-card">
+                <View style={styles.sectionHeader}>
+                  <XCircle color={colors.status.error} size={18} />
+                  <Text style={styles.sectionTitle}>Artificial Ingredients</Text>
+                </View>
+                <View style={styles.tagsWrap}>
+                  {parsed.artificialIngredients.map((t, idx) => (
+                    <Badge key={`art-${idx}`} label={t} style={styles.tag} />
+                  ))}
+                </View>
+              </Card>
+            )}
+
+            {parsed.allergens && parsed.allergens.length > 0 && (
+              <Card style={styles.sectionCard} testID="allergens-card">
+                <View style={styles.sectionHeader}>
+                  <ShieldAlert color={colors.status.warning} size={18} />
+                  <Text style={styles.sectionTitle}>Allergens</Text>
+                </View>
+                <View style={styles.tagsWrap}>
+                  {parsed.allergens.map((t, idx) => (
+                    <Badge key={`all-${idx}`} label={t} style={styles.tag} />
+                  ))}
+                </View>
+              </Card>
+            )}
+
+            {parsed.warnings && parsed.warnings.length > 0 && (
+              <Card style={styles.sectionCard} testID="warnings-card">
+                <View style={styles.sectionHeader}>
+                  <AlertTriangle color={colors.status.error} size={18} />
+                  <Text style={styles.sectionTitle}>Warnings</Text>
+                </View>
+                <View style={styles.tagsWrap}>
+                  {parsed.warnings.map((t, idx) => (
+                    <Badge key={`warn-${idx}`} label={t} style={styles.tag} />
+                  ))}
+                </View>
+              </Card>
+            )}
+          </View>
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#0b1220' },
-  container: { flex: 1, paddingHorizontal: 16, paddingTop: 12 },
-  actionsRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  cameraWrap: { borderRadius: 16, overflow: 'hidden', height: 420, backgroundColor: '#000' },
-  camera: { flex: 1 },
-  cameraOverlay: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', paddingBottom: 24 },
-  shutter: { width: 68, height: 68, borderRadius: 34, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: '#fff' },
-  shutterInner: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#fff' },
-  closeCamera: { position: 'absolute', top: 16, right: 16 },
-  previewCard: { padding: 12 },
-  preview: { width: '100%', height: 240, backgroundColor: '#0b1220', borderRadius: 12 },
-  previewActions: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  loadingRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 8 },
-  loadingText: { color: '#9ca3af' },
-  errorBox: { flexDirection: 'row', alignItems: 'center', gap: 8, padding: 12, borderRadius: 12, backgroundColor: '#2b1111', borderWidth: 1, borderColor: '#ef4444' },
-  errorText: { color: '#fecaca' },
-  scroll: { flex: 1, marginTop: 12 },
-  scrollContent: { paddingBottom: 40, gap: 12 },
-  resultCard: { padding: 16 },
-  verdictRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  verdictText: { fontSize: 16, fontWeight: '700' as const },
-  scoreWrap: { flex: 1, marginLeft: 12 },
-  scoreLabel: { fontSize: 12, color: '#9ca3af', marginBottom: 4 },
-  summary: { color: '#e5e7eb', marginTop: 8 },
-  chipsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  chipsRowWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  section: { padding: 16 },
-  sectionTitle: { fontSize: 14, fontWeight: '700' as const, color: '#e5e7eb', marginBottom: 8 },
-  listWrap: { gap: 8 },
-  kvRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 6 },
-  kvKey: { color: '#9ca3af' },
-  kvVal: { color: '#e5e7eb', fontWeight: '600' as const },
-  bullet: { color: '#d1d5db', marginBottom: 6 },
-  warningCard: { padding: 16, borderColor: '#f59e0b', borderWidth: 1, backgroundColor: 'rgba(245, 158, 11, 0.1)' },
-  warningText: { color: '#fbbf24' },
+  container: { paddingBottom: 48 },
+  header: { paddingTop: 14, paddingBottom: 14, paddingHorizontal: 16 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  backBtn: { paddingVertical: 8, paddingHorizontal: 8 },
+  backText: { color: colors.text.primary, fontSize: 14 },
+  titleWrap: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { color: colors.text.primary, fontSize: 18, fontWeight: '700' as const },
+  subtitle: { color: colors.text.secondary, fontSize: 12, textAlign: 'center', marginTop: 4 },
+  rightSpacer: { width: 48 },
+
+  content: { padding: 16 },
+  actionsRow: {},
+  previewBox: { borderRadius: 12, overflow: 'hidden', height: 220, marginBottom: 12, backgroundColor: colors.background.secondary },
+  previewImage: { width: '100%', height: '100%' },
+
+  manualBox: { marginTop: 12 },
+  label: { marginBottom: 8, color: colors.text.secondary },
+
+  primaryActions: { marginTop: 12 },
+  errorText: { color: colors.status.error, marginTop: 8 },
+
+  analysisWrap: { marginTop: 16 },
+  scoreCard: { padding: 20 },
+  scoreHeader: { flexDirection: 'row', alignItems: 'center', gap: 16, marginBottom: 16 },
+  scoreInfo: { flex: 1 },
+  scoreTitle: { fontSize: 14, color: colors.text.secondary, marginBottom: 4 },
+  scoreValue: { fontSize: 32, fontWeight: '700' as const, marginBottom: 2 },
+  scoreRating: { fontSize: 14, fontWeight: '600' as const, color: colors.text.secondary },
+
+  badgesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  badge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 16 },
+  badgeText: { fontSize: 12, fontWeight: '600' as const },
+
+  alkalineSection: { marginTop: 8 },
+  alkalineLabel: { fontSize: 14, color: colors.text.secondary, marginBottom: 8 },
+  alkalineBar: { height: 8, backgroundColor: colors.background.tertiary, borderRadius: 4, overflow: 'hidden', marginBottom: 4 },
+  alkalineFill: { height: '100%', borderRadius: 4 },
+  alkalineValue: { fontSize: 12, color: colors.text.secondary, textAlign: 'right' },
+
+  impactCard: { marginTop: 12, padding: 16 },
+  impactHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 },
+  impactTitle: { fontSize: 16, fontWeight: '700' as const, color: colors.text.primary },
+  impactItem: { flexDirection: 'row', gap: 8, marginBottom: 8 },
+  impactBullet: { color: colors.text.secondary, fontSize: 16, lineHeight: 20 },
+  impactText: { flex: 1, color: colors.text.primary, fontSize: 14, lineHeight: 20 },
+
+  alternativeItem: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8, padding: 8, backgroundColor: colors.background.tertiary, borderRadius: 8 },
+  alternativeText: { flex: 1, color: colors.text.primary, fontSize: 14 },
+
+  detailedCard: { marginTop: 12, padding: 16 },
+  detailedText: { color: colors.text.primary, fontSize: 14, lineHeight: 22 },
+
+  resultWrap: { marginTop: 16 },
+  productCard: {},
+  productTitle: { fontSize: 20, fontWeight: '700' as const, color: colors.text.primary },
+  productBrand: { fontSize: 14, color: colors.text.secondary, marginTop: 4 },
+  productMetaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+
+  nutritionCard: { marginTop: 12, padding: 16 },
+  nutritionGrid: { marginTop: 12, gap: 8 },
+  nutritionItem: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 6, borderBottomWidth: 1, borderBottomColor: colors.border.light },
+  nutritionLabel: { fontSize: 14, color: colors.text.secondary },
+  nutritionValue: { fontSize: 14, fontWeight: '600' as const, color: colors.text.primary },
+
+  sectionCard: { marginTop: 12 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 8 },
+  sectionTitle: { fontSize: 16, fontWeight: '700' as const, color: colors.text.primary },
+  tagsWrap: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  tag: {},
 });
