@@ -1,82 +1,79 @@
 {
   "expo": {
-    "name": "Rork App",
+    "name": "Ripped360 Professional Fitness & Health",
     "slug": "rork-app",
     "version": "1.0.0",
-    "sdkVersion": "54.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "icon": "./assets/icon.png",
+    "scheme": "ripped360",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rork.app",
+      "bundleIdentifier": "com.ripped360.health",
       "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Allow $(PRODUCT_NAME) to access your photos",
-        "NSCameraUsageDescription": "Allow $(PRODUCT_NAME) to access your camera",
-        "NSMicrophoneUsageDescription": "Allow $(PRODUCT_NAME) to access your microphone",
-        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "NSLocationWhenInUseUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
-        "UIBackgroundModes": ["location", "audio"]
+        "NSPhotoLibraryUsageDescription": "Allow Ripped360 to access your photos",
+        "NSCameraUsageDescription": "Allow Ripped360 to access your camera",
+        "NSMicrophoneUsageDescription": "Allow Ripped360 to access your microphone",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow Ripped360 to use your location",
+        "NSLocationWhenInUseUsageDescription": "Allow Ripped360 to use your location"
       }
     },
     "android": {
-      "package": "com.rork.app",
+      "package": "com.ripped360.health",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#000000"
       },
       "permissions": [
-        "android.permission.VIBRATE",
         "CAMERA",
+        "RECORD_AUDIO",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
-        "RECORD_AUDIO",
         "ACCESS_COARSE_LOCATION",
         "ACCESS_FINE_LOCATION",
         "FOREGROUND_SERVICE",
         "FOREGROUND_SERVICE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.SCHEDULE_EXACT_ALARM",
+        "VIBRATE",
         "INTERNET"
       ],
       "notification": {
-        "icon": "./assets/notifications/notification_icon.png",
         "color": "#ffffff",
         "sound": true,
-        "defaultChannel": "custom"
+        "defaultChannel": "default"
       }
     },
+    "web": {
+      "favicon": "./assets/icon.png"
+    },
     "plugins": [
+      "expo-router",
       [
         "expo-notifications",
         {
-          "icon": "./assets/notifications/notification_icon.png",
+          "icon": "./assets/icon.png",
           "color": "#ffffff",
           "defaultChannel": "custom",
-          "sounds": ["./assets/notifications/notification_sound.wav"],
-          "enableBackgroundRemoteNotifications": false
+          "sounds": ["./assets/notification_sound.wav"]
         }
       ],
-      "expo-router",
       [
         "expo-image-picker",
         {
-          "photosPermission": "The app accesses your photos to let you share them with your friends."
+          "photosPermission": "Allow Ripped360 to access your photos"
         }
       ],
       [
         "expo-camera",
         {
-          "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone",
-          "recordAudioAndroid": true
+          "cameraPermission": "Allow Ripped360 to access your camera",
+          "microphonePermission": "Allow Ripped360 to access your microphone"
         }
       ],
       [
@@ -84,31 +81,21 @@
         {
           "isAndroidForegroundServiceEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
-          "isIosBackgroundLocationEnabled": true,
-          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
+          "isIosBackgroundLocationEnabled": true
         }
       ],
       [
         "expo-av",
         {
-          "microphonePermission": "Allow $(PRODUCT_NAME) to access your microphone"
+          "microphonePermission": "Allow Ripped360 to access your microphone"
         }
       ]
     ],
-    "assetBundlePatterns": [
-      "assets/*",
-      "assets/notifications/*"
-    ],
-    "updates": {
-      "fallbackToCacheTimeout": 0
-    },
-    "runtimeVersion": {
-      "policy": "sdkVersion"
-    },
     "extra": {
       "eas": {
-        "projectId": "rork-app-prod"
-      }
+        "projectId": "rork-app-001"
+      },
+      "apiUrl": "https://ripped360-professional-fitness-health.rork.app"
     }
   }
 }
