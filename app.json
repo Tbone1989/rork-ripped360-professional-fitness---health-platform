@@ -12,7 +12,9 @@
       "resizeMode": "contain",
       "backgroundColor": "#000000"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.ripped360.health",
@@ -21,7 +23,12 @@
         "NSCameraUsageDescription": "Allow Ripped360 to access your camera",
         "NSMicrophoneUsageDescription": "Allow Ripped360 to access your microphone",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow Ripped360 to use your location",
-        "NSLocationWhenInUseUsageDescription": "Allow Ripped360 to use your location"
+        "NSLocationWhenInUseUsageDescription": "Allow Ripped360 to use your location",
+        "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location.",
+        "UIBackgroundModes": [
+          "location",
+          "audio"
+        ]
       }
     },
     "android": {
@@ -41,7 +48,10 @@
         "FOREGROUND_SERVICE_LOCATION",
         "ACCESS_BACKGROUND_LOCATION",
         "VIBRATE",
-        "INTERNET"
+        "INTERNET",
+        "android.permission.VIBRATE",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.SCHEDULE_EXACT_ALARM"
       ],
       "notification": {
         "color": "#ffffff",
@@ -60,7 +70,10 @@
           "icon": "./assets/icon.png",
           "color": "#ffffff",
           "defaultChannel": "custom",
-          "sounds": ["./assets/notification_sound.wav"]
+          "sounds": [
+            "./assets/notification_sound.wav"
+          ],
+          "enableBackgroundRemoteNotifications": false
         }
       ],
       [
@@ -73,7 +86,8 @@
         "expo-camera",
         {
           "cameraPermission": "Allow Ripped360 to access your camera",
-          "microphonePermission": "Allow Ripped360 to access your microphone"
+          "microphonePermission": "Allow Ripped360 to access your microphone",
+          "recordAudioAndroid": true
         }
       ],
       [
@@ -81,7 +95,8 @@
         {
           "isAndroidForegroundServiceEnabled": true,
           "isAndroidBackgroundLocationEnabled": true,
-          "isIosBackgroundLocationEnabled": true
+          "isIosBackgroundLocationEnabled": true,
+          "locationAlwaysAndWhenInUsePermission": "Allow $(PRODUCT_NAME) to use your location."
         }
       ],
       [
