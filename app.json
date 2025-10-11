@@ -107,9 +107,6 @@
       ]
     ],
     "extra": {
-      "eas": {
-        "projectId": "rork-app-001"
-      },
       "apiUrl": "https://ripped360-professional-fitness-health.rork.app"
     }
   }
