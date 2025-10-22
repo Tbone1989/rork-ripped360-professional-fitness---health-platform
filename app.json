@@ -21,7 +21,11 @@
         "NSMicrophoneUsageDescription": "Allow Rork App to access your microphone.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "Allow Rork App to use your location.",
         "NSLocationWhenInUseUsageDescription": "Allow Rork App to use your location.",
-        "UIBackgroundModes": ["location", "audio"]
+        "UIBackgroundModes": [
+          "location",
+          "audio"
+        ],
+        "NSLocationAlwaysUsageDescription": "Allow $(PRODUCT_NAME) to use your location."
       }
     },
     "android": {
@@ -57,7 +61,9 @@
           "icon": "./local/assets/notification_icon.png",
           "color": "#ffffff",
           "defaultChannel": "custom",
-          "sounds": ["./local/assets/notification_sound.wav"],
+          "sounds": [
+            "./local/assets/notification_sound.wav"
+          ],
           "enableBackgroundRemoteNotifications": false
         }
       ],
@@ -92,7 +98,9 @@
         }
       ]
     ],
-    "assetBundlePatterns": ["assets/**"],
+    "assetBundlePatterns": [
+      "assets/**"
+    ],
     "extra": {
       "eas": {
         "projectId": "rork-app-2025"

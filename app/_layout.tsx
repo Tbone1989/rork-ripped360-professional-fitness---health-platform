@@ -4,7 +4,7 @@ import * as SplashScreen from "expo-splash-screen";
 import React, { useEffect } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StatusBar } from "expo-status-bar";
-import { View, Platform, StyleSheet, InteractionManager } from "react-native";
+import { View, Platform, StyleSheet } from "react-native";
 
 import { colors } from "@/constants/colors";
 import { WellnessProvider } from "@/store/wellnessStore";
@@ -65,24 +65,20 @@ export default function RootLayout() {
 
     SplashScreen.hideAsync().catch(() => {});
 
-    const task = InteractionManager.runAfterInteractions(() => {
+    setTimeout(() => {
       if (!isMounted) return;
-      setTimeout(() => {
-        if (!isMounted) return;
-        initializeServices();
-      }, 0);
-    });
+      initializeServices().catch(e => console.error('[RootLayout] Init failed:', e));
+    }, 100);
 
     return () => {
       isMounted = false;
-      task.cancel?.();
       if (Platform.OS !== "web") {
         notificationService.cleanup();
       }
     };
   }, []);
 
-  console.log("[RootLayout] Mounted at", new Date().toISOString());
+  console.log("[RootLayout] Rendering at", new Date().toISOString());
 
   return (
     <trpc.Provider>
