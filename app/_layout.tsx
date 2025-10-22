@@ -48,37 +48,42 @@ function RootLayoutNav() {
 
 export default function RootLayout() {
   useEffect(() => {
-    let isMounted = true;
+    console.log("[RootLayout] Mounted");
+    
+    SplashScreen.hideAsync().catch((e) => {
+      console.log("[RootLayout] SplashScreen hide error (safe to ignore):", e);
+    });
 
     const initializeServices = async () => {
-      const t0 = Date.now();
       try {
+        console.log("[RootLayout] Initializing services...");
         if (Platform.OS !== "web") {
-          await notificationService.initialize();
+          await notificationService.initialize().catch(e => {
+            console.log("[RootLayout] Notification init failed:", e);
+          });
         }
-        await calendarService.initialize();
-        console.log("[RootLayout] Services initialized in", Date.now() - t0, "ms");
+        await calendarService.initialize().catch(e => {
+          console.log("[RootLayout] Calendar init failed:", e);
+        });
+        console.log("[RootLayout] Services initialized");
       } catch (error) {
-        console.error("[RootLayout] Error initializing services:", error);
+        console.error("[RootLayout] Service init error:", error);
       }
     };
 
-    SplashScreen.hideAsync().catch(() => {});
-
     setTimeout(() => {
-      if (!isMounted) return;
-      initializeServices().catch(e => console.error('[RootLayout] Init failed:', e));
-    }, 100);
+      initializeServices();
+    }, 500);
 
     return () => {
-      isMounted = false;
+      console.log("[RootLayout] Unmounting");
       if (Platform.OS !== "web") {
         notificationService.cleanup();
       }
     };
   }, []);
 
-  console.log("[RootLayout] Rendering at", new Date().toISOString());
+  console.log("[RootLayout] Rendering");
 
   return (
     <trpc.Provider>
