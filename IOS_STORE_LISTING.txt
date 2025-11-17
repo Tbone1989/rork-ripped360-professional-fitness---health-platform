@@ -1,0 +1,230 @@
+═══════════════════════════════════════════════════════════════
+iOS APP STORE LISTING - COPY & PASTE READY
+Rip360 Fitness Pro v1.0.0
+═══════════════════════════════════════════════════════════════
+
+🔗 PRIVACY POLICY URL (REQUIRED):
+https://8080-i5uvi1fayd6bjrow9d4ou-cc2fbc16.sandbox.novita.ai
+
+═══════════════════════════════════════════════════════════════
+APP INFORMATION
+═══════════════════════════════════════════════════════════════
+
+App Name:
+Rip360 Fitness Pro
+
+Subtitle (30 chars max):
+Complete Fitness & Health Hub
+
+Primary Category:
+Health & Fitness
+
+Secondary Category:
+Lifestyle
+
+═══════════════════════════════════════════════════════════════
+DESCRIPTION (Copy this entire section)
+═══════════════════════════════════════════════════════════════
+
+TRANSFORM YOUR FITNESS JOURNEY WITH RIP360 FITNESS PRO
+
+Rip360 Fitness Pro is your all-in-one fitness, nutrition, and health platform. Created by entrepreneur Tyrone Hayes, founder of RIPPED CITY INC and Digesting Life Balance nonprofit, this comprehensive app brings professional-grade fitness tracking to everyone.
+
+🏋️ AI-POWERED WORKOUTS
+
+• Generate personalized workout plans tailored to your goals
+• Access comprehensive exercise library with detailed instructions
+• Track your progress with real-time analytics
+• Custom workout creation and scheduling
+• Smart recommendations based on your performance
+• Video guides and proper form tips
+
+🍽️ SMART NUTRITION TRACKING
+
+• Barcode scanning for instant food logging
+• AI meal plan generation based on your dietary needs and goals
+• Complete macro and calorie tracking
+• Recipe database with thousands of healthy options
+• Grocery price finder to save money on healthy eating
+• Shopping list integration
+• Track water intake and nutritional goals
+• Support for dietary restrictions and allergies
+
+🩺 HEALTH & MEDICAL MONITORING
+
+• AI-powered bloodwork analysis with actionable insights
+• Supplement and medication tracking
+• Drug interaction checker for your safety
+• Health metrics dashboard with trends
+• Medical document storage and management
+• Holistic care guidance
+• Integration with health professionals
+
+🛒 INTEGRATED SHOP
+
+• Official Ripped City Inc. product store
+• Premium supplements and fitness equipment
+• Easy checkout and secure payments
+• Order tracking and delivery updates
+• Exclusive deals for app members
+• Product recommendations based on your goals
+
+👥 PROFESSIONAL COACHING & COMMUNITY
+
+• Connect with certified fitness coaches
+• Book coaching sessions with easy scheduling
+• Direct messaging with your coach
+• Community challenges and competitions
+• Progress sharing and motivation
+• Achievement tracking and rewards
+• Join challenges with friends and community
+• Leaderboards and rankings
+
+✨ KEY FEATURES
+
+• Comprehensive fitness and health tracking
+• AI-powered personalized recommendations
+• Professional coaching integration
+• Barcode scanning for food and supplements
+• Dark mode design for comfortable viewing
+• Offline capability for workouts on the go
+• Secure health data storage with encryption
+• Regular updates with new features
+• No ads - premium experience for all users
+
+🎯 WHO IS THIS FOR?
+
+• Fitness enthusiasts looking for comprehensive tracking
+• People starting their fitness journey
+• Athletes training for competitions
+• Health-conscious individuals monitoring wellness
+• Anyone seeking professional coaching guidance
+• Users wanting to integrate nutrition and fitness
+• Community-driven individuals who love challenges
+
+📊 TRACK YOUR COMPLETE HEALTH
+
+Rip360 Fitness Pro goes beyond simple workout tracking. Monitor your complete health picture with bloodwork analysis, supplement tracking, nutrition insights, and professional coaching - all working together to help you achieve your goals.
+
+🔒 YOUR DATA IS SECURE
+
+We take your privacy seriously. All health and fitness data is encrypted and securely stored. We never sell your personal information. See our privacy policy for full details.
+
+💪 CREATED BY FITNESS PROFESSIONALS
+
+Founded by Tyrone Hayes of RIPPED CITY INC, this app brings professional fitness expertise to your pocket. Combined with the mission of Digesting Life Balance nonprofit, we're committed to making health and fitness accessible to everyone.
+
+🚀 START YOUR TRANSFORMATION TODAY
+
+Download Rip360 Fitness Pro and take the first step toward a healthier, stronger you. Whether you're beginning your fitness journey or taking your training to the next level, we have the tools you need to succeed.
+
+Join thousands of users transforming their lives with Rip360 Fitness Pro!
+
+---
+
+Privacy Policy: https://8080-i5uvi1fayd6bjrow9d4ou-cc2fbc16.sandbox.novita.ai
+Support: support@rippedcityinc.com
+Website: https://rippedcityinc.com
+
+═══════════════════════════════════════════════════════════════
+KEYWORDS (100 chars max)
+═══════════════════════════════════════════════════════════════
+
+fitness,workout,nutrition,health,coaching,meal plan,calorie tracker,gym,exercise,supplement
+
+═══════════════════════════════════════════════════════════════
+SUPPORT URL
+═══════════════════════════════════════════════════════════════
+
+https://rippedcityinc.com/support
+
+═══════════════════════════════════════════════════════════════
+PRIVACY POLICY URL
+═══════════════════════════════════════════════════════════════
+
+https://8080-i5uvi1fayd6bjrow9d4ou-cc2fbc16.sandbox.novita.ai
+
+═══════════════════════════════════════════════════════════════
+APP REVIEW INFORMATION
+═══════════════════════════════════════════════════════════════
+
+Demo Account Username:
+demo@rip360app.com
+
+Demo Account Password:
+Demo2025!
+
+Review Notes:
+Please use demo account. App includes workout generation, nutrition tracking with barcode scanning, health monitoring, shopping integration, and coaching features. All permissions (camera, location) are clearly explained to users. Medical features include appropriate disclaimers.
+
+═══════════════════════════════════════════════════════════════
+WHAT'S NEW (Version 1.0.0)
+═══════════════════════════════════════════════════════════════
+
+🎉 Welcome to Rip360 Fitness Pro v1.0!
+
+Our initial release includes:
+
+• AI-powered workout generation
+• Complete nutrition tracking with barcode scanning
+• Health monitoring and bloodwork analysis
+• Integrated Ripped City Inc. shop
+• Professional coaching and community features
+• Comprehensive progress tracking
+
+Start your fitness transformation today!
+
+═══════════════════════════════════════════════════════════════
+SCREENSHOTS TO UPLOAD
+═══════════════════════════════════════════════════════════════
+
+Upload these files from the screenshots/ios/ folder in order:
+
+1. 01_workouts.png - Workout generation and tracking
+2. 02_nutrition.png - Nutrition tracking with barcode scanning
+3. 03_health.png - Health monitoring dashboard
+4. 04_shop.png - Shopping integration
+5. 05_coaching.png - Coaching and community features
+
+All screenshots are 1290×2796px (correct for iPhone 15 Pro Max)
+
+═══════════════════════════════════════════════════════════════
+APP ICON
+═══════════════════════════════════════════════════════════════
+
+Upload: assets/icon.png (1024×1024px)
+
+═══════════════════════════════════════════════════════════════
+COPYRIGHT
+═══════════════════════════════════════════════════════════════
+
+© 2025 Tyrone Hayes / RIPPED CITY INC. All rights reserved.
+
+═══════════════════════════════════════════════════════════════
+DEVELOPER INFORMATION
+═══════════════════════════════════════════════════════════════
+
+Developer Name: Tyrone Hayes
+Company: RIPPED CITY INC
+Email: support@rippedcityinc.com
+Website: https://rippedcityinc.com
+
+═══════════════════════════════════════════════════════════════
+IMPORTANT: DEMO ACCOUNT REQUIREMENT
+═══════════════════════════════════════════════════════════════
+
+⚠️ CRITICAL: You MUST create this demo account in your app before
+submitting for review. Apple reviewers will use these credentials
+to test your app.
+
+Email: demo@rip360app.com
+Password: Demo2025!
+
+Pre-populate the account with:
+- 2-3 completed workouts
+- 3-5 logged meals
+- A meal plan
+- Some health metrics
+- A joined challenge
+
+═══════════════════════════════════════════════════════════════
