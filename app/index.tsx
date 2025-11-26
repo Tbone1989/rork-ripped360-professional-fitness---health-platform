@@ -1,14 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useUserStore } from '@/store/userStore';
+import { colors } from '@/constants/colors';
 
 export default function Index() {
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const hasHydrated = useUserStore((state) => state.hasHydrated);
   const user = useUserStore((state) => state.user);
+  const setHasHydrated = useUserStore((state) => state.setHasHydrated);
+  const [isReady, setIsReady] = useState(false);
   
-  if (!hasHydrated) {
-    return null;
+  useEffect(() => {
+    console.log('[Index] hasHydrated:', hasHydrated, 'isAuthenticated:', isAuthenticated);
+    
+    const timeout = setTimeout(() => {
+      console.log('[Index] Force ready after timeout');
+      if (!hasHydrated) {
+        setHasHydrated(true);
+      }
+      setIsReady(true);
+    }, 500);
+    
+    if (hasHydrated) {
+      setIsReady(true);
+    }
+    
+    return () => clearTimeout(timeout);
+  }, [hasHydrated, isAuthenticated, setHasHydrated]);
+  
+  if (!isReady) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={colors.accent.primary} />
+        <Text style={styles.loadingText}>Starting...</Text>
+      </View>
+    );
   }
   
   if (isAuthenticated && user) {
@@ -23,4 +50,18 @@ export default function Index() {
   
   return <Redirect href="/(auth)/login" />;
 }
+
+const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    backgroundColor: colors.background.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 16,
+  },
+  loadingText: {
+    color: colors.text.secondary,
+    fontSize: 16,
+  },
+});
 

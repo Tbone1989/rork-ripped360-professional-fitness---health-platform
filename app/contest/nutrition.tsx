@@ -156,7 +156,7 @@ export default function NutritionScreen() {
             style={styles.actionButton}
             onPress={() => handleDeleteMeal(index, type)}
           >
-            <Trash2 size={16} color={colors.error} />
+            <Trash2 size={16} color={colors.status.error} />
           </TouchableOpacity>
         </View>
       </View>
@@ -290,7 +290,7 @@ export default function NutritionScreen() {
     <View style={styles.tabContent}>
       <Card style={styles.warningCard}>
         <View style={styles.warningHeader}>
-          <AlertTriangle size={20} color={colors.error} />
+          <AlertTriangle size={20} color={colors.status.error} />
           <Text style={styles.warningTitle}>Emergency Protocols</Text>
         </View>
         <Text style={styles.warningText}>
@@ -755,8 +755,8 @@ const styles = StyleSheet.create({
   },
   warningCard: {
     marginBottom: 20,
-    backgroundColor: colors.error + '10',
-    borderColor: colors.error,
+    backgroundColor: colors.status.error + '10',
+    borderColor: colors.status.error,
     borderWidth: 1,
   },
   warningHeader: {
@@ -767,7 +767,7 @@ const styles = StyleSheet.create({
   warningTitle: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.error,
+    color: colors.status.error,
     marginLeft: 8,
   },
   warningText: {
@@ -778,7 +778,7 @@ const styles = StyleSheet.create({
   protocolCard: {
     marginBottom: 12,
     borderLeftWidth: 4,
-    borderLeftColor: colors.warning,
+    borderLeftColor: colors.status.warning,
   },
   protocolScenario: {
     fontSize: 16,

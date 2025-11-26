@@ -38,7 +38,7 @@ export default function SupplementDetailScreen() {
     Linking.openURL(url);
   };
 
-  const imageUri = supplement.imageUrl ?? getImageForSupplement(supplement);
+  const imageUri = supplement.imageUrl ?? getImageForSupplement(supplement as any);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -82,7 +82,7 @@ export default function SupplementDetailScreen() {
         
         <Card style={styles.benefitsCard}>
           <Text style={styles.sectionTitle}>Benefits</Text>
-          {supplement.benefits.map((benefit, index) => (
+          {'benefits' in supplement && supplement.benefits.map((benefit: string, index: number) => (
             <View key={index} style={styles.listItem}>
               <Text style={styles.bullet}>•</Text>
               <Text style={styles.listText}>{benefit}</Text>
@@ -129,13 +129,13 @@ export default function SupplementDetailScreen() {
           ))}
         </Card>
         
-        {supplement.researchUrls.length > 0 && (
+        {'researchUrls' in supplement && supplement.researchUrls && supplement.researchUrls.length > 0 && (
           <Card style={styles.researchCard}>
             <View style={styles.researchHeader}>
               <Info size={20} color={colors.status.info} />
               <Text style={styles.sectionTitle}>Research</Text>
             </View>
-            {supplement.researchUrls.map((url, index) => (
+            {supplement.researchUrls.map((url: string, index: number) => (
               <TouchableOpacity
                 key={index}
                 style={styles.researchLink}

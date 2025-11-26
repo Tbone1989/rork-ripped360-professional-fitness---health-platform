@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-function DebugTest(): JSX.Element {
+function DebugTest(): React.JSX.Element {
   console.log('[DebugTest] Mounted');
 
   return (

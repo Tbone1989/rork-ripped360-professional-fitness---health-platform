@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Stack, router } from 'expo-router';
 import { Calendar, ChevronDown, Save } from 'lucide-react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DatePicker from 'react-native-ui-datepicker';
 
 import { colors } from '@/constants/colors';
 import { useContestStore } from '@/store/contestStore';
@@ -48,7 +48,8 @@ export default function CreateContestScreen() {
   const [showCategoryPicker, setShowCategoryPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleDateChange = (event: any, selectedDate?: Date) => {
+  const handleDateChange = (params: any) => {
+    const selectedDate = params.date;
     setShowDatePicker(false);
     if (selectedDate) {
       setFormData(prev => ({ ...prev, contestDate: selectedDate }));
@@ -192,12 +193,10 @@ export default function CreateContestScreen() {
               <Calendar size={20} color={colors.text.secondary} />
             </TouchableOpacity>
             {showDatePicker && (
-              <DateTimePicker
-                value={formData.contestDate}
-                mode="date"
-                display="default"
+              <DatePicker
+                mode="single"
+                date={formData.contestDate}
                 onChange={handleDateChange}
-                minimumDate={new Date()}
               />
             )}
           </View>

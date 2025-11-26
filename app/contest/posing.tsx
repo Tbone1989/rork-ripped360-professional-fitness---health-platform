@@ -225,7 +225,7 @@ export default function PosingScreen() {
           <View style={styles.timerHeader}>
             <Text style={styles.activeTimerName}>{selectedTimer.name}</Text>
             <Badge 
-              text={`Round ${currentRound}/${selectedTimer.rounds}`}
+              label={`Round ${currentRound}/${selectedTimer.rounds}`}
               variant="secondary"
             />
           </View>
@@ -253,7 +253,7 @@ export default function PosingScreen() {
                         inputRange: [0, 1],
                         outputRange: ['0%', '100%'],
                       }),
-                      backgroundColor: isResting ? colors.warning : colors.accent.primary,
+                      backgroundColor: isResting ? colors.status.warning : colors.accent.primary,
                     }
                   ]}
                 />
@@ -292,7 +292,7 @@ export default function PosingScreen() {
                   {pose.duration}s {pose.rest > 0 && `+ ${pose.rest}s rest`}
                 </Text>
                 {index < currentPoseIndex && (
-                  <CheckCircle size={16} color={colors.success} />
+                  <CheckCircle size={16} color={colors.status.success} />
                 )}
               </View>
             ))}

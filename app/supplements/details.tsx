@@ -81,7 +81,7 @@ export default function SupplementDetailsScreen() {
           contentFit="cover"
         />
         <View style={styles.badgeContainer}>
-          <Badge variant="success" text="Scanned" />
+          <Badge variant="success" label="Scanned" />
         </View>
       </View>
 

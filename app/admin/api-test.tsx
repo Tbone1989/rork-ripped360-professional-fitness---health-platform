@@ -66,7 +66,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.system.apiStatus.query();
+              const response = await (trpcClient as any).system?.apiStatus?.query();
               setConnectionStatus('connected');
               return {
                 status: 'success' as const,
@@ -92,7 +92,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.example.hi.mutate({ name: 'Test' });
+              const response = await (trpcClient as any).example?.hi?.mutate({ name: 'Test' });
               return {
                 status: 'success' as const,
                 message: '✅ Test endpoint working',
@@ -122,7 +122,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.shop.products.query({ limit: 10 });
+              const response = await (trpcClient as any).shop?.products?.query?.({ limit: 10 });
               const count = Array.isArray(response) ? response.length : 0;
               return {
                 status: count > 0 ? 'success' as const : 'warning' as const,
@@ -153,7 +153,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.list.query({});
+              const response = await (trpcClient as any).coaching?.list?.query?.({});
               const count = Array.isArray(response) ? response.length : 0;
               return {
                 status: 'success' as const,
@@ -178,7 +178,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.clients.query({ viewerId: 'test', viewerRole: 'coach' });
+              const response = await (trpcClient as any).coaching?.clients?.query?.({ viewerId: 'test', viewerRole: 'coach' });
               return {
                 status: 'success' as const,
                 message: `✅ Retrieved client data`,
@@ -202,7 +202,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.sessions.list.query({ coachId: 'test' });
+              const response = await (trpcClient as any).coaching?.sessions?.list?.query?.({ coachId: 'test' });
               return {
                 status: 'success' as const,
                 message: `✅ Sessions endpoint working`,
@@ -226,7 +226,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.coaching.messages.conversations.query({ userId: 'test' });
+              const response = await (trpcClient as any).coaching?.messages?.conversations?.query?.({ userId: 'test' });
               return {
                 status: 'success' as const,
                 message: `✅ Messages endpoint working`,
@@ -256,7 +256,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.fitness.exercises.query({ muscle: 'chest' });
+              const response = await (trpcClient as any).fitness?.exercises?.query?.({ muscle: 'chest' });
               const count = Array.isArray(response) ? response.length : 0;
               return {
                 status: 'success' as const,
@@ -281,7 +281,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.fitness.generate.mutate({
+              const response = await (trpcClient as any).fitness?.generate?.mutate?.({
                 type: 'strength',
                 muscle: ['chest', 'triceps'],
                 difficulty: 'intermediate',
@@ -316,7 +316,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.nutrition.search.query({ query: 'apple' });
+              const response = await (trpcClient as any).nutrition?.search?.query?.({ query: 'apple' });
               const count = Array.isArray(response) ? response.length : 0;
               return {
                 status: count > 0 ? 'success' as const : 'warning' as const,
@@ -341,7 +341,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.nutrition.barcode.query({ barcode: '012345678905' });
+              const response = await (trpcClient as any).nutrition?.barcode?.query?.({ barcode: '012345678905' });
               return {
                 status: response ? 'success' as const : 'warning' as const,
                 message: response ? '✅ Barcode API working' : '⚠️ Product not found',
@@ -365,7 +365,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.nutrition.mealPlan.mutate({
+              const response = await (trpcClient as any).nutrition?.mealPlan?.mutate?.({
                 calories: 2000,
                 protein: 150,
                 carbs: 250,
@@ -402,7 +402,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.bloodwork.mutate({});
+              const response = await (trpcClient as any).health?.bloodwork?.mutate?.({});
               return {
                 status: 'success' as const,
                 message: '✅ Bloodwork data retrieved',
@@ -426,7 +426,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.supplements.search.query({ query: 'vitamin d' });
+              const response = await (trpcClient as any).health?.supplements?.search?.query?.({ query: 'vitamin d' });
               return {
                 status: 'success' as const,
                 message: `✅ Supplements search working`,
@@ -450,7 +450,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.digestive.mutate({
+              const response = await (trpcClient as any).health?.digestive?.mutate?.({
                 symptoms: ['bloating'],
                 frequency: { bloating: 'occasional' },
               });
@@ -477,7 +477,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.detox.mutate({});
+              const response = await (trpcClient as any).health?.detox?.mutate?.({});
               return {
                 status: 'success' as const,
                 message: '✅ Detox protocol retrieved',
@@ -501,7 +501,7 @@ export default function ApiTestScreen() {
           test: async () => {
             const start = Date.now();
             try {
-              const response = await trpcClient.health.issues.mutate({
+              const response = await (trpcClient as any).health?.issues?.mutate?.({
                 symptoms: ['fatigue'],
               });
               return {

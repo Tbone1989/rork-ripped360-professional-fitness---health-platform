@@ -10,7 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ScanLine, Camera, Upload, Volume2, Trash2, Info, ShieldAlert, ListChecks, AlertTriangle, CheckCircle, XCircle, Leaf, Droplet } from 'lucide-react-native';
-import { generateText } from '@rork/toolkit-sdk';
+import { generateText } from '@rork-ai/toolkit-sdk';
 
 interface ParsedLabel {
   productName?: string;

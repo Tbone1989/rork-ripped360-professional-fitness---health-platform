@@ -127,6 +127,8 @@ export default function TeamManagementScreen() {
         }
       ],
       skillLevel: 'mixed',
+      sport: 'Fitness',
+      season: 'offseason',
       goals: ['general fitness', 'weight management'],
       trainingPhase: 'General Conditioning',
       meetingSchedule: [],
@@ -153,6 +155,8 @@ export default function TeamManagementScreen() {
       coachId: 'coach1',
       members: [],
       skillLevel: 'mixed',
+      sport: 'General',
+      season: 'offseason',
       goals: [],
       trainingPhase: 'General',
       meetingSchedule: [],
@@ -218,11 +222,11 @@ export default function TeamManagementScreen() {
           <Text style={styles.teamTitle}>{selectedTeam.name}</Text>
           
           <View style={styles.teamMeta}>
-            <Badge text={selectedTeam.skillLevel} variant="default" />
+            <Badge label={selectedTeam.skillLevel} variant="default" />
             {selectedTeam.sport && (
-              <Badge text={selectedTeam.sport} variant="success" />
+              <Badge label={selectedTeam.sport} variant="success" />
             )}
-            <Badge text={selectedTeam.season || 'General'} variant="warning" />
+            <Badge label={selectedTeam.season || 'General'} variant="warning" />
           </View>
           
           <View style={styles.teamStats}>
@@ -345,7 +349,7 @@ export default function TeamManagementScreen() {
                 
                 <View style={styles.memberBadges}>
                   <Badge 
-                    text={member.skillLevel} 
+                    label={member.skillLevel} 
                     variant={member.skillLevel === 'advanced' ? 'success' : 'default'}
                   />
                   <View style={styles.attendanceContainer}>
@@ -475,9 +479,9 @@ export default function TeamManagementScreen() {
               </View>
               
               <View style={styles.teamCardBadges}>
-                <Badge text={team.skillLevel} variant="default" />
+                <Badge label={team.skillLevel} variant="default" />
                 {team.sport && (
-                  <Badge text={team.sport} variant="success" />
+                  <Badge label={team.sport} variant="success" />
                 )}
               </View>
             </View>
@@ -666,7 +670,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.border.primary,
+    borderTopColor: colors.border.light,
   },
   actionButton: {
     flexDirection: 'row',

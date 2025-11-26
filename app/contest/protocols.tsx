@@ -137,7 +137,7 @@ export default function AutomatedProtocolsScreen() {
               <Text style={styles.protocolName}>{protocol.name}</Text>
             </View>
             <Badge 
-              text={protocol.type.replace('-', ' ')} 
+              label={protocol.type.replace('-', ' ')} 
               variant="secondary"
               style={{ backgroundColor: protocolColor + '20' }}
             />
@@ -165,7 +165,7 @@ export default function AutomatedProtocolsScreen() {
             <Text style={styles.statLabel}>Frequency</Text>
           </View>
           <View style={styles.statItem}>
-            <Text style={[styles.statValue, { color: protocol.isActive ? colors.success : colors.text.tertiary }]}>
+            <Text style={[styles.statValue, { color: protocol.isActive ? colors.status.success : colors.text.tertiary }]}>
               {protocol.isActive ? 'Active' : 'Inactive'}
             </Text>
             <Text style={styles.statLabel}>Status</Text>
@@ -194,7 +194,7 @@ export default function AutomatedProtocolsScreen() {
             style={styles.actionButton}
             onPress={() => handleDeleteProtocol(protocol.id)}
           >
-            <Text style={[styles.actionText, { color: colors.error }]}>Delete</Text>
+            <Text style={[styles.actionText, { color: colors.status.error }]}>Delete</Text>
           </TouchableOpacity>
         </View>
       </Card>

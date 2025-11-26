@@ -28,10 +28,11 @@ const challengeTypes = [
   { id: 'lifestyle', label: 'Lifestyle' },
 ];
 
-const difficultyColors = {
+const difficultyColors: Record<'beginner' | 'intermediate' | 'advanced' | 'all-levels', string> = {
   beginner: colors.status.success,
   intermediate: colors.status.warning,
   advanced: colors.accent.primary,
+  'all-levels': colors.accent.secondary,
 };
 
 export default function ChallengesScreen() {
@@ -172,7 +173,7 @@ export default function ChallengesScreen() {
               <Button
                 title={!canAccess ? 'Upgrade Required' : isFull ? 'Full' : 'Join Challenge'}
                 onPress={() => handleJoinChallenge(challenge)}
-                disabled={!canAccess || isFull}
+                disabled={!canAccess || !!isFull}
                 style={styles.joinButton}
               />
             )}

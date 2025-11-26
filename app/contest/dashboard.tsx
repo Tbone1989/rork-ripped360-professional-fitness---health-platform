@@ -159,7 +159,7 @@ export default function ProtocolDashboardScreen() {
             onPress={() => updateCalorieCycleDay(selectedDate, { completed: !todaysCalorieCycle.completed })}
           >
             {todaysCalorieCycle.completed ? (
-              <CheckCircle size={24} color={colors.success} />
+              <CheckCircle size={24} color={colors.status.success} />
             ) : (
               <Circle size={24} color={colors.text.tertiary} />
             )}
@@ -167,7 +167,7 @@ export default function ProtocolDashboardScreen() {
         </View>
         
         <Badge 
-          text={`${todaysCalorieCycle.type} day`} 
+          label={`${todaysCalorieCycle.type} day`} 
           variant="secondary"
           style={{ 
             backgroundColor: todaysCalorieCycle.type === 'high' ? '#4ECDC4' : 
@@ -230,7 +230,7 @@ export default function ProtocolDashboardScreen() {
               <Text style={styles.cardioType}>{session.type.toUpperCase()}</Text>
               <Text style={styles.cardioDuration}>{session.duration} min</Text>
               <Badge 
-                text={session.intensity} 
+                label={session.intensity} 
                 variant="secondary"
                 style={{ 
                   backgroundColor: session.intensity === 'high' ? '#FF6B35' : 
@@ -242,7 +242,7 @@ export default function ProtocolDashboardScreen() {
               onPress={() => updateCardioSession(session.id, { completed: !session.completed })}
             >
               {session.completed ? (
-                <CheckCircle size={20} color={colors.success} />
+                <CheckCircle size={20} color={colors.status.success} />
               ) : (
                 <Circle size={20} color={colors.text.tertiary} />
               )}
@@ -276,7 +276,7 @@ export default function ProtocolDashboardScreen() {
               onPress={() => updateSupplementReminder(supplement.id, { taken: !supplement.taken })}
             >
               {supplement.taken ? (
-                <CheckCircle size={20} color={colors.success} />
+                <CheckCircle size={20} color={colors.status.success} />
               ) : (
                 <Circle size={20} color={colors.text.tertiary} />
               )}
@@ -310,7 +310,7 @@ export default function ProtocolDashboardScreen() {
               onPress={() => updateProgressPhotoReminder(photo.id, { completed: !photo.completed })}
             >
               {photo.completed ? (
-                <CheckCircle size={20} color={colors.success} />
+                <CheckCircle size={20} color={colors.status.success} />
               ) : (
                 <Circle size={20} color={colors.text.tertiary} />
               )}

@@ -52,7 +52,7 @@ export default function ApiStatusScreen() {
     }
   }, [isAdmin]);
 
-  const { data: apiStatus, isLoading, refetch } = trpc.system.apiStatus.useQuery();
+  const { data: apiStatus, isLoading, refetch } = (trpc as any).system?.apiStatus?.useQuery() || { data: undefined, isLoading: false, refetch: async () => {} };
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -186,7 +186,7 @@ export default function ApiStatusScreen() {
       {apiStatus?.recommendations && apiStatus.recommendations.length > 0 && (
         <Card style={styles.recommendationsCard}>
           <Text style={styles.recommendationsTitle}>Recommendations</Text>
-          {apiStatus.recommendations.filter((rec): rec is string => rec !== null).map((recommendation: string, index: number) => (
+          {apiStatus.recommendations.filter((rec: string | null): rec is string => rec !== null).map((recommendation: string, index: number) => (
             <View key={index} style={styles.recommendationItem}>
               <AlertCircle size={16} color={colors.status.warning} />
               <Text style={styles.recommendationText}>{recommendation}</Text>

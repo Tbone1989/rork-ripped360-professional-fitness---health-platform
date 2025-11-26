@@ -86,7 +86,7 @@ export default function CreateProtocolScreen() {
         setStartDuration(templateData.cardioProgression.startDuration.toString());
         setMaxDuration(templateData.cardioProgression.maxDuration.toString());
         setWeeklyIncrease(templateData.cardioProgression.weeklyIncrease.toString());
-        setIntensityLevels(templateData.cardioProgression.intensityLevels);
+        setIntensityLevels(templateData.cardioProgression.intensityLevels as ("high" | "low" | "moderate")[]);
       }
     }
   };
@@ -655,7 +655,7 @@ const styles = StyleSheet.create({
   },
   removeButtonText: {
     fontSize: 14,
-    color: colors.error,
+    color: colors.status.error,
     fontWeight: '600',
   },
   addButton: {
