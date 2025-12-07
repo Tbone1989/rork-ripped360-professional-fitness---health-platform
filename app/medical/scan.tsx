@@ -114,7 +114,7 @@ const MobileScanner = () => {
 
     try {
       // Try to get supplement data from API
-      const supplementData = await trpcClient.health.supplements.barcode.query({ barcode: data });
+      const supplementData = await trpcClient.health.supplements.barcode({ barcode: data });
       
       if (supplementData) {
         Alert.alert(

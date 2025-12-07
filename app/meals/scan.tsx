@@ -99,7 +99,7 @@ const MobileScanner = () => {
 
     try {
       const startTime = Date.now();
-      const foodData = await trpcClient.nutrition.barcode.query({ barcode: data });
+      const foodData = await trpcClient.nutrition.barcode({ barcode: data });
       const apiDuration = Date.now() - startTime;
 
       if (foodData) {

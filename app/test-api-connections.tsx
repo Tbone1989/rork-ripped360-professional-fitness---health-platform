@@ -133,25 +133,25 @@ export default function TestApiConnections() {
       // Use the trpcClient directly for testing
       switch (route) {
         case 'example.hi':
-          result = await trpcClient.example.hi.mutate({ name: 'Test' });
+          result = await trpcClient.example.hi({ name: 'Test' });
           break;
         case 'system.apiStatus':
-          result = await trpcClient.system.apiStatus.query();
+          result = await trpcClient.system.apiStatus();
           break;
         case 'nutrition.search':
-          result = await trpcClient.nutrition.search.query({ query: 'apple' });
+          result = await trpcClient.nutrition.search({ query: 'apple' });
           break;
         case 'fitness.exercises':
-          result = await trpcClient.fitness.exercises.query({ muscle: 'chest' });
+          result = await trpcClient.fitness.exercises({ muscle: 'chest' });
           break;
         case 'health.bloodwork':
-          result = await trpcClient.health.bloodwork.mutate({ bloodworkData: {}, userProfile: {} });
+          result = await trpcClient.health.bloodwork({ bloodworkData: {}, userProfile: {} });
           break;
         case 'coaching.list':
-          result = await trpcClient.coaching.list.query({ specialty: 'fitness' });
+          result = await trpcClient.coaching.list({ specialty: 'fitness' });
           break;
         case 'shop.products':
-          result = await trpcClient.shop.products.query();
+          result = await trpcClient.shop.products();
           break;
         default:
           throw new Error(`Unknown route: ${route}`);

@@ -97,7 +97,7 @@ const MobileScanner = () => {
 
     try {
       // Try to get nutrition data from API (for food products)
-      const nutritionData = await trpcClient.nutrition.barcode.query({ barcode: data });
+      const nutritionData = await trpcClient.nutrition.barcode({ barcode: data });
       
       if (nutritionData && nutritionData.name !== 'Unknown Item') {
         // Convert nutrition data to shop product format

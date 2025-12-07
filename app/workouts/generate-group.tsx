@@ -129,6 +129,7 @@ export default function GenerateGroupWorkoutScreen() {
       coachId: 'coach1',
       members: [],
       skillLevel: 'mixed',
+      season: 'inseason',
       goals: ['fat-loss', 'conditioning'],
       trainingPhase: 'General Fitness',
       meetingSchedule: [],
@@ -287,9 +288,8 @@ export default function GenerateGroupWorkoutScreen() {
                   <Text style={styles.teamName}>{team.name}</Text>
                   <Text style={styles.teamInfo}>{team.members.length} members</Text>
                   <Badge 
-                    text={team.skillLevel} 
                     variant={team.skillLevel === 'advanced' ? 'success' : 'default'}
-                  />
+                  >{team.skillLevel}</Badge>
                 </TouchableOpacity>
               ))}
             </View>
@@ -581,7 +581,7 @@ export default function GenerateGroupWorkoutScreen() {
               <Card key={workout.id} style={styles.workoutCard}>
                 <View style={styles.workoutHeader}>
                   <Text style={styles.workoutName}>{workout.name}</Text>
-                  <Badge text={workout.classType} variant="default" />
+                  <Badge variant="default">{workout.classType}</Badge>
                 </View>
                 
                 <Text style={styles.workoutDescription}>{workout.description}</Text>
@@ -816,7 +816,7 @@ const styles = StyleSheet.create({
     height: 20,
     borderRadius: 4,
     borderWidth: 2,
-    borderColor: colors.border.primary,
+    borderColor: colors.border.light,
     justifyContent: 'center',
     alignItems: 'center',
   },

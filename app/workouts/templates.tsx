@@ -461,19 +461,16 @@ export default function WorkoutTemplatesScreen() {
               
               <View style={styles.badgeRow}>
                 <Badge 
-                  text={template.category} 
                   variant="default"
                   style={{ backgroundColor: getCategoryColor(template.category) + '20' }}
-                />
+                >{template.category}</Badge>
                 <Badge 
-                  text={template.classType} 
                   variant="default"
-                />
+                >{template.classType}</Badge>
                 <Badge 
-                  text={template.difficulty} 
                   variant="default"
                   style={{ backgroundColor: getDifficultyColor(template.difficulty) + '20' }}
-                />
+                >{template.difficulty}</Badge>
               </View>
             </View>
             
@@ -793,7 +790,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingTop: 12,
     borderTopWidth: 1,
-    borderTopColor: colors.border.primary,
+    borderTopColor: colors.border.light,
   },
   statItem: {
     alignItems: 'center',
