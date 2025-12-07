@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useUserStore } from '@/store/userStore';
@@ -9,32 +9,32 @@ export default function Index() {
   const hasHydrated = useUserStore((state) => state.hasHydrated);
   const user = useUserStore((state) => state.user);
   const setHasHydrated = useUserStore((state) => state.setHasHydrated);
-  const [isReady, setIsReady] = useState(false);
-  
+  const [hydrationFallbackReady, setHydrationFallbackReady] = useState<boolean>(() => hasHydrated);
+
   useEffect(() => {
-    console.log('[Index] Component mounted');
-    console.log('[Index] hasHydrated:', hasHydrated, 'isAuthenticated:', isAuthenticated);
-    
-    const timeout = setTimeout(() => {
-      console.log('[Index] Force ready after 1s timeout');
-      if (!hasHydrated) {
-        console.log('[Index] Forcing hydration complete');
-        setHasHydrated(true);
-      }
-      setIsReady(true);
-    }, 1000);
-    
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+
     if (hasHydrated) {
-      console.log('[Index] Already hydrated, setting ready');
-      setIsReady(true);
+      console.log('[Index] Hydration complete');
+      setHydrationFallbackReady(true);
+    } else {
+      console.log('[Index] Waiting for hydration...');
+      timeout = setTimeout(() => {
+        console.log('[Index] Hydration fallback triggered');
+        setHasHydrated(true);
+        setHydrationFallbackReady(true);
+      }, 1500);
     }
-    
+
     return () => {
-      console.log('[Index] Cleanup');
-      clearTimeout(timeout);
+      if (timeout) {
+        clearTimeout(timeout);
+      }
     };
-  }, [hasHydrated, isAuthenticated, setHasHydrated]);
-  
+  }, [hasHydrated, setHasHydrated]);
+
+  const isReady = useMemo(() => hasHydrated || hydrationFallbackReady, [hasHydrated, hydrationFallbackReady]);
+
   if (!isReady) {
     return (
       <View style={styles.loadingContainer}>
@@ -43,7 +43,7 @@ export default function Index() {
       </View>
     );
   }
-  
+
   if (isAuthenticated && user) {
     if (user.role === 'coach') {
       return <Redirect href="/coach/dashboard" />;
@@ -53,7 +53,7 @@ export default function Index() {
     }
     return <Redirect href="/(tabs)" />;
   }
-  
+
   return <Redirect href="/(auth)/login" />;
 }
 
