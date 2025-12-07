@@ -12,21 +12,27 @@ export default function Index() {
   const [isReady, setIsReady] = useState(false);
   
   useEffect(() => {
+    console.log('[Index] Component mounted');
     console.log('[Index] hasHydrated:', hasHydrated, 'isAuthenticated:', isAuthenticated);
     
     const timeout = setTimeout(() => {
-      console.log('[Index] Force ready after timeout');
+      console.log('[Index] Force ready after 1s timeout');
       if (!hasHydrated) {
+        console.log('[Index] Forcing hydration complete');
         setHasHydrated(true);
       }
       setIsReady(true);
-    }, 500);
+    }, 1000);
     
     if (hasHydrated) {
+      console.log('[Index] Already hydrated, setting ready');
       setIsReady(true);
     }
     
-    return () => clearTimeout(timeout);
+    return () => {
+      console.log('[Index] Cleanup');
+      clearTimeout(timeout);
+    };
   }, [hasHydrated, isAuthenticated, setHasHydrated]);
   
   if (!isReady) {
