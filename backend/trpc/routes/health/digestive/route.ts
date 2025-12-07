@@ -245,7 +245,7 @@ const analyzeDigestiveHealth = async (healthData: any): Promise<DigestiveHealthA
 export const analyzeDigestiveHealthProcedure = publicProcedure
   .input(z.object({
     symptoms: z.array(z.string()),
-    frequency: z.record(z.string()),
+    frequency: z.record(z.string(), z.string()),
     triggers: z.array(z.string()).optional(),
     currentDiet: z.string().optional(),
     medications: z.array(z.string()).optional(),
@@ -256,7 +256,7 @@ export const analyzeDigestiveHealthProcedure = publicProcedure
     console.log(`🦠 Analyzing digestive health data`);
     
     try {
-      const analysis = await analyzeDigestiveHealth(input);
+      const analysis = await analyzeDigestiveHealth(input as any);
       
       console.log(`✅ Generated digestive health analysis with ${analysis.recommendations.length} recommendations`);
       

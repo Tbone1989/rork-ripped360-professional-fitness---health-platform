@@ -99,7 +99,7 @@ export default function VideoAnalysisScreen() {
     try {
       // Convert video to base64 for analysis
       const base64Video = await FileSystem.readAsStringAsync(videoUri, {
-        encoding: FileSystem.EncodingType.Base64,
+        encoding: 'base64' as any,
       });
 
       // Create frames from video for analysis (simplified - in production, extract key frames)

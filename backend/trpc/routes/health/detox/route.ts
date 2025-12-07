@@ -361,8 +361,8 @@ export const analyzeDetoxCapacityProcedure = publicProcedure
   .input(z.object({
     currentSymptoms: z.array(z.string()).optional(),
     toxinExposure: z.array(z.string()).optional(),
-    liverMarkers: z.record(z.number()).optional(),
-    kidneyMarkers: z.record(z.number()).optional(),
+    liverMarkers: z.record(z.string(), z.number()).optional(),
+    kidneyMarkers: z.record(z.string(), z.number()).optional(),
     lifestyle: z.object({
       alcohol: z.enum(['none', 'light', 'moderate', 'heavy']).optional(),
       smoking: z.boolean().optional(),
@@ -377,7 +377,7 @@ export const analyzeDetoxCapacityProcedure = publicProcedure
     console.log(`🧹 Analyzing detox capacity and creating protocol`);
     
     try {
-      const analysis = await analyzeDetoxCapacity(input);
+      const analysis = await analyzeDetoxCapacity(input as any);
       
       console.log(`✅ Generated detox analysis with ${analysis.detoxPhases.length} phases`);
       

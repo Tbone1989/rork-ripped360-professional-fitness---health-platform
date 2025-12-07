@@ -32,11 +32,9 @@ export const trpc = {
   Provider: ({ children }: TrpcProviderProps) => React.createElement(React.Fragment, null, children),
   example: {
     hi: {
-      useQuery(input?: Record<string, unknown>, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
-        return useQuery({
-          queryKey: ["example.hi", input ?? {}],
-          queryFn: async () => trpcCall("example.hi", input ?? {}),
-          ...options,
+      useMutation() {
+        return useMutation({
+          mutationFn: async (input: Record<string, unknown>) => trpcCall("example.hi", input),
         });
       },
     },
@@ -97,9 +95,11 @@ export const trpc = {
       },
     },
     barcode: {
-      useMutation() {
-        return useMutation({
-          mutationFn: async (input: Record<string, unknown>) => trpcCall("nutrition.barcode", input),
+      useQuery(input?: Record<string, unknown>, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
+        return useQuery({
+          queryKey: ["nutrition.barcode", input ?? {}],
+          queryFn: async () => trpcCall("nutrition.barcode", input ?? {}),
+          ...options,
         });
       },
     },
@@ -120,29 +120,23 @@ export const trpc = {
       },
     },
     digestive: {
-      useQuery(input?: Record<string, unknown>, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
-        return useQuery({
-          queryKey: ["health.digestive", input ?? {}],
-          queryFn: async () => trpcCall("health.digestive", input ?? {}),
-          ...options,
+      useMutation() {
+        return useMutation({
+          mutationFn: async (input: Record<string, unknown>) => trpcCall("health.digestive", input),
         });
       },
     },
     detox: {
-      useQuery(input?: Record<string, unknown>, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
-        return useQuery({
-          queryKey: ["health.detox", input ?? {}],
-          queryFn: async () => trpcCall("health.detox", input ?? {}),
-          ...options,
+      useMutation() {
+        return useMutation({
+          mutationFn: async (input: Record<string, unknown>) => trpcCall("health.detox", input),
         });
       },
     },
     issues: {
-      useQuery(input?: Record<string, unknown>, options?: Omit<UseQueryOptions<any>, 'queryKey' | 'queryFn'>) {
-        return useQuery({
-          queryKey: ["health.issues", input ?? {}],
-          queryFn: async () => trpcCall("health.issues", input ?? {}),
-          ...options,
+      useMutation() {
+        return useMutation({
+          mutationFn: async (input: Record<string, unknown>) => trpcCall("health.issues", input),
         });
       },
     },

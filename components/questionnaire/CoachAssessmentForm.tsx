@@ -23,7 +23,7 @@ import {
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+
 import { 
   ClientQuestionnaire,
   CoachAssessmentForm as CoachAssessmentFormType,
@@ -89,17 +89,7 @@ export default function CoachAssessmentForm({
     setRecommendations(updated);
   };
 
-  const addRiskItem = (category: keyof RiskAssessment, item: string) => {
-    if (!item.trim()) return;
-    
-    const currentItems = riskAssessment[category] as string[];
-    if (!currentItems.includes(item)) {
-      setRiskAssessment({
-        ...riskAssessment,
-        [category]: [...currentItems, item]
-      });
-    }
-  };
+
 
   const removeRiskItem = (category: keyof RiskAssessment, index: number) => {
     const currentItems = riskAssessment[category] as string[];
@@ -255,14 +245,6 @@ export default function CoachAssessmentForm({
             </View>
           ))}
         </View>
-        <Input
-          placeholder="Add medical risk concern"
-          onSubmitEditing={(e) => {
-            addRiskItem('medicalRisks', e.nativeEvent.text);
-            e.target.clear();
-          }}
-          returnKeyType="done"
-        />
       </View>
 
       <View style={styles.riskSection}>
@@ -281,14 +263,6 @@ export default function CoachAssessmentForm({
             </View>
           ))}
         </View>
-        <Input
-          placeholder="Add injury risk concern"
-          onSubmitEditing={(e) => {
-            addRiskItem('injuryRisks', e.nativeEvent.text);
-            e.target.clear();
-          }}
-          returnKeyType="done"
-        />
       </View>
 
       <View style={styles.riskSection}>
@@ -307,14 +281,6 @@ export default function CoachAssessmentForm({
             </View>
           ))}
         </View>
-        <Input
-          placeholder="Add exercise restriction"
-          onSubmitEditing={(e) => {
-            addRiskItem('exerciseRestrictions', e.nativeEvent.text);
-            e.target.clear();
-          }}
-          returnKeyType="done"
-        />
       </View>
     </Card>
   );

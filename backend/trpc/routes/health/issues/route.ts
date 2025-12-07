@@ -114,10 +114,6 @@ interface ProfessionalReferral {
 }
 
 const analyzeHealthIssues = async (healthData: any): Promise<HealthIssueAnalysis> => {
-  const symptoms = healthData.symptoms || [];
-  const medicalHistory = healthData.medicalHistory || [];
-  const familyHistory = healthData.familyHistory || [];
-  
   const analysis: HealthIssueAnalysis = {
     id: `health_analysis_${Date.now()}`,
     userId: healthData.userId || 'user_123',
@@ -444,8 +440,8 @@ const analyzeHealthIssues = async (healthData: any): Promise<HealthIssueAnalysis
 export const analyzeHealthIssuesProcedure = publicProcedure
   .input(z.object({
     symptoms: z.array(z.string()),
-    duration: z.record(z.string()).optional(),
-    severity: z.record(z.string()).optional(),
+    duration: z.record(z.string(), z.string()).optional(),
+    severity: z.record(z.string(), z.string()).optional(),
     medicalHistory: z.array(z.string()).optional(),
     familyHistory: z.array(z.string()).optional(),
     currentMedications: z.array(z.string()).optional(),
@@ -465,7 +461,7 @@ export const analyzeHealthIssuesProcedure = publicProcedure
     console.log(`🏥 Analyzing health issues and symptoms`);
     
     try {
-      const analysis = await analyzeHealthIssues(input);
+      const analysis = await analyzeHealthIssues(input as any);
       
       console.log(`✅ Generated health analysis with ${analysis.identifiedIssues.length} identified issues`);
       

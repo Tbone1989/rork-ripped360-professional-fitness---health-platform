@@ -31,6 +31,8 @@ interface InputProps {
   onBlur?: () => void;
   onFocus?: () => void;
   leftIcon?: React.ReactNode;
+  returnKeyType?: 'done' | 'go' | 'next' | 'search' | 'send';
+  onSubmitEditing?: (e: { nativeEvent: { text: string } }) => void;
 }
 
 export const Input: React.FC<InputProps> = ({
@@ -53,6 +55,8 @@ export const Input: React.FC<InputProps> = ({
   onFocus,
   testID,
   leftIcon,
+  returnKeyType,
+  onSubmitEditing,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -104,6 +108,8 @@ export const Input: React.FC<InputProps> = ({
           editable={editable}
           onFocus={handleFocus}
           onBlur={handleBlur}
+          returnKeyType={returnKeyType}
+          onSubmitEditing={onSubmitEditing}
         />
         {secureTextEntry && (
           <TouchableOpacity

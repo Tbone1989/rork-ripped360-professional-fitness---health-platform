@@ -129,7 +129,7 @@ export const useBrandStore = create<BrandState>()(persist(
       if (purchasedGuides.includes(guide.id)) return true;
       if (!guide.membershipRequired) return true;
       
-      return userMembership && userMembership.status === 'active';
+      return !!(userMembership && userMembership.status === 'active');
     },
   }),
   {

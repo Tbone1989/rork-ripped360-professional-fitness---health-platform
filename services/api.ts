@@ -2,12 +2,7 @@
 // TODO: Replace with actual API endpoints once provided
 const API_BASE_URL = 'https://api.rip360.com';
 
-// Alternative endpoints for testing (replace with real ones)
-const API_ENDPOINTS = {
-  NINJA: process.env.EXPO_PUBLIC_NINJA_API_URL || 'https://api.api-ninjas.com/v1',
-  NUTRITION: process.env.EXPO_PUBLIC_NUTRITION_API_URL || 'https://api.edamam.com/api/food-database/v2',
-  HEALTH_FDA: process.env.EXPO_PUBLIC_FDA_API_URL || 'https://api.fda.gov'
-};
+
 
 // API Keys - These should be set in your environment variables
 const API_KEYS = {
@@ -72,8 +67,24 @@ export interface SupplementData {
   reviews: number;
 }
 
+async function trpcCall(path: string, input?: unknown): Promise<any> {
+  const url = `/api/trpc/${path}`;
+  try {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ input }),
+    });
+    const json = await res.json().catch(() => ({} as any));
+    const data = (json?.result?.data ?? json?.data ?? json) as unknown;
+    return data;
+  } catch (e) {
+    console.log("trpcCall error", path, e);
+    return [];
+  }
+}
+
 // API Service Class
-import { trpcClient } from '@/lib/trpc';
 
 class ApiService {
   private async makeRequest<T>(
@@ -144,7 +155,7 @@ class ApiService {
   async getFoodByBarcode(barcode: string): Promise<NutritionData | null> {
     try {
       console.log('Using tRPC nutrition.barcode for lookup', barcode);
-      const data = await trpcClient.nutrition.barcode.query({ barcode });
+      const data = await trpcCall('nutrition.barcode', { barcode });
       return data as NutritionData;
     } catch (trpcError) {
       console.warn('tRPC nutrition.barcode failed, falling back to HTTP', trpcError);
@@ -177,7 +188,7 @@ class ApiService {
     // Try tRPC first (has built-in API + mock fallback on server)
     try {
       console.log('Using tRPC nutrition.mealPlan for generation');
-      const data = await trpcClient.nutrition.mealPlan.mutate(preferences);
+      const data = await trpcCall('nutrition.mealPlan', preferences);
       return data as any;
     } catch (trpcError) {
       console.warn('tRPC nutrition.mealPlan failed, falling back to HTTP', trpcError);
