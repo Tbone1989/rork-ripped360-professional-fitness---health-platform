@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowRight, Apple, Users, ShieldQuestion, Stethoscope, ShieldCheck, Info, HelpCircle } from 'lucide-react-native';
+import { ArrowRight, Apple, Users, ShieldQuestion, Stethoscope, ShieldCheck, Info, HelpCircle, Sparkles } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
@@ -19,6 +19,7 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function LoginScreen() {
   const router = useRouter();
   const login = useUserStore((state) => state.login);
+  const demoLogin = useUserStore((state) => state.demoLogin);
   const isLoading = useUserStore((state) => state.isLoading);
 
   const [email, setEmail] = useState('');
@@ -67,7 +68,8 @@ export default function LoginScreen() {
       securityService.recordLoginAttempt(email, true);
       securityService.updateActivity();
       router.replace('/(tabs)');
-    } catch (err) {
+    } catch (loginError) {
+      console.error('[Login] error', loginError);
       securityService.recordLoginAttempt(email, false);
       setError('Invalid email or password');
     }
@@ -165,6 +167,18 @@ export default function LoginScreen() {
     }
   }, [ensureEnvVal, redirectUri, router, withHaptics, GOOGLE_CLIENT_ID, APPLE_CLIENT_ID]);
 
+  const handleDemoAccess = useCallback(async () => {
+    await withHaptics(Haptics.ImpactFeedbackStyle.Light);
+    try {
+      setError('');
+      await demoLogin();
+      router.replace('/(tabs)');
+    } catch (demoError) {
+      console.error('[DemoLogin] error', demoError);
+      setError('Unable to load demo mode right now. Please try again.');
+    }
+  }, [demoLogin, router, withHaptics]);
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView
@@ -247,6 +261,17 @@ export default function LoginScreen() {
               testID="apple-signin"
             />
           </View>
+
+          <Button
+            title="Explore Demo Experience"
+            onPress={handleDemoAccess}
+            variant="ghost"
+            fullWidth
+            style={styles.demoButton}
+            icon={<Sparkles size={18} color={colors.accent.primary} />}
+            testID="demo-mode-button"
+          />
+          <Text style={styles.demoHint}>Loads a sample account so you can tour the full app instantly.</Text>
 
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -567,5 +592,14 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     width: '100%',
+  },
+  demoButton: {
+    marginTop: 12,
+  },
+  demoHint: {
+    textAlign: 'center',
+    color: colors.text.secondary,
+    fontSize: 13,
+    marginTop: 8,
   },
 });

@@ -3,6 +3,63 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { User, UserPreferences } from '@/types/user';
 
+const createDemoUser = (): User => {
+  const nowIso = new Date().toISOString();
+  return {
+    id: 'demo-user',
+    email: 'demo@ripped360.com',
+    name: 'Demo Athlete',
+    profileImageUrl: 'https://images.unsplash.com/photo-1502764613149-7f1d229e230f?w=800&q=80',
+    role: 'user',
+    createdAt: nowIso,
+    lastActive: nowIso,
+    preferences: {
+      darkMode: true,
+      notifications: {
+        workoutReminders: true,
+        coachMessages: true,
+        progressUpdates: true,
+        medicalAlerts: false,
+      },
+      measurementSystem: 'imperial',
+      language: 'en',
+    },
+    stats: {
+      workoutsCompleted: 142,
+      totalWorkoutTime: 9720,
+      streakDays: 18,
+      longestStreak: 41,
+      lastWorkout: nowIso,
+      favoriteWorkouts: ['w1', 'w2', 'w3'],
+      favoriteExercises: ['deadlift', 'pull-up'],
+    },
+    subscription: {
+      id: 'sub-demo',
+      plan: 'premium',
+      startDate: nowIso,
+      endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+      autoRenew: false,
+    },
+    attachments: [],
+    verificationStatus: {
+      identity: 'verified',
+      email: 'verified',
+      phone: 'verified',
+      professional: 'not_applicable',
+    },
+    legalAgreements: [
+      {
+        id: 'legal-demo-1',
+        type: 'terms_of_service',
+        version: '1.0',
+        acceptedAt: nowIso,
+        ipAddress: '127.0.0.1',
+        userAgent: 'demo-mode',
+      },
+    ],
+  };
+};
+
 interface UserState {
   user: User | null;
   isLoading: boolean;
@@ -11,6 +68,7 @@ interface UserState {
   isAdmin: boolean;
   login: (email: string, password: string, role?: 'user' | 'coach' | 'medical') => Promise<void>;
   adminLogin: (email: string, password: string) => Promise<void>;
+  demoLogin: () => Promise<void>;
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   updatePreferences: (preferences: Partial<UserPreferences>) => void;
@@ -204,6 +262,24 @@ export const useUserStore = create<UserState>()(
         }
       },
       
+      demoLogin: async () => {
+        set({ isLoading: true });
+        try {
+          const demoUser = createDemoUser();
+          set({
+            user: demoUser,
+            isAuthenticated: true,
+            isAdmin: false,
+            isLoading: false,
+            hasHydrated: true,
+          });
+        } catch (error) {
+          console.error('Demo login error:', error);
+          set({ isLoading: false });
+          throw error;
+        }
+      },
+
       logout: () => {
         set({ user: null, isAuthenticated: false, isAdmin: false });
       },
