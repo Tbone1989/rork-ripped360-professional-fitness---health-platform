@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useUserStore } from '@/store/userStore';
 import { colors } from '@/constants/colors';
+
+const HYDRATION_FALLBACK_MS = 6000;
 
 export default function Index() {
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
@@ -10,39 +12,69 @@ export default function Index() {
   const user = useUserStore((state) => state.user);
   const setHasHydrated = useUserStore((state) => state.setHasHydrated);
   const [hydrationFallbackReady, setHydrationFallbackReady] = useState<boolean>(() => hasHydrated);
+  const [stuck, setStuck] = useState<boolean>(false);
+
+  useEffect(() => {
+    console.log('[Index] Mount/state', { hasHydrated, isAuthenticated, role: user?.role ?? null });
+  }, [hasHydrated, isAuthenticated, user?.role]);
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout> | undefined;
+    let stuckTimeout: ReturnType<typeof setTimeout> | undefined;
 
     if (hasHydrated) {
       console.log('[Index] Hydration complete');
       setHydrationFallbackReady(true);
+      setStuck(false);
     } else {
       console.log('[Index] Waiting for hydration...');
+      stuckTimeout = setTimeout(() => {
+        console.log('[Index] Still waiting for hydration - showing fallback UI');
+        setStuck(true);
+      }, 2500);
+
       timeout = setTimeout(() => {
-        console.log('[Index] Hydration fallback triggered');
+        console.log('[Index] Hydration hard fallback triggered');
         setHasHydrated(true);
         setHydrationFallbackReady(true);
-      }, 1500);
+      }, HYDRATION_FALLBACK_MS);
     }
 
     return () => {
-      if (timeout) {
-        clearTimeout(timeout);
-      }
+      if (timeout) clearTimeout(timeout);
+      if (stuckTimeout) clearTimeout(stuckTimeout);
     };
   }, [hasHydrated, setHasHydrated]);
 
-  const isReady = useMemo(() => hasHydrated || hydrationFallbackReady, [hasHydrated, hydrationFallbackReady]);
+  const isReady = useMemo(
+    () => Boolean(hasHydrated || hydrationFallbackReady),
+    [hasHydrated, hydrationFallbackReady]
+  );
 
   if (!isReady) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.loadingContainer} testID="app-loading">
         <ActivityIndicator size="large" color={colors.accent.primary} />
-        <Text style={styles.loadingText}>Starting...</Text>
+        <Text style={styles.loadingTitle}>Loading Ripped360…</Text>
+        <Text style={styles.loadingText}>
+          {stuck ? 'This is taking longer than expected. Retrying…' : 'Starting up…'}
+        </Text>
+        <Pressable
+          onPress={() => {
+            console.log('[Index] User tapped Continue (force hydrated)');
+            setHasHydrated(true);
+            setHydrationFallbackReady(true);
+          }}
+          style={styles.secondaryButton}
+          testID="loading-continue"
+        >
+          <Text style={styles.secondaryButtonText}>Continue</Text>
+        </Pressable>
       </View>
     );
   }
+
+  console.log('[Index] Ready -> routing', { isAuthenticated, role: user?.role ?? null });
 
   if (isAuthenticated && user) {
     if (user.role === 'coach') {
@@ -63,11 +95,34 @@ const styles = StyleSheet.create({
     backgroundColor: colors.background.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 16,
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  loadingTitle: {
+    color: colors.text.primary,
+    fontSize: 18,
+    fontWeight: '800',
+    marginTop: 10,
   },
   loadingText: {
     color: colors.text.secondary,
-    fontSize: 16,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  secondaryButton: {
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    backgroundColor: colors.background.secondary,
+  },
+  secondaryButtonText: {
+    color: colors.text.primary,
+    fontSize: 13,
+    fontWeight: '700',
   },
 });
 
