@@ -289,7 +289,7 @@ export default function LoginScreen() {
           <View style={styles.roleButtonsRow}>
             <TouchableOpacity
               style={styles.roleButton}
-              onPress={() => router.push('/(auth)/coach-login')}
+              onPress={() => router.push('/(auth)/coach-login' as any)}
               onLongPress={() => {
                 Alert.alert(
                   'Coach Portal',
@@ -317,7 +317,7 @@ export default function LoginScreen() {
 
             <TouchableOpacity
               style={styles.roleButton}
-              onPress={() => router.push('/(auth)/doctor-login')}
+              onPress={() => router.push('/(auth)/doctor-login' as any)}
               onLongPress={() => {
                 Alert.alert(
                   'Medical Portal',
@@ -345,7 +345,7 @@ export default function LoginScreen() {
 
             <TouchableOpacity
               style={styles.roleButton}
-              onPress={() => router.push('/(auth)/admin-login')}
+              onPress={() => router.push('/(auth)/admin-login' as any)}
               onLongPress={() => {
                 Alert.alert(
                   'Admin Portal',

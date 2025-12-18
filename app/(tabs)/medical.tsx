@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, PlusCircle, FileText, Pill, Camera, Brain, Leaf, Info, Droplets } from 'lucide-react-native';
+import { Filter, PlusCircle, Camera, Brain, Leaf, Info, Droplets } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -31,7 +31,7 @@ export default function MedicalScreen() {
           <Text style={styles.headerTitle}>Medical & Health</Text>
           <TouchableOpacity 
             style={styles.scanButton}
-            onPress={() => router.push('/medical/scan')}
+            onPress={() => router.push('/medical/scan' as any)}
           >
             <Camera size={20} color={colors.accent.primary} />
           </TouchableOpacity>
@@ -65,14 +65,14 @@ export default function MedicalScreen() {
                 <Button
                   title="Upload Results"
                   icon={<PlusCircle size={18} color={colors.text.primary} />}
-                  onPress={() => router.push('/medical/upload')}
+                  onPress={() => router.push('/medical/upload' as any)}
                   style={[styles.actionButton, styles.actionButtonHalf]}
                   testID="btn-upload-results"
                 />
                 <Button
                   title="AI Analysis"
                   icon={<Brain size={18} color={colors.text.primary} />}
-                  onPress={() => router.push('/medical/ai-analysis')}
+                  onPress={() => router.push('/medical/ai-analysis' as any)}
                   style={[styles.actionButton, styles.actionButtonHalf, styles.noGlow]}
                   testID="btn-ai-analysis"
                 />
@@ -95,14 +95,14 @@ export default function MedicalScreen() {
                 <Button
                   title="Holistic Care"
                   icon={<Leaf size={18} color={colors.text.primary} />}
-                  onPress={() => router.push('/medical/holistic')}
+                  onPress={() => router.push('/medical/holistic' as any)}
                   style={[styles.actionButton, styles.actionButtonHalf]}
                   testID="btn-holistic-care"
                 />
                 <Button
                   title="Homeopathic Remedies"
                   icon={<Droplets size={18} color={colors.text.primary} />}
-                  onPress={() => router.push('/medical/homeopathy')}
+                  onPress={() => router.push('/medical/homeopathy' as any)}
                   style={[styles.actionButton, styles.actionButtonHalf]}
                   testID="btn-homeopathy"
                 />
@@ -123,7 +123,7 @@ export default function MedicalScreen() {
                 style={styles.guideLink}
                 onPress={() => {
                   console.log('[MedicalScreen] Navigate to /supplements/guide');
-                  router.push('/supplements/guide');
+                  router.push('/supplements/guide' as any);
                 }}
                 testID="btn-supplement-guide"
                 activeOpacity={0.8}
@@ -166,7 +166,7 @@ export default function MedicalScreen() {
       {activeTab === 'bloodwork' && (
         <TouchableOpacity 
           style={styles.fab}
-          onPress={() => router.push('/medical/upload')}
+          onPress={() => router.push('/medical/upload' as any)}
         >
           <PlusCircle size={24} color={colors.text.primary} />
         </TouchableOpacity>

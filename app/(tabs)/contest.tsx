@@ -140,7 +140,7 @@ export default function ContestScreen() {
           <View style={styles.quickActions}>
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/dashboard')}
+              onPress={() => router.push('/contest/dashboard' as any)}
               testID="contest-action-dashboard"
             >
               <TrendingUp size={24} color={colors.accent.primary} />
@@ -149,7 +149,7 @@ export default function ContestScreen() {
             
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/protocols')}
+              onPress={() => router.push('/contest/protocols' as any)}
               testID="contest-action-protocols"
             >
               <Timer size={24} color={colors.accent.primary} />
@@ -158,7 +158,7 @@ export default function ContestScreen() {
             
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/peak-week')}
+              onPress={() => router.push('/contest/peak-week' as any)}
               testID="contest-action-peak-week"
             >
               <Calendar size={24} color={colors.accent.primary} />
@@ -167,7 +167,7 @@ export default function ContestScreen() {
             
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/posing')}
+              onPress={() => router.push('/contest/posing' as any)}
               testID="contest-action-posing"
             >
               <Droplets size={24} color={colors.accent.primary} />
@@ -176,7 +176,7 @@ export default function ContestScreen() {
             
             <TouchableOpacity 
               style={styles.actionButton}
-              onPress={() => router.push('/contest/peak-week-ai')}
+              onPress={() => router.push('/contest/peak-week-ai' as any)}
               testID="contest-action-peak-week-ai"
             >
               <Brain size={24} color={colors.accent.primary} />
@@ -247,7 +247,7 @@ export default function ContestScreen() {
           />
           <TouchableOpacity
             style={[styles.actionButton, { width: '100%', marginTop: 12 }]}
-            onPress={() => router.push('/contest/peak-week-ai')}
+            onPress={() => router.push('/contest/peak-week-ai' as any)}
             testID="empty-try-peak-week-ai"
           >
             <Brain size={24} color={colors.accent.primary} />

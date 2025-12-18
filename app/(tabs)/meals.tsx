@@ -368,21 +368,21 @@ export default function MealsScreen() {
       <View style={styles.quickActions}>
         <Button
           title="Log Food"
-          onPress={() => router.push('/meals/log')}
+          onPress={() => router.push('/meals/log' as any)}
           icon={<Plus size={18} color={colors.text.primary} />}
           style={styles.actionButton}
         />
         <Button
           title="Meal Plans"
           variant="outline"
-          onPress={() => router.push('/meals/plans')}
+          onPress={() => router.push('/meals/plans' as any)}
           icon={<Calendar size={18} color={colors.accent.primary} />}
           style={styles.actionButton}
         />
         <Button
           title="Progress"
           variant="outline"
-          onPress={() => router.push('/meals/progress')}
+          onPress={() => router.push('/meals/progress' as any)}
           icon={<TrendingUp size={18} color={colors.accent.primary} />}
           style={styles.actionButton}
         />
@@ -396,7 +396,7 @@ export default function MealsScreen() {
         </View>
         <Button
           title="Scan Food Labels"
-          onPress={() => router.push('/meals/label-reader')}
+          onPress={() => router.push('/meals/label-reader' as any)}
           icon={<Camera size={18} color={colors.text.primary} />}
           style={styles.groceryButton}
           testID="btn-food-label-reader"
@@ -411,7 +411,7 @@ export default function MealsScreen() {
         </View>
         <Button
           title="Open Meal Guides"
-          onPress={() => router.push('/meals/guides')}
+          onPress={() => router.push('/meals/guides' as any)}
           icon={<UtensilsCrossed size={18} color={colors.text.primary} />}
           style={styles.groceryButton}
           testID="btn-open-meal-guides"
@@ -419,7 +419,7 @@ export default function MealsScreen() {
         <Button
           title="Healthy Recipes"
           variant="outline"
-          onPress={() => router.push('/meals/recipes')}
+          onPress={() => router.push('/meals/recipes' as any)}
           icon={<UtensilsCrossed size={18} color={colors.accent.primary} />}
           style={styles.groceryButton}
           testID="btn-open-recipes"
@@ -434,7 +434,7 @@ export default function MealsScreen() {
         </View>
         <Button
           title="Search Grocery Prices"
-          onPress={() => router.push('/meals/grocery-prices')}
+          onPress={() => router.push('/meals/grocery-prices' as any)}
           icon={<Search size={18} color={colors.text.primary} />}
           style={styles.groceryButton}
         />
