@@ -4,7 +4,7 @@ import { Redirect } from 'expo-router';
 import { useUserStore } from '@/store/userStore';
 import { colors } from '@/constants/colors';
 
-const HYDRATION_FALLBACK_MS = 6000;
+const HYDRATION_FALLBACK_MS = 1500;
 
 export default function Index() {
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
@@ -13,6 +13,7 @@ export default function Index() {
   const setHasHydrated = useUserStore((state) => state.setHasHydrated);
   const [hydrationFallbackReady, setHydrationFallbackReady] = useState<boolean>(() => hasHydrated);
   const [stuck, setStuck] = useState<boolean>(false);
+  const [forceProceed, setForceProceed] = useState<boolean>(false);
 
   useEffect(() => {
     console.log('[Index] Mount/state', { hasHydrated, isAuthenticated, role: user?.role ?? null });
@@ -26,17 +27,25 @@ export default function Index() {
       console.log('[Index] Hydration complete');
       setHydrationFallbackReady(true);
       setStuck(false);
+      setForceProceed(false);
     } else {
       console.log('[Index] Waiting for hydration...');
+
       stuckTimeout = setTimeout(() => {
         console.log('[Index] Still waiting for hydration - showing fallback UI');
         setStuck(true);
-      }, 2500);
+      }, 800);
 
       timeout = setTimeout(() => {
-        console.log('[Index] Hydration hard fallback triggered');
-        setHasHydrated(true);
+        console.log('[Index] Hydration fallback reached -> proceeding with current state');
         setHydrationFallbackReady(true);
+        setForceProceed(true);
+
+        try {
+          setHasHydrated(true);
+        } catch (e) {
+          console.log('[Index] setHasHydrated failed (non-fatal):', e);
+        }
       }, HYDRATION_FALLBACK_MS);
     }
 
@@ -47,8 +56,8 @@ export default function Index() {
   }, [hasHydrated, setHasHydrated]);
 
   const isReady = useMemo(
-    () => Boolean(hasHydrated || hydrationFallbackReady),
-    [hasHydrated, hydrationFallbackReady]
+    () => Boolean(hasHydrated || hydrationFallbackReady || forceProceed),
+    [hasHydrated, hydrationFallbackReady, forceProceed]
   );
 
   if (!isReady) {
@@ -57,13 +66,18 @@ export default function Index() {
         <ActivityIndicator size="large" color={colors.accent.primary} />
         <Text style={styles.loadingTitle}>Loading Ripped360…</Text>
         <Text style={styles.loadingText}>
-          {stuck ? 'This is taking longer than expected. Retrying…' : 'Starting up…'}
+          {stuck ? 'Taking longer than expected…' : 'Starting up…'}
         </Text>
         <Pressable
           onPress={() => {
-            console.log('[Index] User tapped Continue (force hydrated)');
-            setHasHydrated(true);
+            console.log('[Index] User tapped Continue (proceed)');
+            setForceProceed(true);
             setHydrationFallbackReady(true);
+            try {
+              setHasHydrated(true);
+            } catch (e) {
+              console.log('[Index] setHasHydrated failed (non-fatal):', e);
+            }
           }}
           style={styles.secondaryButton}
           testID="loading-continue"
