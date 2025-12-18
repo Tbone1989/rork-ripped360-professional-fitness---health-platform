@@ -18,7 +18,11 @@ export default function HomeScreen() {
         <View style={styles.headerWrap}>
           <View style={styles.headerRow}>
             <Text style={styles.headerTitle}>Ripped City 360</Text>
-            <TouchableOpacity accessibilityLabel="Open store" testID="home-store-btn" onPress={() => router.push('/shop')}>
+            <TouchableOpacity
+              accessibilityLabel="Open store"
+              testID="home-store-btn"
+              onPress={() => router.push('/shop' as any)}
+            >
               <ShoppingBag size={24} color={colors.text.primary} />
             </TouchableOpacity>
           </View>
