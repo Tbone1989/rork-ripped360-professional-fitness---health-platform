@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, Pressable } from 'react-native';
-import { Redirect } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { useUserStore } from '@/store/userStore';
 import { colors } from '@/constants/colors';
 
 const HYDRATION_FALLBACK_MS = 1500;
 
 export default function Index() {
+  const router = useRouter();
   const isAuthenticated = useUserStore((state) => state.isAuthenticated);
   const hasHydrated = useUserStore((state) => state.hasHydrated);
   const user = useUserStore((state) => state.user);
@@ -68,6 +69,20 @@ export default function Index() {
         <Text style={styles.loadingText}>
           {stuck ? 'Taking longer than expected…' : 'Starting up…'}
         </Text>
+
+        <View style={styles.debugCard} testID="loading-debug-card">
+          <Text style={styles.debugTitle}>Startup status</Text>
+          <Text selectable style={styles.debugLine}>
+            hasHydrated: {String(hasHydrated)}
+          </Text>
+          <Text selectable style={styles.debugLine}>
+            isAuthenticated: {String(isAuthenticated)}
+          </Text>
+          <Text selectable style={styles.debugLine}>
+            role: {String(user?.role ?? 'none')}
+          </Text>
+        </View>
+
         <Pressable
           onPress={() => {
             console.log('[Index] User tapped Continue (proceed)');
@@ -83,6 +98,17 @@ export default function Index() {
           testID="loading-continue"
         >
           <Text style={styles.secondaryButtonText}>Continue</Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => {
+            console.log('[Index] Open UI Preview tapped');
+            router.push('/ui-preview');
+          }}
+          style={styles.tertiaryButton}
+          testID="loading-open-ui-preview"
+        >
+          <Text style={styles.tertiaryButtonText}>Open UI Preview</Text>
         </Pressable>
       </View>
     );
@@ -133,10 +159,42 @@ const styles = StyleSheet.create({
     borderColor: colors.border.light,
     backgroundColor: colors.background.secondary,
   },
+  debugCard: {
+    width: '100%',
+    maxWidth: 460,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    backgroundColor: colors.background.secondary,
+    padding: 12,
+    gap: 6,
+  },
+  debugTitle: {
+    color: colors.text.primary,
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  debugLine: {
+    color: colors.text.tertiary,
+    fontSize: 12,
+    lineHeight: 16,
+  },
   secondaryButtonText: {
     color: colors.text.primary,
     fontSize: 13,
     fontWeight: '700',
+  },
+  tertiaryButton: {
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: 'transparent',
+  },
+  tertiaryButtonText: {
+    color: colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
 });
 

@@ -49,7 +49,7 @@ function RootLayoutNav() {
 export default function RootLayout() {
   useEffect(() => {
     console.log("[RootLayout] Mounted");
-    
+
     SplashScreen.hideAsync().catch((e) => {
       console.log("[RootLayout] SplashScreen hide error (safe to ignore):", e);
     });
@@ -58,11 +58,11 @@ export default function RootLayout() {
       try {
         console.log("[RootLayout] Initializing services...");
         if (Platform.OS !== "web") {
-          await notificationService.initialize().catch(e => {
+          await notificationService.initialize().catch((e) => {
             console.log("[RootLayout] Notification init failed:", e);
           });
         }
-        await calendarService.initialize().catch(e => {
+        await calendarService.initialize().catch((e) => {
           console.log("[RootLayout] Calendar init failed:", e);
         });
         console.log("[RootLayout] Services initialized");
@@ -86,24 +86,24 @@ export default function RootLayout() {
   console.log("[RootLayout] Rendering");
 
   return (
-    <trpc.Provider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <WellnessProvider>
-            <DisclaimerProvider>
-              <GestureHandlerRootView style={styles.gestureRoot}>
-                <ThemedRoot>
-                  <ErrorBoundary>
+    <ErrorBoundary>
+      <trpc.Provider>
+        <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
+            <WellnessProvider>
+              <DisclaimerProvider>
+                <GestureHandlerRootView style={styles.gestureRoot}>
+                  <ThemedRoot>
                     <RootLayoutNav />
                     <DisclaimerGuard />
                     <DisclaimerHost />
-                  </ErrorBoundary>
-                </ThemedRoot>
-              </GestureHandlerRootView>
-            </DisclaimerProvider>
-          </WellnessProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </trpc.Provider>
+                  </ThemedRoot>
+                </GestureHandlerRootView>
+              </DisclaimerProvider>
+            </WellnessProvider>
+          </ThemeProvider>
+        </QueryClientProvider>
+      </trpc.Provider>
+    </ErrorBoundary>
   );
 }
