@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image, Alert } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, Image } from 'react-native';
 import { useRouter } from 'expo-router';
 
 import { ArrowRight, Stethoscope, Shield } from 'lucide-react-native';
@@ -40,8 +40,9 @@ export default function DoctorLoginScreen() {
     try {
       setError('');
       await login(email, password, 'medical');
-      router.replace('/medical');
+      router.replace('/medical' as any);
     } catch (err) {
+      console.log('[DoctorLogin] login failed', err);
       setError('Invalid doctor credentials');
     }
   };
@@ -50,7 +51,7 @@ export default function DoctorLoginScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    router.push('/(auth)/login');
+    router.push('/(auth)/login' as any);
   };
 
   return (

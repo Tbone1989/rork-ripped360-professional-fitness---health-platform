@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Search, Filter, Calendar, MessageCircle, ClipboardList } from 'lucide-react-native';
+import { Filter, Calendar, MessageCircle, ClipboardList } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Input } from '@/components/ui/Input';
@@ -92,7 +92,7 @@ export default function CoachingScreen() {
               <Card style={styles.quickActionsCard}>
                 <TouchableOpacity
                   style={styles.quickActionItem}
-                  onPress={() => router.push('/questionnaire/client-checkin')}
+                  onPress={() => router.push('/questionnaire/client-checkin' as any)}
                   activeOpacity={0.8}
                 >
                   <View style={styles.quickActionIcon}>
@@ -112,7 +112,7 @@ export default function CoachingScreen() {
               <Calendar size={48} color={colors.text.tertiary} />
               <Text style={styles.emptyStateTitle}>No Upcoming Sessions</Text>
               <Text style={styles.emptyStateDescription}>
-                You don't have any coaching sessions scheduled. Book a session with one of our expert coaches.
+                You don’t have any coaching sessions scheduled. Book a session with one of our expert coaches.
               </Text>
               <Button
                 title="Find a Coach"
@@ -128,7 +128,7 @@ export default function CoachingScreen() {
             <MessageCircle size={48} color={colors.text.tertiary} />
             <Text style={styles.emptyStateTitle}>No Messages</Text>
             <Text style={styles.emptyStateDescription}>
-              You don't have any active conversations. Start by messaging a coach.
+              You don’t have any active conversations. Start by messaging a coach.
             </Text>
             <Button
               title="Find a Coach"

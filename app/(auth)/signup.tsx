@@ -40,8 +40,9 @@ export default function SignUpScreen() {
       setError('');
       // For demo purposes, just log them in
       await login(email, password);
-      router.replace('/(tabs)');
+      router.replace('/(tabs)' as any);
     } catch (err) {
+      console.log('[SignUp] signup failed', err);
       setError('Failed to create account');
     }
   };
@@ -50,7 +51,7 @@ export default function SignUpScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    router.push('/(auth)/login');
+    router.push('/(auth)/login' as any);
   };
 
   return (

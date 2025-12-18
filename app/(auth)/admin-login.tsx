@@ -32,8 +32,9 @@ export default function AdminLoginScreen() {
     try {
       setError('');
       await adminLogin(email, password);
-      router.replace('/admin/dashboard');
+      router.replace('/admin/dashboard' as any);
     } catch (err) {
+      console.log('[AdminLogin] login failed', err);
       setError('Invalid admin credentials');
     }
   };
@@ -42,7 +43,7 @@ export default function AdminLoginScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    router.push('/(auth)/login');
+    router.push('/(auth)/login' as any);
   };
 
   return (

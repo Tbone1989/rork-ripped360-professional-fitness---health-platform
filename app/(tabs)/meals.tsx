@@ -7,7 +7,7 @@ import {
   Filter, 
   Clock, 
   Flame, 
-  Target,
+
   UtensilsCrossed,
   Apple,
   Beef,
@@ -153,13 +153,13 @@ export default function MealsScreen() {
             <View style={styles.headerButtons}>
               <TouchableOpacity 
                 style={styles.headerButton}
-                onPress={() => router.push('/meals/scan')}
+                onPress={() => router.push('/meals/scan' as any)}
               >
                 <Camera size={20} color={colors.accent.primary} />
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.headerButton}
-                onPress={() => router.push('/meals/add')}
+                onPress={() => router.push('/meals/add' as any)}
               >
                 <Plus size={20} color={colors.accent.primary} />
               </TouchableOpacity>
@@ -171,7 +171,7 @@ export default function MealsScreen() {
       {/* Daily Overview */}
       <Card style={styles.overviewCard}>
         <View style={styles.overviewHeader}>
-          <Text style={styles.overviewTitle}>Today's Nutrition</Text>
+          <Text style={styles.overviewTitle}>Today’s Nutrition</Text>
           <Text style={styles.overviewDate}>{new Date().toLocaleDateString()}</Text>
         </View>
         
@@ -295,8 +295,8 @@ export default function MealsScreen() {
       {/* Meals List */}
       <View style={styles.mealsSection}>
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Today's Meals</Text>
-          <TouchableOpacity onPress={() => router.push('/meals/plan')}>
+          <Text style={styles.sectionTitle}>Today’s Meals</Text>
+          <TouchableOpacity onPress={() => router.push('/meals/plan' as any)}>
             <Text style={styles.sectionAction}>View Plan</Text>
           </TouchableOpacity>
         </View>
@@ -305,7 +305,7 @@ export default function MealsScreen() {
           <Card key={meal.id} style={styles.mealCard}>
             <TouchableOpacity 
               style={styles.mealContent}
-              onPress={() => router.push(`/meals/${meal.id}`)}
+              onPress={() => router.push(`/meals/${meal.id}` as any)}
             >
               <View style={styles.mealHeader}>
                 <View style={styles.mealInfo}>

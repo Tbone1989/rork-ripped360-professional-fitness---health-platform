@@ -67,7 +67,7 @@ export default function LoginScreen() {
       await login(email, password);
       securityService.recordLoginAttempt(email, true);
       securityService.updateActivity();
-      router.replace('/(tabs)');
+      router.replace('/(tabs)' as any);
     } catch (loginError) {
       console.error('[Login] error', loginError);
       securityService.recordLoginAttempt(email, false);
@@ -79,7 +79,7 @@ export default function LoginScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    router.push('/(auth)/signup');
+    router.push('/(auth)/signup' as any);
   };
 
   const redirectUri = useMemo(() => {
@@ -152,7 +152,7 @@ export default function LoginScreen() {
         const token = params.get('access_token');
         if (token) {
           await useUserStore.getState().login(`${provider}@oauth.local`, 'oauth', 'user');
-          router.replace('/(tabs)');
+          router.replace('/(tabs)' as any);
           return;
         }
       }
@@ -172,7 +172,7 @@ export default function LoginScreen() {
     try {
       setError('');
       await demoLogin();
-      router.replace('/(tabs)');
+      router.replace('/(tabs)' as any);
     } catch (demoError) {
       console.error('[DemoLogin] error', demoError);
       setError('Unable to load demo mode right now. Please try again.');

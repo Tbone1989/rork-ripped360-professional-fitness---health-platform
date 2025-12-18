@@ -5,7 +5,7 @@ import {
   ScrollView,
   TouchableOpacity,
   StyleSheet,
-  Alert,
+
   Dimensions
 } from 'react-native';
 import { Stack, router } from 'expo-router';
@@ -43,21 +43,11 @@ export default function ContestScreen() {
   );
 
   const handleCreatePrep = () => {
-    router.push('/contest/create');
+    router.push('/contest/create' as any);
   };
 
   const handleSelectPrep = (prep: typeof currentPrep) => {
     setCurrentPrep(prep);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'planning': return colors.accent.secondary;
-      case 'prep': return colors.accent.primary;
-      case 'peak-week': return '#FF6B35';
-      case 'post-contest': return colors.status.success;
-      default: return colors.text.tertiary;
-    }
   };
 
   const getDaysUntilContest = (contestDate: string) => {
@@ -75,15 +65,15 @@ export default function ContestScreen() {
       return;
     }
     if (key === 'peak-week') {
-      router.push('/contest/peak-week');
+      router.push('/contest/peak-week' as any);
       return;
     }
     if (key === 'posing') {
-      router.push('/contest/posing');
+      router.push('/contest/posing' as any);
       return;
     }
     if (key === 'ai') {
-      router.push('/contest/peak-week-ai');
+      router.push('/contest/peak-week-ai' as any);
       return;
     }
   }, []);

@@ -33,8 +33,9 @@ export default function CoachLoginScreen() {
       setError('');
       // Login as coach role
       await login(email, password, 'coach');
-      router.replace('/coach/dashboard');
+      router.replace('/coach/dashboard' as any);
     } catch (err) {
+      console.log('[CoachLogin] login failed', err);
       setError('Invalid coach credentials');
     }
   };
@@ -43,7 +44,7 @@ export default function CoachLoginScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
-    router.push('/(auth)/login');
+    router.push('/(auth)/login' as any);
   };
 
   return (
