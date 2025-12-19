@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
@@ -28,73 +28,127 @@ export default function AdminTestingScreen() {
   const { gymTestingScenarios, nutritionTestScenarios } = useWellnessStore();
   const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
 
+  const isActuallyAdmin = useMemo(() => {
+    return Boolean(isAdmin || user?.role === 'admin');
+  }, [isAdmin, user?.role]);
+
   useEffect(() => {
-    const admin = isAdmin || (user?.role === 'admin');
-    if (!admin) {
+    if (!isActuallyAdmin) {
       router.replace('/admin/login');
     }
-  }, [isAdmin, user, router]);
+  }, [isActuallyAdmin, router]);
 
-  // Calculate test completion stats
-  const gymTestsCompleted = gymTestingScenarios.reduce((total, scenario) => 
-    total + scenario.testCases.filter(tc => tc.status !== 'pending').length, 0
-  );
-  const totalGymTests = gymTestingScenarios.reduce((total, scenario) => 
-    total + scenario.testCases.length, 0
-  );
-  
-  const nutritionTestsCompleted = nutritionTestScenarios.reduce((total, scenario) => 
-    total + scenario.testCases.filter(tc => tc.status !== 'pending').length, 0
-  );
-  const totalNutritionTests = nutritionTestScenarios.reduce((total, scenario) => 
-    total + scenario.testCases.length, 0
+  const {
+    gymTestsCompleted,
+    totalGymTests,
+    nutritionTestsCompleted,
+    totalNutritionTests,
+    gymProgress,
+    nutritionProgress,
+    totalCompleted,
+    totalTests,
+    completionPercent,
+  } = useMemo(() => {
+    const gymCompleted = gymTestingScenarios.reduce((total, scenario) => {
+      return total + scenario.testCases.filter((tc) => tc.status !== 'pending').length;
+    }, 0);
+    const gymTotal = gymTestingScenarios.reduce((total, scenario) => {
+      return total + scenario.testCases.length;
+    }, 0);
+
+    const nutritionCompleted = nutritionTestScenarios.reduce((total, scenario) => {
+      return total + scenario.testCases.filter((tc) => tc.status !== 'pending').length;
+    }, 0);
+    const nutritionTotal = nutritionTestScenarios.reduce((total, scenario) => {
+      return total + scenario.testCases.length;
+    }, 0);
+
+    const totalC = gymCompleted + nutritionCompleted;
+    const totalT = gymTotal + nutritionTotal;
+
+    const gymP = gymTotal > 0 ? gymCompleted / gymTotal : 0;
+    const nutritionP = nutritionTotal > 0 ? nutritionCompleted / nutritionTotal : 0;
+    const completion = totalT > 0 ? Math.round((totalC / totalT) * 100) : 0;
+
+    return {
+      gymTestsCompleted: gymCompleted,
+      totalGymTests: gymTotal,
+      nutritionTestsCompleted: nutritionCompleted,
+      totalNutritionTests: nutritionTotal,
+      gymProgress: gymP,
+      nutritionProgress: nutritionP,
+      totalCompleted: totalC,
+      totalTests: totalT,
+      completionPercent: completion,
+    };
+  }, [gymTestingScenarios, nutritionTestScenarios]);
+
+  const testingScenarios = useMemo(
+    () =>
+      [
+        {
+          id: 'gym',
+          title: 'Gym Environment',
+          description: 'Test app performance during actual workouts',
+          iconName: 'smartphone' as const,
+          iconColor: colors.accent.primary,
+          progress: gymProgress,
+          completed: gymTestsCompleted,
+          total: totalGymTests,
+          route: '/testing/gym-environment',
+          features: ['Screen visibility', 'Touch responsiveness', 'Battery usage', 'Performance monitoring'],
+        },
+        {
+          id: 'nutrition',
+          title: 'Nutrition Scenarios',
+          description: 'Test meal logging and nutrition tracking',
+          iconName: 'utensils' as const,
+          iconColor: colors.status.success,
+          progress: nutritionProgress,
+          completed: nutritionTestsCompleted,
+          total: totalNutritionTests,
+          route: '/testing/nutrition-scenarios',
+          features: ['Meal prep logging', 'Restaurant scanning', 'Supplement timing', 'Hydration tracking'],
+        },
+        {
+          id: 'wellness',
+          title: 'Wellness Tracking',
+          description: 'Monitor sleep, stress, and recovery metrics',
+          iconName: 'heart' as const,
+          iconColor: colors.status.info,
+          progress: 0.3,
+          completed: 12,
+          total: 40,
+          route: '/testing/wellness-tracking',
+          features: ['Sleep quality', 'Stress levels', 'Recovery metrics', 'Hormone tracking'],
+        },
+      ] as const,
+    [
+      gymProgress,
+      gymTestsCompleted,
+      totalGymTests,
+      nutritionProgress,
+      nutritionTestsCompleted,
+      totalNutritionTests,
+    ]
   );
 
-  const gymProgress = totalGymTests > 0 ? gymTestsCompleted / totalGymTests : 0;
-  const nutritionProgress = totalNutritionTests > 0 ? nutritionTestsCompleted / totalNutritionTests : 0;
+  const systemChecks = useMemo(() => {
+    type SystemCheck = {
+      id: 'battery' | 'network' | 'brightness' | 'sync';
+      name: string;
+      status: 'good' | 'warning' | 'error';
+    };
 
-  const testingScenarios = [
-    {
-      id: 'gym',
-      title: 'Gym Environment',
-      description: 'Test app performance during actual workouts',
-      icon: <Smartphone size={24} color={colors.accent.primary} />,
-      progress: gymProgress,
-      completed: gymTestsCompleted,
-      total: totalGymTests,
-      route: '/testing/gym-environment',
-      features: ['Screen visibility', 'Touch responsiveness', 'Battery usage', 'Performance monitoring']
-    },
-    {
-      id: 'nutrition',
-      title: 'Nutrition Scenarios',
-      description: 'Test meal logging and nutrition tracking',
-      icon: <UtensilsCrossed size={24} color={colors.status.success} />,
-      progress: nutritionProgress,
-      completed: nutritionTestsCompleted,
-      total: totalNutritionTests,
-      route: '/testing/nutrition-scenarios',
-      features: ['Meal prep logging', 'Restaurant scanning', 'Supplement timing', 'Hydration tracking']
-    },
-    {
-      id: 'wellness',
-      title: 'Wellness Tracking',
-      description: 'Monitor sleep, stress, and recovery metrics',
-      icon: <Heart size={24} color={colors.status.info} />,
-      progress: 0.3, // Mock progress
-      completed: 12,
-      total: 40,
-      route: '/testing/wellness-tracking',
-      features: ['Sleep quality', 'Stress levels', 'Recovery metrics', 'Hormone tracking']
-    }
-  ];
+    const checks: SystemCheck[] = [
+      { id: 'battery', name: 'Battery Optimization', status: 'good' },
+      { id: 'network', name: 'Network Performance', status: 'good' },
+      { id: 'brightness', name: 'Screen Brightness', status: 'warning' },
+      { id: 'sync', name: 'Background Sync', status: 'good' },
+    ];
 
-  const systemChecks = [
-    { name: 'Battery Optimization', status: 'good', icon: <Battery size={16} color={colors.status.success} /> },
-    { name: 'Network Performance', status: 'good', icon: <Wifi size={16} color={colors.status.success} /> },
-    { name: 'Screen Brightness', status: 'warning', icon: <Sun size={16} color={colors.status.warning} /> },
-    { name: 'Background Sync', status: 'good', icon: <Activity size={16} color={colors.status.success} /> }
-  ];
+    return checks;
+  }, []);
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -127,18 +181,38 @@ export default function AdminTestingScreen() {
         <Text style={styles.sectionTitle}>System Status</Text>
         
         <View style={styles.systemChecks}>
-          {systemChecks.map((check, index) => (
-            <View key={index} style={styles.systemCheck}>
-              {check.icon}
-              <Text style={styles.systemCheckName}>{check.name}</Text>
-              <View style={[
-                styles.systemCheckStatus,
-                check.status === 'good' && styles.statusGood,
-                check.status === 'warning' && styles.statusWarning,
-                check.status === 'error' && styles.statusError
-              ]} />
-            </View>
-          ))}
+          {systemChecks.map((check) => {
+            const iconColor =
+              check.status === 'good'
+                ? colors.status.success
+                : check.status === 'warning'
+                  ? colors.status.warning
+                  : colors.status.error;
+
+            const Icon =
+              check.id === 'battery'
+                ? Battery
+                : check.id === 'network'
+                  ? Wifi
+                  : check.id === 'brightness'
+                    ? Sun
+                    : Activity;
+
+            return (
+              <View key={check.id} style={styles.systemCheck}>
+                <Icon size={16} color={iconColor} />
+                <Text style={styles.systemCheckName}>{check.name}</Text>
+                <View
+                  style={[
+                    styles.systemCheckStatus,
+                    check.status === 'good' && styles.statusGood,
+                    check.status === 'warning' && styles.statusWarning,
+                    check.status === 'error' && styles.statusError,
+                  ]}
+                />
+              </View>
+            );
+          })}
         </View>
       </Card>
 
@@ -146,16 +220,25 @@ export default function AdminTestingScreen() {
       <View style={styles.scenariosSection}>
         <Text style={styles.sectionTitle}>Testing Scenarios</Text>
         
-        {testingScenarios.map((scenario) => (
-          <Card key={scenario.id} style={styles.scenarioCard}>
-            <TouchableOpacity 
-              style={styles.scenarioContent}
-              onPress={() => router.push(scenario.route as any)}
-            >
-              <View style={styles.scenarioHeader}>
-                <View style={styles.scenarioIcon}>
-                  {scenario.icon}
-                </View>
+        {testingScenarios.map((scenario) => {
+          const Icon =
+            scenario.iconName === 'smartphone'
+              ? Smartphone
+              : scenario.iconName === 'utensils'
+                ? UtensilsCrossed
+                : Heart;
+
+          return (
+            <Card key={scenario.id} style={styles.scenarioCard}>
+              <TouchableOpacity
+                style={styles.scenarioContent}
+                onPress={() => router.push(scenario.route as any)}
+                testID={`admin-testing-scenario-${scenario.id}`}
+              >
+                <View style={styles.scenarioHeader}>
+                  <View style={styles.scenarioIcon}>
+                    <Icon size={24} color={scenario.iconColor} />
+                  </View>
                 
                 <View style={styles.scenarioInfo}>
                   <Text style={styles.scenarioTitle}>{scenario.title}</Text>
@@ -183,9 +266,10 @@ export default function AdminTestingScreen() {
                   </View>
                 ))}
               </View>
-            </TouchableOpacity>
-          </Card>
-        ))}
+              </TouchableOpacity>
+            </Card>
+          );
+        })}
       </View>
 
       {/* Quick Stats */}
@@ -195,21 +279,19 @@ export default function AdminTestingScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statItem}>
             <CheckCircle size={20} color={colors.status.success} />
-            <Text style={styles.statValue}>{gymTestsCompleted + nutritionTestsCompleted}</Text>
+            <Text style={styles.statValue}>{totalCompleted}</Text>
             <Text style={styles.statLabel}>Tests Completed</Text>
           </View>
           
           <View style={styles.statItem}>
             <Activity size={20} color={colors.accent.primary} />
-            <Text style={styles.statValue}>{totalGymTests + totalNutritionTests}</Text>
+            <Text style={styles.statValue}>{totalTests}</Text>
             <Text style={styles.statLabel}>Total Tests</Text>
           </View>
           
           <View style={styles.statItem}>
             <TrendingUp size={20} color={colors.status.info} />
-            <Text style={styles.statValue}>
-              {Math.round(((gymTestsCompleted + nutritionTestsCompleted) / (totalGymTests + totalNutritionTests)) * 100)}%
-            </Text>
+            <Text style={styles.statValue}>{completionPercent}%</Text>
             <Text style={styles.statLabel}>Completion</Text>
           </View>
           
