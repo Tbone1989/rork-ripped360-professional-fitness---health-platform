@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { 
   Smartphone, 
@@ -7,8 +7,7 @@ import {
   Heart, 
   Battery, 
   Wifi, 
-  Sun, 
-  Moon,
+  Sun,
   Activity,
   TrendingUp,
   CheckCircle,
@@ -231,7 +230,7 @@ export default function TestingScreen() {
       <View style={styles.actionsSection}>
         <Button
           title="Start Gym Testing"
-          onPress={() => router.push('/testing/gym-environment')}
+          onPress={() => router.push('/testing/gym-environment' as never)}
           icon={<Smartphone size={18} color={colors.text.primary} />}
           style={styles.actionButton}
         />
@@ -239,7 +238,7 @@ export default function TestingScreen() {
         <Button
           title="Test Nutrition Features"
           variant="outline"
-          onPress={() => router.push('/testing/nutrition-scenarios')}
+          onPress={() => router.push('/testing/nutrition-scenarios' as never)}
           icon={<UtensilsCrossed size={18} color={colors.accent.primary} />}
           style={styles.actionButton}
         />
@@ -247,7 +246,7 @@ export default function TestingScreen() {
         <Button
           title="Wellness Tracking"
           variant="outline"
-          onPress={() => router.push('/testing/wellness-tracking')}
+          onPress={() => router.push('/testing/wellness-tracking' as never)}
           icon={<Heart size={18} color={colors.accent.primary} />}
           style={styles.actionButton}
         />

@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert, Platform, Linking, Image } from 'react-native';
 import { useRouter } from 'expo-router';
-import { 
+import {
   Settings, 
   LogOut, 
   User, 
@@ -23,9 +23,7 @@ import {
   BookOpen,
   Pill,
   Paperclip,
-  AlertTriangle,
   Camera,
-  TestTube,
   Trophy,
   ShoppingBag,
   ExternalLink,
@@ -48,7 +46,7 @@ export default function ProfileScreen() {
   const user = useUserStore((state) => state.user);
   const logout = useUserStore((state) => state.logout);
   const updateUser = useUserStore((state) => state.updateUser);
-  const { bloodworkResults, medicalProfile } = useMedicalStore();
+  const { bloodworkResults } = useMedicalStore();
 
   // Calculate additional stats
   const weeklyGoalProgress = 0.65; // Mock data
@@ -59,7 +57,7 @@ export default function ProfileScreen() {
 
   const handleLogout = () => {
     logout();
-    router.replace('/login');
+    router.replace('/(auth)/login' as never);
   };
 
 
@@ -72,7 +70,7 @@ export default function ProfileScreen() {
       },
       {
         text: 'Go to Account Settings',
-        onPress: () => router.push('/profile/account'),
+        onPress: () => router.push('/profile/account' as never),
       },
       {
         text: 'Cancel',
@@ -163,62 +161,62 @@ export default function ProfileScreen() {
     {
       icon: <User size={20} color={colors.text.secondary} />,
       title: 'Account Settings',
-      onPress: () => router.push('/profile/account'),
+      onPress: () => router.push('/profile/account' as never),
       testID: 'menu-account-settings',
     },
     ...(showAttachments ? [{
       icon: <Paperclip size={20} color={colors.text.secondary} />,
       title: 'Attachments',
-      onPress: () => router.push('/profile/attachments'),
+      onPress: () => router.push('/profile/attachments' as never),
       testID: 'menu-attachments',
     }] as const : []),
     {
       icon: <Smartphone size={20} color={colors.text.secondary} />,
       title: 'Connected Devices',
-      onPress: () => router.push('/profile/devices'),
+      onPress: () => router.push('/profile/devices' as never),
       testID: 'menu-devices',
     },
     {
       icon: <Trophy size={20} color={colors.status.warning} />,
       title: 'Contest Prep',
-      onPress: () => router.push('/(tabs)/contest'),
+      onPress: () => router.push('/contest/dashboard' as never),
       testID: 'menu-contest-prep',
     },
     {
       icon: <ShoppingBag size={20} color={colors.accent.primary} />,
       title: 'Ripped City Store',
-      onPress: () => router.push('/(tabs)/shop'),
+      onPress: () => router.push('/(tabs)/shop' as never),
       testID: 'menu-store',
     },
     {
       icon: <Bell size={20} color={colors.text.secondary} />,
       title: 'Notifications',
-      onPress: () => router.push('/profile/notifications'),
+      onPress: () => router.push('/profile/notifications' as never),
       testID: 'menu-notifications',
     },
     {
       icon: <CreditCard size={20} color={colors.text.secondary} />,
       title: 'Subscription',
-      onPress: () => router.push('/profile/subscription'),
+      onPress: () => router.push('/profile/subscription' as never),
       badge: user?.subscription?.plan === 'premium' ? 'Premium' : undefined,
       testID: 'menu-subscription',
     },
     {
       icon: <HelpCircle size={20} color={colors.text.secondary} />,
       title: 'Help & Support',
-      onPress: () => router.push('/profile/support'),
+      onPress: () => router.push('/profile/support' as never),
       testID: 'menu-support',
     },
     {
       icon: <MessageSquare size={20} color={colors.status.warning} />,
       title: 'Report Issue',
-      onPress: () => router.push('/profile/report-issue'),
+      onPress: () => router.push('/profile/report-issue' as never),
       testID: 'menu-report-issue',
     },
     {
       icon: <Shield size={20} color={colors.text.secondary} />,
       title: 'Privacy & Security',
-      onPress: () => router.push('/profile/privacy'),
+      onPress: () => router.push('/profile/privacy' as never),
       testID: 'menu-privacy',
     },
 
@@ -265,7 +263,7 @@ export default function ProfileScreen() {
           </View>
         </View>
         
-        <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/profile/settings')}>
+        <TouchableOpacity style={styles.settingsButton} onPress={() => router.push('/profile/settings' as never)}>
           <Settings size={24} color={colors.text.secondary} />
         </TouchableOpacity>
       </View>
@@ -421,17 +419,17 @@ export default function ProfileScreen() {
                 />
                 <Text style={styles.founderTitle}>Ripped City Inc. Mission</Text>
               </View>
-              <Text style={styles.founderTagline}>"Born from Rock Bottom, Built for Champions"</Text>
+              <Text style={styles.founderTagline}>{'"Born from Rock Bottom, Built for Champions"'}</Text>
               <Text style={styles.founderText}>
                 Ripped City Inc. was founded by Tyrone Hayes after a life-changing transformation from 338 pounds to a champion mindset.
                 With the support of mentors Mark Alvisi and Duveuil Valcena, he lost 97 pounds in 12 months and discovered a profound truth:
-                "It's better to suffer in the gym than suffer in the hospital." We build for athletes who demand more—through daily commitment,
+                {'"It\'s better to suffer in the gym than suffer in the hospital."'} We build for athletes who demand more—through daily commitment,
                 resilience, and community support.
               </Text>
               <View style={styles.ctaRow}>
                 <Button
                   title="Shop Collection"
-                  onPress={() => router.push('/(tabs)/shop')}
+                  onPress={() => router.push('/(tabs)/shop' as never)}
                   testID="rci-shop-button"
                 />
               </View>
@@ -444,7 +442,7 @@ export default function ProfileScreen() {
                 />
                 <Text style={styles.founderTitle}>Digesting Life Balance Mission</Text>
               </View>
-              <Text style={styles.founderTagline}>"From Personal Struggle to Community Healing"</Text>
+              <Text style={styles.founderTagline}>{'"From Personal Struggle to Community Healing"'}</Text>
               <Text style={styles.founderText}>
                 Digesting Life Balance was born from firsthand experience with the devastating effects of poor nutrition and emotional eating.
                 Our nonprofit raises awareness about obesity while mobilizing communities toward healthier eating and social diversity. Our mission:
@@ -471,7 +469,7 @@ export default function ProfileScreen() {
               </View>
 
               <Text style={styles.quote}>
-                "Better to suffer in the gym than suffer in the hospital"
+                {'"Better to suffer in the gym than suffer in the hospital"'}
               </Text>
             </View>
           </View>

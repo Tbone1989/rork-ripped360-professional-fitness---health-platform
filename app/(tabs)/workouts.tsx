@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Filter, Zap, BookOpen, Video } from 'lucide-react-native';
@@ -79,7 +79,7 @@ export default function WorkoutsScreen() {
                   <CategoryCard 
                     key={category.id} 
                     category={category}
-                    onPress={() => router.push(`/category/${category.id}`)}
+                    onPress={() => router.push(`/category/${category.id}` as never)}
                   />
                 ))}
               </ScrollView>
@@ -92,7 +92,7 @@ export default function WorkoutsScreen() {
                   key={plan.id} 
                   item={plan} 
                   type="plan"
-                  onPress={() => router.push(`/plan/${plan.id}`)}
+                  onPress={() => router.push(`/plan/${plan.id}` as never)}
                 />
               ))}
             </View>
@@ -108,7 +108,7 @@ export default function WorkoutsScreen() {
                 </Text>
                 <Button
                   title="Generate Workout"
-                  onPress={() => router.push('/workouts/generate')}
+                  onPress={() => router.push('/workouts/generate' as never)}
                   style={styles.aiWorkoutButton}
                 />
               </View>
@@ -125,7 +125,7 @@ export default function WorkoutsScreen() {
                 </Text>
                 <Button
                   title="Analyze Video"
-                  onPress={() => router.push('/workouts/video-analysis')}
+                  onPress={() => router.push('/workouts/video-analysis' as never)}
                   style={styles.videoAnalysisButton}
                 />
               </View>
@@ -151,7 +151,7 @@ export default function WorkoutsScreen() {
                   accessibilityRole="button"
                   testID="open-exercise-dictionary"
                   style={styles.dictionaryButton}
-                  onPress={() => router.push('/workouts/dictionary')}
+                  onPress={() => router.push('/workouts/dictionary' as never)}
                 >
                   <BookOpen size={18} color={colors.accent.primary} />
                   <Text style={styles.dictionaryButtonText}>Dictionary</Text>
@@ -161,7 +161,7 @@ export default function WorkoutsScreen() {
                 <ExerciseCard 
                   key={exercise.id} 
                   exercise={exercise}
-                  onPress={() => router.push(`/exercise/${exercise.id}`)}
+                  onPress={() => router.push(`/exercise/${exercise.id}` as never)}
                 />
               ))}
             </View>

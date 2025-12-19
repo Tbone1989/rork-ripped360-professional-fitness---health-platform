@@ -94,7 +94,7 @@ export default function ShopScreen() {
 
   const tryFetchJson = useCallback(async (url: string) => {
     try {
-      const res = await fetch(url, { cache: 'no-store' as const, headers: { 'Accept': 'application/json, text/plain, */*' } });
+      const res = await fetch(url, { cache: 'no-store' as const, headers: { Accept: 'application/json, text/plain, */*' } });
       if (!res.ok) return null;
       const text = await res.text();
       try {
@@ -102,7 +102,7 @@ export default function ShopScreen() {
       } catch {
         return null;
       }
-    } catch (e) {
+    } catch {
       return null;
     }
   }, []);
@@ -189,7 +189,7 @@ export default function ShopScreen() {
     if (!searchQuery) return list;
     const q = searchQuery.toLowerCase();
     return list.filter((p) => p.title.toLowerCase().includes(q));
-  }, [sourceList, searchQuery, selectedCategory]);
+  }, [sourceList, searchQuery, selectedCategory, selectedAudience]);
 
   const renderProduct = ({ item }: { item: ShopProduct }) => (
     <ProductCard item={item} />
@@ -204,13 +204,13 @@ export default function ShopScreen() {
             <View style={styles.headerButtons}>
               <TouchableOpacity 
                 style={styles.scanButton}
-                onPress={() => router.push('/shop/scan')}
+                onPress={() => router.push('/shop/scan' as never)}
               >
                 <ScanLine size={20} color={colors.text.primary} />
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.cartButton}
-                onPress={() => router.push('/shop/cart')}
+                onPress={() => router.push('/shop/cart' as never)}
               >
                 <ShoppingCart size={20} color={colors.text.primary} />
                 {cartItems.length > 0 && (
