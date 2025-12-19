@@ -3,28 +3,62 @@ import { useQuery, useMutation, UseQueryOptions } from "@tanstack/react-query";
 
 export type TrpcProviderProps = { children: ReactNode };
 
-function getBaseUrl(): string {
+function getWebOrigin(): string {
   try {
-    const origin = typeof globalThis !== "undefined" && (globalThis as any)?.location?.origin ? String((globalThis as any).location.origin) : "";
+    const origin =
+      typeof globalThis !== "undefined" && (globalThis as any)?.location?.origin
+        ? String((globalThis as any).location.origin)
+        : "";
     if (origin) return origin;
   } catch {}
   return "";
 }
 
+export function getApiBaseUrl(): string {
+  const envUrl = (process.env.EXPO_PUBLIC_RORK_API_BASE_URL ?? "").trim();
+  if (envUrl) return envUrl.replace(/\/+$/, "");
+
+  const origin = getWebOrigin();
+  if (origin) return origin.replace(/\/+$/, "");
+
+  return "";
+}
+
+function getTrpcBaseUrl(): string {
+  const base = getApiBaseUrl();
+  if (!base) return "";
+
+  // If base already points at a Rork project endpoint like .../api/p/<projectId>,
+  // the backend is exposed under /trpc.
+  if (base.includes("/api/p/")) return `${base}/trpc`;
+
+  // Otherwise assume same-origin backend with /api/trpc mounted.
+  return `${base}/api/trpc`;
+}
+
 async function trpcCall(path: string, input?: unknown): Promise<any> {
-  const url = `${getBaseUrl()}/api/trpc/${path}`;
+  const base = getTrpcBaseUrl();
+  const url = base ? `${base}/${path}` : `/api/trpc/${path}`;
+
   try {
     const res = await fetch(url, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ input }),
     });
+
     const json = await res.json().catch(() => ({} as any));
     const data = (json?.result?.data ?? json?.data ?? json) as unknown;
+
+    if (!res.ok) {
+      const message = (json as any)?.error?.message ?? `HTTP ${res.status}`;
+      throw new Error(message);
+    }
+
     return data;
   } catch (e) {
-    console.log("trpcCall error", path, e);
-    return [];
+    console.log("trpcCall error", { url, path, e });
+    throw e;
   }
 }
 
@@ -253,91 +287,101 @@ export const trpc = {
   },
 } as const;
 
+type TrpcQueryFn<TInput extends Record<string, unknown> | undefined, TOutput> = (input?: TInput) => Promise<TOutput>;
+
+type TrpcQueryWrapper<TInput extends Record<string, unknown> | undefined, TOutput> = {
+  query: TrpcQueryFn<TInput, TOutput>;
+};
+
+type TrpcMutationWrapper<TInput extends Record<string, unknown>, TOutput> = {
+  mutate: (input: TInput) => Promise<TOutput>;
+};
+
 export const trpcClient = {
   example: {
-    async hi(input?: Record<string, unknown>) {
-      return trpcCall("example.hi", input ?? {});
-    },
+    hi: {
+      mutate: (input: Record<string, unknown>) => trpcCall("example.hi", input),
+    } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
   },
   system: {
-    async apiStatus(input?: Record<string, unknown>) {
-      return trpcCall("system.apiStatus", input ?? {});
-    },
+    apiStatus: {
+      query: (input?: Record<string, unknown>) => trpcCall("system.apiStatus", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
   },
   shop: {
-    async products(input?: Record<string, unknown>) {
-      return trpcCall("shop.products", input ?? {});
-    },
+    products: {
+      query: (input?: Record<string, unknown>) => trpcCall("shop.products", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
   },
   fitness: {
-    async exercises(input?: Record<string, unknown>) {
-      return trpcCall("fitness.exercises", input ?? {});
-    },
-    async generate(input: Record<string, unknown>) {
-      return trpcCall("fitness.generate", input);
-    },
+    exercises: {
+      query: (input?: Record<string, unknown>) => trpcCall("fitness.exercises", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+    generate: {
+      mutate: (input: Record<string, unknown>) => trpcCall("fitness.generate", input),
+    } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
   },
   nutrition: {
-    async search(input?: Record<string, unknown>) {
-      return trpcCall("nutrition.search", input ?? {});
-    },
-    async barcode(input: Record<string, unknown>) {
-      return trpcCall("nutrition.barcode", input);
-    },
-    async mealPlan(input: Record<string, unknown>) {
-      return trpcCall("nutrition.mealPlan", input);
-    },
+    search: {
+      query: (input?: Record<string, unknown>) => trpcCall("nutrition.search", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+    barcode: {
+      query: (input?: Record<string, unknown>) => trpcCall("nutrition.barcode", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+    mealPlan: {
+      mutate: (input: Record<string, unknown>) => trpcCall("nutrition.mealPlan", input),
+    } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
   },
   health: {
-    async bloodwork(input: Record<string, unknown>) {
-      return trpcCall("health.bloodwork", input);
-    },
-    async digestive(input?: Record<string, unknown>) {
-      return trpcCall("health.digestive", input ?? {});
-    },
-    async detox(input?: Record<string, unknown>) {
-      return trpcCall("health.detox", input ?? {});
-    },
-    async issues(input?: Record<string, unknown>) {
-      return trpcCall("health.issues", input ?? {});
-    },
+    bloodwork: {
+      mutate: (input: Record<string, unknown>) => trpcCall("health.bloodwork", input),
+    } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
+    digestive: {
+      mutate: (input: Record<string, unknown>) => trpcCall("health.digestive", input),
+    } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
+    detox: {
+      mutate: (input: Record<string, unknown>) => trpcCall("health.detox", input),
+    } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
+    issues: {
+      mutate: (input: Record<string, unknown>) => trpcCall("health.issues", input),
+    } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
     supplements: {
-      async search(input?: Record<string, unknown>) {
-        return trpcCall("health.supplements.search", input ?? {});
-      },
-      async barcode(input: Record<string, unknown>) {
-        return trpcCall("health.supplements.barcode", input);
-      },
+      search: {
+        query: (input?: Record<string, unknown>) => trpcCall("health.supplements.search", input ?? {}),
+      } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+      barcode: {
+        mutate: (input: Record<string, unknown>) => trpcCall("health.supplements.barcode", input),
+      } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
     },
   },
   coaching: {
-    async list(input?: Record<string, unknown>) {
-      return trpcCall("coaching.list", input ?? {});
-    },
-    async clients(input?: Record<string, unknown>) {
-      return trpcCall("coaching.clients", input ?? {});
-    },
-    async clientAttachments(input?: Record<string, unknown>) {
-      return trpcCall("coaching.clientAttachments", input ?? {});
-    },
+    list: {
+      query: (input?: Record<string, unknown>) => trpcCall("coaching.list", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+    clients: {
+      query: (input?: Record<string, unknown>) => trpcCall("coaching.clients", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+    clientAttachments: {
+      query: (input?: Record<string, unknown>) => trpcCall("coaching.clientAttachments", input ?? {}),
+    } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
     sessions: {
-      async list(input?: Record<string, unknown>) {
-        return trpcCall("coaching.sessions.list", input ?? {});
-      },
-      async book(input: Record<string, unknown>) {
-        return trpcCall("coaching.sessions.book", input);
-      },
+      list: {
+        query: (input?: Record<string, unknown>) => trpcCall("coaching.sessions.list", input ?? {}),
+      } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+      book: {
+        mutate: (input: Record<string, unknown>) => trpcCall("coaching.sessions.book", input),
+      } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
     },
     messages: {
-      async conversations(input?: Record<string, unknown>) {
-        return trpcCall("coaching.messages.conversations", input ?? {});
-      },
-      async list(input?: Record<string, unknown>) {
-        return trpcCall("coaching.messages.list", input ?? {});
-      },
-      async send(input: Record<string, unknown>) {
-        return trpcCall("coaching.messages.send", input);
-      },
+      conversations: {
+        query: (input?: Record<string, unknown>) => trpcCall("coaching.messages.conversations", input ?? {}),
+      } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+      list: {
+        query: (input?: Record<string, unknown>) => trpcCall("coaching.messages.list", input ?? {}),
+      } satisfies TrpcQueryWrapper<Record<string, unknown> | undefined, unknown>,
+      send: {
+        mutate: (input: Record<string, unknown>) => trpcCall("coaching.messages.send", input),
+      } satisfies TrpcMutationWrapper<Record<string, unknown>, unknown>,
     },
   },
 } as const;

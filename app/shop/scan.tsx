@@ -37,7 +37,7 @@ const WebScanner = () => {
       <View style={styles.webContainer}>
         <Text style={styles.webTitle}>Camera Scanner</Text>
         <Text style={styles.webSubtitle}>Camera scanning requires a mobile device</Text>
-        <Text style={styles.webHint}>Please use your phone's browser or the mobile app to scan barcodes</Text>
+        <Text style={styles.webHint}>Please use your phone’s browser or the mobile app to scan barcodes</Text>
         <Button title="Browse Shop" onPress={handleManualEntry} />
       </View>
     </View>
@@ -97,7 +97,7 @@ const MobileScanner = () => {
 
     try {
       // Try to get nutrition data from API (for food products)
-      const nutritionData = await trpcClient.nutrition.barcode({ barcode: data });
+      const nutritionData = await trpcClient.nutrition.barcode.query({ barcode: data });
       
       if (nutritionData && nutritionData.name !== 'Unknown Item') {
         // Convert nutrition data to shop product format

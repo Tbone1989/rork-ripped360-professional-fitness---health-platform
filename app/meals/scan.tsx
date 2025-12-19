@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Alert, Platform, Dimensions } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, Alert, Platform } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import { X, Flashlight, FlashlightOff, RotateCcw, TestTube } from 'lucide-react-native';
 
@@ -38,7 +38,7 @@ const WebScanner = () => {
       <View style={styles.webContainer}>
         <Text style={styles.webTitle}>Camera Scanner</Text>
         <Text style={styles.webSubtitle}>Camera scanning requires a mobile device</Text>
-        <Text style={styles.webHint}>Please use your phone's browser or the mobile app to scan barcodes</Text>
+        <Text style={styles.webHint}>Please use your phone’s browser or the mobile app to scan barcodes</Text>
         <Button title="Add Food Manually" onPress={handleManualEntry} />
       </View>
     </View>
@@ -99,7 +99,7 @@ const MobileScanner = () => {
 
     try {
       const startTime = Date.now();
-      const foodData = await trpcClient.nutrition.barcode({ barcode: data });
+      const foodData = await trpcClient.nutrition.barcode.query({ barcode: data });
       const apiDuration = Date.now() - startTime;
 
       if (foodData) {

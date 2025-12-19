@@ -26,7 +26,7 @@ export default function TestTRPCSimpleScreen() {
     addResult('🔄 Testing basic tRPC connection...');
     
     try {
-      const result = await trpcClient.example.hi({ name: 'Simple Test' });
+      const result = await trpcClient.example.hi.mutate({ name: 'Simple Test' });
       addResult(`✅ Basic connection successful!`);
       addResult(`📄 Response: ${JSON.stringify(result, null, 2)}`);
     } catch (error: any) {
@@ -44,7 +44,7 @@ export default function TestTRPCSimpleScreen() {
     addResult('🔄 Testing API status endpoint...');
     
     try {
-      const result = await trpcClient.system.apiStatus();
+      const result = await trpcClient.system.apiStatus.query();
       addResult(`✅ API status successful!`);
       addResult(`📊 Summary: ${result.summary?.configured || 0}/${result.summary?.total || 0} APIs configured`);
     } catch (error: any) {
@@ -61,7 +61,7 @@ export default function TestTRPCSimpleScreen() {
     addResult('🔄 Testing shop products endpoint...');
     
     try {
-      const result = await trpcClient.shop.products();
+      const result = await trpcClient.shop.products.query();
       addResult(`✅ Shop products successful!`);
       addResult(`🛍️ Found ${result?.length || 0} products`);
     } catch (error: any) {
