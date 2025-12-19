@@ -49,7 +49,10 @@ export default function CartScreen() {
       Alert.alert('Empty Cart', 'Please add items to your cart before checkout.');
       return;
     }
-    router.push('/shop/checkout');
+
+    const url = `https://www.rippedcityinc.com/cart`;
+    const encoded = encodeURIComponent(url);
+    router.push((`/shop/web-checkout?url=${encoded}`) as never);
   };
 
   if (cartItems.length === 0) {
