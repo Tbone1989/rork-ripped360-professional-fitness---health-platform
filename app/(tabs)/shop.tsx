@@ -11,13 +11,15 @@ import {
   Linking,
   ActivityIndicator,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { Stack, router } from 'expo-router';
-import { Search, ShoppingCart, ExternalLink, ScanLine } from 'lucide-react-native';
+import { ArrowUpDown, ExternalLink, Plus, ScanLine, Search, ShoppingCart, Sparkles, X } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
 import { Button } from '@/components/ui/Button';
 import { trpc } from '@/lib/trpc';
 import { useShopStore } from '@/store/shopStore';
+import type { Product, ProductCategory } from '@/types/product';
 
 const { width } = Dimensions.get('window');
 const PRODUCT_WIDTH = (width - 48) / 2;
@@ -31,6 +33,35 @@ type ShopProduct = {
   category?: string;
 };
 
+type SortKey = 'featured' | 'price-low' | 'price-high' | 'a-z';
+
+const DEFAULT_CATEGORY: ProductCategory = 'accessories';
+
+const mapShopProductToCartProduct = (p: ShopProduct): Product => {
+  const nowIso = new Date().toISOString();
+  const price = typeof p.price === 'number' && Number.isFinite(p.price) ? p.price : 0;
+
+  return {
+    id: p.id,
+    name: p.title,
+    description: '',
+    price,
+    originalPrice: undefined,
+    category: DEFAULT_CATEGORY,
+    images: p.image ? [p.image] : [],
+    sizes: undefined,
+    colors: undefined,
+    inStock: true,
+    stockCount: 999,
+    rating: 4.7,
+    reviewCount: 120,
+    tags: [],
+    featured: false,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+};
+
 const normalizeImageUrl = (src?: string): string | undefined => {
   if (!src || typeof src !== 'string') return undefined;
   const s = src.trim();
@@ -40,12 +71,22 @@ const normalizeImageUrl = (src?: string): string | undefined => {
   try { new URL(s); return s; } catch { return undefined; }
 };
 
-const ProductCard = ({ item }: { item: ShopProduct }) => {
+const ProductCard = ({
+  item,
+  onAddToCart,
+}: {
+  item: ShopProduct;
+  onAddToCart: (p: ShopProduct) => void;
+}) => {
+  const hasPrice = typeof item.price === 'number' && Number.isFinite(item.price);
+
   return (
-    <View style={styles.productCard}>
-      <TouchableOpacity 
+    <View style={styles.productCard} testID={`shop-product-${item.id}`}>
+      <TouchableOpacity
         style={styles.productImageContainer}
-        activeOpacity={0.8}
+        activeOpacity={0.9}
+        onPress={() => Linking.openURL(item.url)}
+        testID={`shop-product-open-${item.id}`}
       >
         <View style={styles.imageContainer}>
           {item.image ? (
@@ -56,26 +97,54 @@ const ProductCard = ({ item }: { item: ShopProduct }) => {
             </View>
           )}
         </View>
+        <View style={styles.imageOverlay}>
+          <View style={styles.overlayPill}>
+            <ExternalLink size={14} color={colors.text.primary} />
+            <Text style={styles.overlayPillText}>Details</Text>
+          </View>
+        </View>
       </TouchableOpacity>
+
       <View style={styles.productInfo}>
         <Text style={styles.productName} numberOfLines={2}>
           {item.title}
         </Text>
-        <View style={styles.priceContainer}>
-          {typeof item.price === 'number' ? (
-            <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+
+        <View style={styles.priceRow}>
+          {hasPrice ? (
+            <Text style={styles.price}>${item.price!.toFixed(2)}</Text>
           ) : (
-            <Text style={styles.priceUnavailable}>Price on site</Text>
+            <Text style={styles.priceUnavailable}>See price</Text>
           )}
+          {item.category ? (
+            <View style={styles.categoryPill}>
+              <Text style={styles.categoryPillText} numberOfLines={1}>
+                {item.category}
+              </Text>
+            </View>
+          ) : null}
         </View>
+
         <View style={styles.productActions}>
-          <Button
-            title="View on Website"
+          <TouchableOpacity
+            testID={`shop-add-${item.id}`}
+            activeOpacity={0.85}
+            onPress={() => onAddToCart(item)}
+            style={[styles.addButton, !hasPrice && styles.addButtonDisabled]}
+            disabled={!hasPrice}
+          >
+            <Plus size={16} color={colors.text.primary} />
+            <Text style={styles.addButtonText}>{hasPrice ? 'Add' : 'N/A'}</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            testID={`shop-view-${item.id}`}
+            activeOpacity={0.85}
             onPress={() => Linking.openURL(item.url)}
-            style={[styles.viewButton, { flex: 1 }]}
-            variant="outline"
-            icon={<ExternalLink size={16} color={colors.accent.primary} />}
-          />
+            style={styles.viewPill}
+          >
+            <Text style={styles.viewPillText}>View</Text>
+          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -86,11 +155,13 @@ export default function ShopScreen() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedAudience, setSelectedAudience] = useState<'all' | 'men' | 'women' | 'kids'>('all');
+  const [sortKey, setSortKey] = useState<SortKey>('featured');
+  const [showFilters, setShowFilters] = useState<boolean>(false);
   const { data, isLoading, error, refetch } = trpc.shop.products.useQuery({});
   const [fallback, setFallback] = useState<ShopProduct[]>([]);
   const [isFallbackLoading, setIsFallbackLoading] = useState<boolean>(false);
   const [fallbackTried, setFallbackTried] = useState<boolean>(false);
-  const { cartItems } = useShopStore();
+  const { cartItems, addToCart } = useShopStore();
 
   const tryFetchJson = useCallback(async (url: string) => {
     try {
@@ -186,13 +257,47 @@ export default function ShopScreen() {
     if (selectedCategory && selectedCategory !== 'all') {
       list = list.filter((p) => (p.category ?? '').toLowerCase() === selectedCategory.toLowerCase());
     }
-    if (!searchQuery) return list;
-    const q = searchQuery.toLowerCase();
-    return list.filter((p) => p.title.toLowerCase().includes(q));
-  }, [sourceList, searchQuery, selectedCategory, selectedAudience]);
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter((p) => p.title.toLowerCase().includes(q));
+    }
 
-  const renderProduct = ({ item }: { item: ShopProduct }) => (
-    <ProductCard item={item} />
+    const sorted = [...list];
+    if (sortKey === 'a-z') {
+      sorted.sort((a, b) => (a.title ?? '').localeCompare(b.title ?? ''));
+    } else if (sortKey === 'price-low') {
+      sorted.sort((a, b) => (a.price ?? Number.POSITIVE_INFINITY) - (b.price ?? Number.POSITIVE_INFINITY));
+    } else if (sortKey === 'price-high') {
+      sorted.sort((a, b) => (b.price ?? -1) - (a.price ?? -1));
+    } else {
+      sorted.sort((a, b) => {
+        const scoreA = (typeof a.price === 'number' ? 2 : 0) + (a.image ? 1 : 0);
+        const scoreB = (typeof b.price === 'number' ? 2 : 0) + (b.image ? 1 : 0);
+        return scoreB - scoreA;
+      });
+    }
+
+    return sorted;
+  }, [sourceList, searchQuery, selectedCategory, selectedAudience, sortKey]);
+
+  const featured: ShopProduct[] = useMemo(() => products.slice(0, 8), [products]);
+
+  const handleAddToCart = useCallback(
+    async (p: ShopProduct) => {
+      try {
+        const product = mapShopProductToCartProduct(p);
+        addToCart(product, 1);
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      } catch (e) {
+        console.log('[Shop] addToCart failed:', e);
+      }
+    },
+    [addToCart]
+  );
+
+  const renderProduct = useCallback(
+    ({ item }: { item: ShopProduct }) => <ProductCard item={item} onAddToCart={handleAddToCart} />,
+    [handleAddToCart]
   );
 
   return (
@@ -224,23 +329,76 @@ export default function ShopScreen() {
         }}
       />
 
-      <View style={styles.header}>
-        <Text style={styles.brandTitle}>Ripped City Inc.</Text>
-        <Text style={styles.brandSubtitle}>Premium Gear • Direct from rippedcityinc.com</Text>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Search size={20} color={colors.text.secondary} />
-          <TextInput
-            testID="shop-search-input"
-            style={styles.searchInput}
-            placeholder="Search products..."
-            placeholderTextColor={colors.text.secondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+      <View style={styles.hero}>
+        <View style={styles.heroTopRow}>
+          <View style={styles.brandMark}>
+            <Sparkles size={18} color={colors.text.primary} />
+          </View>
+          <View style={styles.heroTextWrap}>
+            <Text style={styles.brandTitle}>Ripped City Store</Text>
+            <Text style={styles.brandSubtitle}>
+              Tap “Add” to build your cart • Checkout securely
+            </Text>
+          </View>
         </View>
+
+        <View style={styles.searchContainer}>
+          <View style={styles.searchInputContainer}>
+            <Search size={20} color={colors.text.secondary} />
+            <TextInput
+              testID="shop-search-input"
+              style={styles.searchInput}
+              placeholder="Search gear, supplements, ebooks…"
+              placeholderTextColor={colors.text.secondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              returnKeyType="search"
+            />
+            {searchQuery ? (
+              <TouchableOpacity
+                testID="shop-search-clear"
+                onPress={() => setSearchQuery('')}
+                activeOpacity={0.85}
+                style={styles.clearBtn}
+              >
+                <X size={16} color={colors.text.secondary} />
+              </TouchableOpacity>
+            ) : null}
+          </View>
+
+          <TouchableOpacity
+            testID="shop-filters-toggle"
+            onPress={() => setShowFilters((v) => !v)}
+            activeOpacity={0.85}
+            style={[styles.sortBtn, showFilters && styles.sortBtnActive]}
+          >
+            <ArrowUpDown size={18} color={colors.text.primary} />
+          </TouchableOpacity>
+        </View>
+
+        {showFilters ? (
+          <View style={styles.filterPanel} testID="shop-filter-panel">
+            <Text style={styles.panelLabel}>Sort</Text>
+            <View style={styles.sortRow}>
+              {([
+                { key: 'featured', label: 'Featured' },
+                { key: 'price-low', label: 'Price ↑' },
+                { key: 'price-high', label: 'Price ↓' },
+                { key: 'a-z', label: 'A–Z' },
+              ] as const).map((o) => (
+                <TouchableOpacity
+                  key={o.key}
+                  testID={`shop-sort-${o.key}`}
+                  onPress={() => setSortKey(o.key)}
+                  activeOpacity={0.85}
+                  style={[styles.sortChip, sortKey === o.key && styles.sortChipSelected]}
+                >
+                  <Text style={[styles.sortChipText, sortKey === o.key && styles.sortChipTextSelected]}>{o.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.audienceContainer}>
@@ -249,7 +407,7 @@ export default function ShopScreen() {
             key={aud}
             testID={`audience-${aud}`}
             onPress={() => setSelectedAudience(aud)}
-            activeOpacity={0.8}
+            activeOpacity={0.85}
             style={[styles.audienceChip, selectedAudience === aud && styles.audienceChipSelected]}
           >
             <Text style={[styles.audienceChipText, selectedAudience === aud && styles.audienceChipTextSelected]}>
@@ -321,6 +479,56 @@ export default function ShopScreen() {
             showsVerticalScrollIndicator={false}
             onRefresh={refetch}
             refreshing={isLoading}
+            ListHeaderComponent={
+              featured.length > 0 ? (
+                <View style={styles.featuredWrap} testID="shop-featured">
+                  <View style={styles.featuredHeader}>
+                    <Text style={styles.featuredTitle}>Featured picks</Text>
+                    <Text style={styles.featuredSub}>Fast adds, popular items</Text>
+                  </View>
+                  <FlatList
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    data={featured}
+                    keyExtractor={(p) => `featured-${p.id}`}
+                    contentContainerStyle={styles.featuredList}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity
+                        testID={`shop-featured-open-${item.id}`}
+                        activeOpacity={0.9}
+                        onPress={() => Linking.openURL(item.url)}
+                        style={styles.featuredCard}
+                      >
+                        {item.image ? (
+                          <Image source={{ uri: item.image }} style={styles.featuredImage} />
+                        ) : (
+                          <View style={[styles.featuredImage, styles.imagePlaceholder]} />
+                        )}
+                        <View style={styles.featuredInfo}>
+                          <Text style={styles.featuredName} numberOfLines={2}>
+                            {item.title}
+                          </Text>
+                          <View style={styles.featuredBottomRow}>
+                            <Text style={styles.featuredPrice} numberOfLines={1}>
+                              {typeof item.price === 'number' ? `${item.price.toFixed(2)}` : 'See price'}
+                            </Text>
+                            <TouchableOpacity
+                              testID={`shop-featured-add-${item.id}`}
+                              activeOpacity={0.85}
+                              onPress={() => handleAddToCart(item)}
+                              style={[styles.featuredAddBtn, typeof item.price !== 'number' && styles.addButtonDisabled]}
+                              disabled={typeof item.price !== 'number'}
+                            >
+                              <Plus size={14} color={colors.text.primary} />
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              ) : null
+            }
           />
         </>
       )}
@@ -333,36 +541,124 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background.primary,
   },
-  header: {
-    padding: 20,
-    alignItems: 'center',
+  hero: {
+    paddingHorizontal: 16,
+    paddingTop: 14,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: colors.border.light,
+    backgroundColor: colors.background.primary,
+  },
+  heroTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 12,
+  },
+  brandMark: {
+    width: 40,
+    height: 40,
+    borderRadius: 14,
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  heroTextWrap: {
+    flex: 1,
   },
   brandTitle: {
-    fontSize: 24,
-    fontWeight: '700',
+    fontSize: 22,
+    fontWeight: '800',
     color: colors.text.primary,
-    marginBottom: 4,
+    marginBottom: 2,
+    letterSpacing: -0.2,
   },
   brandSubtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.text.secondary,
   },
   searchContainer: {
     flexDirection: 'row',
-    padding: 16,
-    gap: 12,
+    gap: 10,
   },
   searchInputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.background.secondary,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    borderRadius: 16,
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    gap: 12,
+    gap: 10,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  clearBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background.primary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  sortBtn: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  sortBtnActive: {
+    backgroundColor: colors.background.card,
+  },
+  filterPanel: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    gap: 10,
+  },
+  panelLabel: {
+    color: colors.text.secondary,
+    fontWeight: '700',
+    fontSize: 12,
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  sortRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  sortChip: {
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 999,
+    backgroundColor: colors.background.primary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  sortChipSelected: {
+    backgroundColor: colors.accent.primary,
+    borderColor: colors.accent.primary,
+  },
+  sortChipText: {
+    color: colors.text.secondary,
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  sortChipTextSelected: {
+    color: '#FFFFFF',
+    fontWeight: '800',
   },
   searchInput: {
     flex: 1,
@@ -407,6 +703,68 @@ const styles = StyleSheet.create({
   },
   productsContainer: {
     padding: 16,
+    paddingTop: 10,
+  },
+  featuredWrap: {
+    marginBottom: 16,
+  },
+  featuredHeader: {
+    paddingHorizontal: 2,
+    paddingBottom: 10,
+  },
+  featuredTitle: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: colors.text.primary,
+  },
+  featuredSub: {
+    fontSize: 12,
+    color: colors.text.secondary,
+    marginTop: 2,
+  },
+  featuredList: {
+    paddingHorizontal: 2,
+    paddingBottom: 6,
+    gap: 12,
+  },
+  featuredCard: {
+    width: Math.min(260, width * 0.64),
+    borderRadius: 18,
+    overflow: 'hidden',
+    backgroundColor: colors.background.card,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  featuredImage: {
+    width: '100%',
+    height: 140,
+    resizeMode: 'cover',
+  },
+  featuredInfo: {
+    padding: 12,
+    gap: 8,
+  },
+  featuredName: {
+    color: colors.text.primary,
+    fontWeight: '800',
+    lineHeight: 18,
+  },
+  featuredBottomRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  featuredPrice: {
+    color: colors.text.secondary,
+    fontWeight: '800',
+  },
+  featuredAddBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 12,
+    backgroundColor: colors.accent.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   row: {
     justifyContent: 'space-between',
@@ -414,19 +772,43 @@ const styles = StyleSheet.create({
   productCard: {
     width: PRODUCT_WIDTH,
     backgroundColor: colors.background.card,
-    borderRadius: 12,
+    borderRadius: 16,
     marginBottom: 16,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border.light,
   },
   productImageContainer: {
     position: 'relative',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    left: 10,
+    right: 10,
+    bottom: 10,
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  overlayPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: 999,
+    backgroundColor: 'rgba(0,0,0,0.40)',
+  },
+  overlayPillText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 12,
   },
   imageContainer: {
     width: '100%',
   },
   productImage: {
     width: '100%',
-    height: 180,
+    height: 178,
     resizeMode: 'cover',
   },
   imagePlaceholder: {
@@ -454,10 +836,31 @@ const styles = StyleSheet.create({
   productInfo: {
     padding: 12,
   },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 10,
+  },
+  categoryPill: {
+    maxWidth: 96,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 999,
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+  },
+  categoryPillText: {
+    fontSize: 11,
+    color: colors.text.secondary,
+    fontWeight: '700',
+  },
   productActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    gap: 10,
   },
   productName: {
     fontSize: 14,
@@ -501,11 +904,36 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     textDecorationLine: 'line-through',
   },
-  addToCartButton: {
-    marginTop: 4,
+  addButton: {
+    flex: 1,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: colors.accent.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 8,
   },
-  viewButton: {
-    marginTop: 4,
+  addButtonDisabled: {
+    opacity: 0.45,
+  },
+  addButtonText: {
+    color: '#FFFFFF',
+    fontWeight: '900',
+  },
+  viewPill: {
+    height: 40,
+    paddingHorizontal: 14,
+    borderRadius: 12,
+    backgroundColor: colors.background.secondary,
+    borderWidth: 1,
+    borderColor: colors.border.light,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewPillText: {
+    color: colors.text.primary,
+    fontWeight: '800',
   },
   headerButtons: {
     flexDirection: 'row',
