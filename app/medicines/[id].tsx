@@ -24,15 +24,6 @@ export default function MedicineDetailScreen() {
   
   const idParam = Array.isArray(id) ? id?.[0] : id;
   const medicine = useMemo(() => peptidesMedicines.find(m => m.id === (idParam ?? '')), [idParam]);
-  
-  if (!medicine) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Medicine not found</Text>
-        <Button title="Go Back" onPress={() => router.back()} />
-      </View>
-    );
-  }
 
   const [currentUri, setCurrentUri] = useState<string>('https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=900&auto=format&fit=crop');
 
@@ -50,6 +41,15 @@ export default function MedicineDetailScreen() {
       setCurrentUri('https://images.unsplash.com/photo-1551190822-a9333d879b1f?q=80&w=900&auto=format&fit=crop');
     }
   }, [medicine]);
+
+  if (!medicine) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>Medicine not found</Text>
+        <Button title="Go Back" onPress={() => router.back()} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false} testID="medicineDetailScroll">
