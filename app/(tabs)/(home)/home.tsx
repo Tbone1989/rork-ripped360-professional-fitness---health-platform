@@ -47,7 +47,7 @@ export default function HomeScreen() {
           <View style={styles.actionsRow}>
             <Button
               title="Check In"
-              onPress={() => {}}
+              onPress={() => router.push('/questionnaire/client-checkin' as any)}
               icon={<CalendarCheck2 size={18} color={colors.text.primary} />}
               testID="checkin-cta"
             />
@@ -65,11 +65,21 @@ export default function HomeScreen() {
               <Text style={styles.checkinTitle}>Daily Check-in</Text>
               <Text style={styles.checkinSub}>Claim your reward</Text>
               <View style={styles.checkinButtonRow}>
-                <Button title="Check In" onPress={() => {}} size="small" testID="checkin-button" />
+                <Button
+                  title="Check In"
+                  onPress={() => router.push('/questionnaire/client-checkin' as any)}
+                  size="small"
+                  testID="checkin-button"
+                />
               </View>
             </View>
           </View>
-          <TouchableOpacity style={styles.rewardsRow} accessibilityRole="link" testID="rewards-link">
+          <TouchableOpacity
+            style={styles.rewardsRow}
+            accessibilityRole="link"
+            testID="rewards-link"
+            onPress={() => router.push('/contest/dashboard' as any)}
+          >
             <Gift size={18} color={colors.accent.primary} />
             <Text style={styles.rewardsText}>View Rewards Calendar</Text>
           </TouchableOpacity>
