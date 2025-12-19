@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { popularExercises } from '@/mocks/workouts';
+import { trpc } from '@/lib/trpc';
 import MuscleGroupVisualizer from '@/components/workout/MuscleGroupVisualizer';
 
 export default function ExerciseDetailScreen() {
@@ -16,8 +17,30 @@ export default function ExerciseDetailScreen() {
   const router = useRouter();
   const [isFavorited, setIsFavorited] = useState(false);
   
-  // In a real app, you would fetch the exercise data based on the ID
-  const exercise = popularExercises.find(ex => ex.id === id) || popularExercises[0];
+  const exerciseId = typeof id === 'string' ? id : Array.isArray(id) ? id[0] : undefined;
+
+  const exerciseQuery = trpc.fitness.exercises.useQuery(
+    { id: exerciseId },
+    { enabled: !!exerciseId, staleTime: 5 * 60 * 1000 }
+  );
+
+  const apiExercise = Array.isArray(exerciseQuery.data) ? (exerciseQuery.data[0] as any) : null;
+
+  const exercise = apiExercise
+    ? {
+        id: String(apiExercise.id),
+        name: String(apiExercise.name ?? 'Exercise'),
+        description: 'Loaded from API. Follow the steps below and maintain good form.',
+        muscleGroups: Array.isArray(apiExercise.muscle) ? apiExercise.muscle.map((m: any) => String(m)) : [],
+        equipment: [String(apiExercise.equipment ?? 'body_only')],
+        difficulty: (String(apiExercise.difficulty ?? 'intermediate') as 'beginner' | 'intermediate' | 'advanced'),
+        category: 'Strength Training',
+        videoUrl: undefined,
+        thumbnailUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1200',
+        instructions: Array.isArray(apiExercise.instructions) ? apiExercise.instructions.map((i: any) => String(i)) : [],
+        tips: ['Control the tempo', 'Stop if you feel sharp pain', 'Prioritize full range of motion'],
+      }
+    : popularExercises.find((ex) => ex.id === exerciseId) || popularExercises[0];
 
   const handleStartExercise = () => {
     console.log('handleStartExercise called for exercise:', exercise.name);
@@ -129,7 +152,7 @@ export default function ExerciseDetailScreen() {
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>How to Perform</Text>
           <View style={styles.instructionsContainer}>
-            {exercise.instructions.map((instruction, index) => (
+            {exercise.instructions.map((instruction: string, index: number) => (
               <View key={index} style={styles.instructionItem}>
                 <View style={styles.instructionNumber}>
                   <Text style={styles.instructionNumberText}>{index + 1}</Text>

@@ -112,12 +112,18 @@ const fetchWithApiNinjas = async (muscle?: string, type?: string): Promise<Worko
 };
 
 export default publicProcedure
-  .input(z.object({ 
-    muscle: z.string().optional(),
-    type: z.string().optional() 
-  }))
+  .input(
+    z.object({
+      id: z.string().optional(),
+      muscle: z.string().optional(),
+      type: z.string().optional(),
+      query: z.string().optional(),
+    })
+  )
   .query(async ({ input }) => {
-    console.log(`🔍 Searching exercises - muscle: ${input.muscle}, type: ${input.type}`);
+    console.log(
+      `🔍 Searching exercises - id: ${input.id ?? 'none'}, muscle: ${input.muscle ?? 'none'}, type: ${input.type ?? 'none'}, query: ${input.query ?? 'none'}`
+    );
 
     const attempts = [
       { name: 'RIP360', fn: () => fetchWithRip360(input.muscle, input.type) },
@@ -129,8 +135,16 @@ export default publicProcedure
         console.log(`🔄 Trying ${api.name} API...`);
         const results = await api.fn();
         if (results.length > 0) {
-          console.log(`✅ ${api.name} success: Found ${results.length} exercises`);
-          return results;
+          let filtered = results;
+          if (input.id) {
+            filtered = results.filter((r) => String(r.id) === String(input.id));
+          }
+          if (input.query) {
+            const q = input.query.toLowerCase();
+            filtered = filtered.filter((r) => r.name.toLowerCase().includes(q));
+          }
+          console.log(`✅ ${api.name} success: Found ${filtered.length} exercises (post-filter)`);
+          return filtered;
         }
       } catch (e) {
         console.warn(`⚠️ ${api.name} failed:`, e instanceof Error ? e.message : 'Unknown error');
@@ -139,15 +153,20 @@ export default publicProcedure
     }
 
     let exercises = getMockExercises();
+    if (input.id) {
+      exercises = exercises.filter((exercise) => String(exercise.id) === String(input.id));
+    }
     if (input.muscle) {
-      exercises = exercises.filter(exercise => 
-        exercise.muscle.some(m => m.toLowerCase().includes(input.muscle!.toLowerCase()))
+      exercises = exercises.filter((exercise) =>
+        exercise.muscle.some((m) => m.toLowerCase().includes(input.muscle!.toLowerCase()))
       );
     }
     if (input.type) {
-      exercises = exercises.filter(exercise => 
-        exercise.type.toLowerCase().includes(input.type!.toLowerCase())
-      );
+      exercises = exercises.filter((exercise) => exercise.type.toLowerCase().includes(input.type!.toLowerCase()));
+    }
+    if (input.query) {
+      const q = input.query.toLowerCase();
+      exercises = exercises.filter((exercise) => exercise.name.toLowerCase().includes(q));
     }
     console.log(`✅ Mock fallback: Found ${exercises.length} exercises`);
     return exercises;

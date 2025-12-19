@@ -221,9 +221,8 @@ export const generateWorkoutRoute = publicProcedure
         console.warn('⚠️ Missing required parameters, using defaults');
       }
       
-      // Always use mock data for now to ensure reliability
-      const forceMockData = true; // Force mock data until backend APIs are stable
-      
+      const forceMockData = !API_KEYS.RIP360_NINJA && !API_KEYS.API_NINJAS;
+
       if (!forceMockData) {
         // Try APIs in order of preference
         const apiAttempts = [
@@ -255,7 +254,7 @@ export const generateWorkoutRoute = publicProcedure
       }
       
       // Fallback to mock data
-      console.log(forceMockData ? '🔄 Using mock data (forced for reliability)' : '🔄 All APIs failed, using mock data');
+      console.log(forceMockData ? '🔄 Using mock data (no API keys configured)' : '🔄 All APIs failed, using mock data');
       const workout = getMockWorkout(input);
       console.log(`✅ Mock data: Generated workout with ${workout.exercises.length} exercises`);
       
@@ -266,7 +265,7 @@ export const generateWorkoutRoute = publicProcedure
         exercises: workout.exercises,
         success: true,
         timestamp: new Date().toISOString(),
-        source: forceMockData ? 'Mock (Reliable)' : 'Mock (Fallback)'
+        source: forceMockData ? 'Mock (No Keys)' : 'Mock (Fallback)'
       };
     } catch (error) {
       console.error('❌ Error generating workout:', error);

@@ -12,6 +12,7 @@ import { WorkoutCard } from '@/components/workout/WorkoutCard';
 import { CategoryCard } from '@/components/workout/CategoryCard';
 import { ExerciseCard } from '@/components/workout/ExerciseCard';
 import { featuredWorkoutPlans, workoutCategories, popularExercises } from '@/mocks/workouts';
+import { trpc } from '@/lib/trpc';
 
 const tabs = [
   { key: 'workouts', label: 'Workouts' },
@@ -31,6 +32,18 @@ export default function WorkoutsScreen() {
   const [activeTab, setActiveTab] = useState('workouts');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulties, setSelectedDifficulties] = useState(['all']);
+
+  const exercisesQuery = trpc.fitness.exercises.useQuery(
+    {
+      query: activeTab === 'exercises' ? searchQuery : undefined,
+    },
+    {
+      enabled: activeTab === 'exercises' && (searchQuery.trim().length > 0 || true),
+      staleTime: 3 * 60 * 1000,
+    }
+  );
+
+  const serverExercises = Array.isArray(exercisesQuery.data) ? (exercisesQuery.data as any[]) : [];
 
   return (
     <View style={styles.container}>
@@ -157,13 +170,30 @@ export default function WorkoutsScreen() {
                   <Text style={styles.dictionaryButtonText}>Dictionary</Text>
                 </TouchableOpacity>
               </View>
-              {popularExercises.map((exercise) => (
-                <ExerciseCard 
-                  key={exercise.id} 
-                  exercise={exercise}
-                  onPress={() => router.push(`/exercise/${exercise.id}` as never)}
-                />
-              ))}
+              {(serverExercises.length > 0 ? serverExercises : popularExercises).map((exercise: any) => {
+                const normalized = serverExercises.length > 0
+                  ? {
+                      id: String(exercise.id),
+                      name: String(exercise.name ?? 'Exercise'),
+                      description: 'Tap to view details and instructions.',
+                      muscleGroups: Array.isArray(exercise.muscle) ? exercise.muscle.map((m: any) => String(m)) : [],
+                      equipment: [String(exercise.equipment ?? 'body_only')],
+                      difficulty: (String(exercise.difficulty ?? 'intermediate') as 'beginner' | 'intermediate' | 'advanced'),
+                      category: 'Strength Training',
+                      thumbnailUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=800',
+                      instructions: Array.isArray(exercise.instructions) ? exercise.instructions.map((i: any) => String(i)) : [],
+                      tips: [],
+                    }
+                  : exercise;
+
+                return (
+                  <ExerciseCard
+                    key={normalized.id}
+                    exercise={normalized}
+                    onPress={() => router.push(`/exercise/${normalized.id}` as never)}
+                  />
+                );
+              })}
             </View>
           </>
         )}
