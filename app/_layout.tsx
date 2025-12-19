@@ -50,6 +50,8 @@ export default function RootLayout() {
   useEffect(() => {
     console.log("[RootLayout] Mounted");
 
+    let isMounted = true;
+
     SplashScreen.hideAsync().catch((e) => {
       console.log("[RootLayout] SplashScreen hide error (safe to ignore):", e);
     });
@@ -57,38 +59,47 @@ export default function RootLayout() {
     const initializeServices = async () => {
       try {
         console.log("[RootLayout] Initializing services...");
+
+        if (!isMounted) return;
+
         if (Platform.OS !== "web") {
           await notificationService.initialize().catch((e) => {
             console.log("[RootLayout] Notification init failed:", e);
           });
         }
+
+        if (!isMounted) return;
+
         await calendarService.initialize().catch((e) => {
           console.log("[RootLayout] Calendar init failed:", e);
         });
+
+        if (!isMounted) return;
+
         console.log("[RootLayout] Services initialized");
       } catch (error) {
         console.error("[RootLayout] Service init error:", error);
       }
     };
 
-    setTimeout(() => {
-      initializeServices();
+    const timeout = setTimeout(() => {
+      void initializeServices();
     }, 500);
 
     return () => {
       console.log("[RootLayout] Unmounting");
+      isMounted = false;
+      clearTimeout(timeout);
       if (Platform.OS !== "web") {
         notificationService.cleanup();
       }
     };
   }, []);
 
-  console.log("[RootLayout] Rendering");
-
   return (
     <ErrorBoundary>
-      <trpc.Provider>
-        <QueryClientProvider client={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <trpc.Provider>
           <ThemeProvider>
             <WellnessProvider>
               <DisclaimerProvider>
@@ -102,8 +113,8 @@ export default function RootLayout() {
               </DisclaimerProvider>
             </WellnessProvider>
           </ThemeProvider>
-        </QueryClientProvider>
-      </trpc.Provider>
+        </trpc.Provider>
+      </QueryClientProvider>
     </ErrorBoundary>
   );
 }
