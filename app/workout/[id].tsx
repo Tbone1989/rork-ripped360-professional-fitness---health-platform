@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Card } from '@/components/ui/Card';
 import { popularExercises, featuredWorkoutPlans, individualWorkouts } from '@/mocks/workouts';
-import { Exercise, WorkoutPlan } from '@/types/workout';
+
 
 // Extended workout data with exercises
 const getWorkoutById = (id: string) => {
@@ -87,15 +87,27 @@ export default function WorkoutDetailScreen() {
   const [isFavorited, setIsFavorited] = useState(false);
   
   // Get workout data based on the ID
-  const workout = getWorkoutById(id as string);
-  
+  const workoutRaw = getWorkoutById(id as string);
+  const workout = workoutRaw
+    ? {
+        ...workoutRaw,
+        exercises: Array.isArray(workoutRaw.exercises) ? workoutRaw.exercises : [],
+        equipment: Array.isArray(workoutRaw.equipment) ? workoutRaw.equipment : [],
+        targetMuscles: Array.isArray(workoutRaw.targetMuscles) ? workoutRaw.targetMuscles : [],
+        imageUrl:
+          typeof workoutRaw.imageUrl === 'string' && workoutRaw.imageUrl.length > 0
+            ? workoutRaw.imageUrl
+            : 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1200',
+      }
+    : null;
+
   if (!workout) {
     return (
       <View style={styles.container}>
         <View style={styles.errorContainer}>
           <Text style={styles.errorTitle}>Workout Not Found</Text>
           <Text style={styles.errorDescription}>
-            The workout you're looking for doesn't exist or has been removed.
+            The workout you&apos;re looking for doesn&apos;t exist or has been removed.
           </Text>
           <Button
             title="Back to Workouts"
@@ -187,7 +199,7 @@ export default function WorkoutDetailScreen() {
           </View>
           <View style={styles.statItem}>
             <Dumbbell size={20} color={colors.accent.primary} />
-            <Text style={styles.statValue}>{workout.exercises.length}</Text>
+            <Text style={styles.statValue}>{workout.exercises?.length ?? 0}</Text>
             <Text style={styles.statLabel}>exercises</Text>
           </View>
           <View style={styles.statItem}>
@@ -207,7 +219,7 @@ export default function WorkoutDetailScreen() {
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>Equipment Needed</Text>
           <View style={styles.equipmentContainer}>
-            {workout.equipment.map((item, index) => (
+            {(workout.equipment ?? []).map((item, index) => (
               <Badge
                 key={index}
                 label={item}
@@ -222,7 +234,7 @@ export default function WorkoutDetailScreen() {
         <Card style={styles.section}>
           <Text style={styles.sectionTitle}>Target Muscles</Text>
           <View style={styles.muscleContainer}>
-            {workout.targetMuscles.map((muscle, index) => (
+            {(workout.targetMuscles ?? []).map((muscle, index) => (
               <Badge
                 key={index}
                 label={muscle}
@@ -235,8 +247,8 @@ export default function WorkoutDetailScreen() {
 
         {/* Exercises */}
         <Card style={styles.section}>
-          <Text style={styles.sectionTitle}>Exercises ({workout.exercises.length})</Text>
-          {workout.exercises.map((exercise, index) => (
+          <Text style={styles.sectionTitle}>Exercises ({workout.exercises?.length ?? 0})</Text>
+          {(workout.exercises ?? []).map((exercise, index) => (
             <TouchableOpacity
               key={exercise.id}
               style={styles.exerciseItem}
