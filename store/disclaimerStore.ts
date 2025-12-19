@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import createContextHook from '@nkzw/create-context-hook';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import createContextHook from '@/utils/createContextHook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';
 import { usePathname } from 'expo-router';
-import React from "react";
 
 export type DisclaimerType = 'medical' | 'doctor' | 'audio' | 'coach' | 'product_selling' | 'general';
 
@@ -114,7 +113,7 @@ export const [DisclaimerProvider, useDisclaimer] = createContextHook(() => {
       return () => {
         cancelled = true;
       };
-    }, [pathname, acceptance?.doctor, acceptance?.medical, acceptance?.coach, state.visible]);
+    }, [pathname]);
 
     return null;
   };
