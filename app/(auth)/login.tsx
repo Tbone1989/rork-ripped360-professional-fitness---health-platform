@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, KeyboardAvoidingView, Platform, ScrollView, SafeAreaView, Alert, Image, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
-import { ArrowRight, Apple, Users, ShieldQuestion, Stethoscope, ShieldCheck, Info, HelpCircle, Sparkles } from 'lucide-react-native';
+import { ArrowRight, Apple, Users, ShieldQuestion, Stethoscope, ShieldCheck, Info, HelpCircle } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
@@ -19,7 +19,6 @@ const { width: screenWidth } = Dimensions.get('window');
 export default function LoginScreen() {
   const router = useRouter();
   const login = useUserStore((state) => state.login);
-  const demoLogin = useUserStore((state) => state.demoLogin);
   const isLoading = useUserStore((state) => state.isLoading);
 
   const [email, setEmail] = useState('');
@@ -167,17 +166,6 @@ export default function LoginScreen() {
     }
   }, [ensureEnvVal, redirectUri, router, withHaptics, GOOGLE_CLIENT_ID, APPLE_CLIENT_ID]);
 
-  const handleDemoAccess = useCallback(async () => {
-    await withHaptics(Haptics.ImpactFeedbackStyle.Light);
-    try {
-      setError('');
-      await demoLogin();
-      router.replace('/(tabs)/(home)/home' as any);
-    } catch (demoError) {
-      console.error('[DemoLogin] error', demoError);
-      setError('Unable to load demo mode right now. Please try again.');
-    }
-  }, [demoLogin, router, withHaptics]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -262,16 +250,6 @@ export default function LoginScreen() {
             />
           </View>
 
-          <Button
-            title="Explore Demo Experience"
-            onPress={handleDemoAccess}
-            variant="ghost"
-            fullWidth
-            style={styles.demoButton}
-            icon={<Sparkles size={18} color={colors.accent.primary} />}
-            testID="demo-mode-button"
-          />
-          <Text style={styles.demoHint}>Loads a sample account so you can tour the full app instantly.</Text>
 
           <TouchableOpacity style={styles.forgotPassword}>
             <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
@@ -425,8 +403,9 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 20,
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 24,
+    paddingBottom: 32,
   },
   header: {
     alignItems: 'center',
@@ -436,9 +415,9 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   logoContainer: {
-    width: 140,
-    height: 140,
-    borderRadius: 28,
+    width: 112,
+    height: 112,
+    borderRadius: 24,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000000',
@@ -453,9 +432,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logoImage: {
-    width: 140,
-    height: 140,
-    borderRadius: 28,
+    width: 112,
+    height: 112,
+    borderRadius: 24,
     backgroundColor: '#000000',
   },
   logoMainText: {
@@ -486,7 +465,7 @@ const styles = StyleSheet.create({
     marginTop: -8,
   },
   title: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: '900' as const,
     color: colors.text.primary,
     marginBottom: 6,
@@ -540,12 +519,15 @@ const styles = StyleSheet.create({
   },
   roleButtonsRow: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
     width: '100%',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   roleButton: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 110,
+    minWidth: 110,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -592,14 +574,5 @@ const styles = StyleSheet.create({
   },
   socialButton: {
     width: '100%',
-  },
-  demoButton: {
-    marginTop: 12,
-  },
-  demoHint: {
-    textAlign: 'center',
-    color: colors.text.secondary,
-    fontSize: 13,
-    marginTop: 8,
   },
 });
