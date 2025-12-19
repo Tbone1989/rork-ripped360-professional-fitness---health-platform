@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,20 +12,16 @@ import { Stack, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import {
   Users,
-  Shield,
   Activity,
   Settings,
   Database,
   MessageSquare,
   FileText,
   TrendingUp,
-  UserCheck,
-  UserX,
   Crown,
   Stethoscope,
   LogOut,
   Camera,
-  User,
   TestTube,
   Wifi,
   DollarSign,
@@ -93,14 +89,13 @@ export default function AdminDashboardScreen() {
   const { user, logout, grantUserAccess, revokeUserAccess, isAdmin, updateUser } = useUserStore();
   const [users, setUsers] = useState<UserManagementItem[]>(mockUsers);
 
-  // Redirect if not admin
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isAdmin) {
       router.replace('/admin/login');
     }
-  }, [isAdmin]);
+  }, [isAdmin, router]);
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     Alert.alert(
       'Logout',
       'Are you sure you want to logout from admin panel?',
@@ -116,7 +111,7 @@ export default function AdminDashboardScreen() {
         },
       ]
     );
-  };
+  }, [logout, router]);
 
   const handleGrantAccess = (userId: string, accessLevel: 'free' | 'premium' | 'medical') => {
     grantUserAccess(userId, accessLevel);
@@ -310,18 +305,21 @@ export default function AdminDashboardScreen() {
     { title: 'Medical Users', value: '156', icon: Stethoscope, color: colors.accent.primary },
   ];
 
+  const headerOptions = useMemo(
+    () => ({
+      title: 'Admin Dashboard',
+      headerRight: () => (
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton} testID="admin-dashboard-logout">
+          <LogOut size={20} color={colors.text.secondary} />
+        </TouchableOpacity>
+      ),
+    }),
+    [handleLogout]
+  );
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Stack.Screen
-        options={{
-          title: 'Admin Dashboard',
-          headerRight: () => (
-            <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
-              <LogOut size={20} color={colors.text.secondary} />
-            </TouchableOpacity>
-          ),
-        }}
-      />
+      <Stack.Screen options={headerOptions} />
 
       <View style={styles.header}>
         <View style={styles.profileSection}>

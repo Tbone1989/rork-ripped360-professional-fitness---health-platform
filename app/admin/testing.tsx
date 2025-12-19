@@ -26,7 +26,7 @@ import { useUserStore } from '@/store/userStore';
 export default function AdminTestingScreen() {
   const router = useRouter();
   const { gymTestingScenarios, nutritionTestScenarios } = useWellnessStore();
-  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+  const { isAdmin, user } = useUserStore();
 
   const isActuallyAdmin = useMemo(() => {
     return Boolean(isAdmin || user?.role === 'admin');

@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
 import {
-  Database,
   Server,
   HardDrive,
   Activity,
@@ -25,6 +24,7 @@ import { colors } from '@/constants/colors';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { useUserStore } from '@/store/userStore';
 
 interface DatabaseInfo {
   name: string;
@@ -74,7 +74,7 @@ export default function AdminDatabaseScreen() {
   const router = useRouter();
   const [databases, setDatabases] = useState<DatabaseInfo[]>(mockDatabases);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const { isAdmin, user } = require('@/store/userStore').useUserStore((s: any) => ({ isAdmin: s.isAdmin, user: s.user }));
+  const { isAdmin, user } = useUserStore();
 
   useEffect(() => {
     const admin = isAdmin || (user?.role === 'admin');
@@ -87,6 +87,12 @@ export default function AdminDatabaseScreen() {
     setIsRefreshing(true);
     // Simulate API call
     setTimeout(() => {
+      setDatabases((prev) =>
+        prev.map((db) => ({
+          ...db,
+          lastBackup: db.lastBackup,
+        }))
+      );
       setIsRefreshing(false);
       Alert.alert('Success', 'Database status refreshed');
     }, 1500);
@@ -122,19 +128,6 @@ export default function AdminDatabaseScreen() {
         },
       ]
     );
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return colors.status.success;
-      case 'warning':
-        return colors.status.warning;
-      case 'error':
-        return colors.status.error;
-      default:
-        return colors.text.secondary;
-    }
   };
 
   const getStatusVariant = (status: string): 'success' | 'warning' | 'error' => {

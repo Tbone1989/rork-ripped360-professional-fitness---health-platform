@@ -92,7 +92,7 @@ export default function AdminMessagesScreen() {
     type: 'notification' as SystemMessage['type'],
     priority: 'medium' as SystemMessage['priority'],
   });
-  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+  const { isAdmin, user } = useUserStore();
 
   const headerOptions = useMemo(
     () => ({

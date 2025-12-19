@@ -85,7 +85,7 @@ export default function AdminReportsScreen() {
   const router = useRouter();
   const [reports, setReports] = useState<ReportData[]>(mockReports);
   const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
-  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+  const { isAdmin, user } = useUserStore();
 
   useEffect(() => {
     const admin = isAdmin || (user?.role === 'admin');
