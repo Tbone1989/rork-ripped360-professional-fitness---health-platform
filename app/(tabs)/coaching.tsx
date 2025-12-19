@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Filter, Calendar, MessageCircle, ClipboardList, RefreshCw } from 'lucide-react-native';
@@ -149,6 +149,14 @@ export default function CoachingScreen() {
   const featuredCoaches = useMemo(() => coaches.filter((c) => c.featured), [coaches]);
   const allOtherCoaches = useMemo(() => coaches.filter((c) => !c.featured), [coaches]);
 
+  const onCoachPress = useCallback(
+    (coachId: string) => {
+      console.log('[CoachingTab] open coach', coachId);
+      router.push(`/coaching/${coachId}` as any);
+    },
+    [router]
+  );
+
   return (
     <View style={styles.container} testID="coaching-container">
       <View style={styles.header} testID="coaching-header">
@@ -212,7 +220,7 @@ export default function CoachingScreen() {
               <View style={styles.section} testID="coaching-featured">
                 <Text style={styles.sectionTitle}>Featured Coaches</Text>
                 {featuredCoaches.map((coach) => (
-                  <CoachCard key={coach.id} coach={coach} />
+                  <CoachCard key={coach.id} coach={coach} onPress={() => onCoachPress(coach.id)} />
                 ))}
               </View>
             )}
@@ -221,7 +229,7 @@ export default function CoachingScreen() {
               <View style={styles.section} testID="coaching-all">
                 <Text style={styles.sectionTitle}>All Coaches</Text>
                 {allOtherCoaches.map((coach) => (
-                  <CoachCard key={coach.id} coach={coach} />
+                  <CoachCard key={coach.id} coach={coach} onPress={() => onCoachPress(coach.id)} />
                 ))}
               </View>
             )}

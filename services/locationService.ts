@@ -29,6 +29,81 @@ class LocationService {
   private currentLocation: UserLocation | null = null;
   private locationPermissionGranted = false;
 
+  private normalizeUsState(input: string | null | undefined): string | undefined {
+    const raw = (input ?? '').trim();
+    if (!raw) return undefined;
+    const upper = raw.toUpperCase();
+    if (/^[A-Z]{2}$/.test(upper)) return upper;
+
+    const map: Record<string, string> = {
+      ALABAMA: 'AL',
+      ALASKA: 'AK',
+      ARIZONA: 'AZ',
+      ARKANSAS: 'AR',
+      CALIFORNIA: 'CA',
+      COLORADO: 'CO',
+      CONNECTICUT: 'CT',
+      DELAWARE: 'DE',
+      FLORIDA: 'FL',
+      GEORGIA: 'GA',
+      HAWAII: 'HI',
+      IDAHO: 'ID',
+      ILLINOIS: 'IL',
+      INDIANA: 'IN',
+      IOWA: 'IA',
+      KANSAS: 'KS',
+      KENTUCKY: 'KY',
+      LOUISIANA: 'LA',
+      MAINE: 'ME',
+      MARYLAND: 'MD',
+      MASSACHUSETTS: 'MA',
+      MICHIGAN: 'MI',
+      MINNESOTA: 'MN',
+      MISSISSIPPI: 'MS',
+      MISSOURI: 'MO',
+      MONTANA: 'MT',
+      NEBRASKA: 'NE',
+      NEVADA: 'NV',
+      'NEW HAMPSHIRE': 'NH',
+      'NEW JERSEY': 'NJ',
+      'NEW MEXICO': 'NM',
+      'NEW YORK': 'NY',
+      'NORTH CAROLINA': 'NC',
+      'NORTH DAKOTA': 'ND',
+      OHIO: 'OH',
+      OKLAHOMA: 'OK',
+      OREGON: 'OR',
+      PENNSYLVANIA: 'PA',
+      'RHODE ISLAND': 'RI',
+      'SOUTH CAROLINA': 'SC',
+      'SOUTH DAKOTA': 'SD',
+      TENNESSEE: 'TN',
+      TEXAS: 'TX',
+      UTAH: 'UT',
+      VERMONT: 'VT',
+      VIRGINIA: 'VA',
+      WASHINGTON: 'WA',
+      'WEST VIRGINIA': 'WV',
+      WISCONSIN: 'WI',
+      WYOMING: 'WY',
+      'DISTRICT OF COLUMBIA': 'DC',
+      'WASHINGTON, D.C.': 'DC',
+      'WASHINGTON DC': 'DC',
+    };
+
+    return map[upper] ?? raw;
+  }
+
+  private normalizeUserLocation(loc: UserLocation): UserLocation {
+    const countryCode = (loc.country ?? '').toUpperCase();
+    const shouldNormalize = countryCode === 'US' || countryCode === 'USA' || !countryCode;
+    const normalizedState = shouldNormalize ? this.normalizeUsState(loc.state) : loc.state;
+    return {
+      ...loc,
+      state: String(normalizedState ?? loc.state),
+    };
+  }
+
   async requestLocationPermission(): Promise<boolean> {
     try {
       if (Platform.OS === 'web') {
@@ -170,7 +245,7 @@ class LocationService {
         const results = await Location.reverseGeocodeAsync(coordinates);
         if (results.length > 0) {
           const result = results[0];
-          return {
+          const rawLoc: UserLocation = {
             city: result.city || result.subregion || 'Unknown City',
             state: result.region || 'Unknown State',
             zipCode: result.postalCode || undefined,
@@ -178,12 +253,14 @@ class LocationService {
             address: `${result.street || ''} ${result.streetNumber || ''}`.trim(),
             country: result.country || 'US'
           };
+          return this.normalizeUserLocation(rawLoc);
         }
-        return {
+        return this.normalizeUserLocation({
           city: 'My Area',
           state: 'Unknown',
           coordinates,
-        } as UserLocation;
+          country: 'US',
+        });
       }
     } catch (error) {
       console.error('Reverse geocoding error:', error);
@@ -209,7 +286,7 @@ class LocationService {
       const stateComponent = addressComponents.find((comp: any) => comp.types?.includes('administrative_area_level_1'));
       const zipComponent = addressComponents.find((comp: any) => comp.types?.includes('postal_code'));
       const countryComponent = addressComponents.find((comp: any) => comp.types?.includes('country'));
-      return {
+      const rawLoc: UserLocation = {
         city: cityComponent?.long_name || 'Unknown City',
         state: stateComponent?.short_name || 'Unknown State',
         zipCode: zipComponent?.long_name,
@@ -217,6 +294,7 @@ class LocationService {
         address: result.formatted_address,
         country: countryComponent?.short_name || 'US'
       };
+      return this.normalizeUserLocation(rawLoc);
     } catch (error) {
       console.error('Google Geocoding API error:', error);
       throw error;
@@ -525,7 +603,7 @@ class LocationService {
       const city = address.city || address.town || address.village || address.hamlet || 'Unknown City';
       const state = address.state || address.region || 'Unknown State';
       const countryCode = (address.country_code?.toUpperCase?.() ?? 'US') as string;
-      const result: UserLocation = {
+      const rawLoc: UserLocation = {
         city,
         state,
         zipCode: address.postcode,
@@ -533,7 +611,7 @@ class LocationService {
         address: data.display_name,
         country: countryCode,
       };
-      return result;
+      return this.normalizeUserLocation(rawLoc);
     } catch (e) {
       console.warn('Nominatim reverse geocoding failed:', e);
       return null;
@@ -549,11 +627,15 @@ class LocationService {
       return results.map((r: any, index: number) => {
         const addr = r.address || {};
         const city = addr.city || addr.town || addr.village || r.display_name;
+        const countryCode = (addr.country_code?.toUpperCase?.() ?? 'US') as string;
+        const normalizedState = (countryCode === 'US' || countryCode === 'USA' || !countryCode)
+          ? this.normalizeUsState(addr.state)
+          : (addr.state || 'Unknown State');
         return {
           id: r.place_id?.toString() || `osm-${index}`,
           displayName: r.display_name,
           city: city,
-          state: addr.state || 'Unknown State',
+          state: String(normalizedState ?? (addr.state || 'Unknown State')),
           zipCode: addr.postcode,
           coordinates: { latitude: parseFloat(r.lat), longitude: parseFloat(r.lon) },
         } as LocationSearchResult;

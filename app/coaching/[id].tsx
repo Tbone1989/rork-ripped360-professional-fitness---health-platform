@@ -2,19 +2,18 @@ import React, { useMemo, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
-import { 
-  Star, 
-  Calendar, 
-  MessageCircle, 
-  Award, 
-  Clock, 
+import {
+  Star,
+  Calendar,
+  MessageCircle,
+  Award,
+  Clock,
   DollarSign,
   CheckCircle,
   ArrowLeft,
-  Package,
   Users,
   Phone,
-  FileText
+  FileText,
 } from 'lucide-react-native';
 
 import { colors } from '@/constants/colors';
@@ -22,8 +21,8 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
-import { allCoaches } from '@/mocks/coaches';
 import { trpc } from '@/lib/trpc';
+import type { Coach } from '@/types/coaching';
 
 export default function CoachDetailScreen() {
   const { id } = useLocalSearchParams();
@@ -31,9 +30,105 @@ export default function CoachDetailScreen() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
   const bookMutation = trpc.coaching.sessions.book.useMutation();
 
-  const coach = allCoaches.find(c => c.id === id);
+  const coachesQuery = trpc.coaching.list.useQuery({ showPricing: true });
+
+  const coach: Coach | undefined = useMemo(() => {
+    const raw = (coachesQuery.data as any)?.coaches as any[] | undefined;
+    const arr = Array.isArray(raw) ? raw : [];
+    const api = arr.find((c) => String(c?.id) === String(id));
+    if (!api) return undefined;
+
+    const pricingVisibility: Coach['pricingVisibility'] =
+      api?.pricingVisibility === 'after_engagement'
+        ? 'after_contact'
+        : (api?.pricingVisibility as Coach['pricingVisibility']);
+
+    const hourlyRate = typeof api?.hourlyRate === 'number' ? api.hourlyRate : 0;
+
+    return {
+      id: String(api?.id ?? ''),
+      userId: String(api?.userId ?? ''),
+      name: String(api?.name ?? ''),
+      bio: String(api?.bio ?? ''),
+      specialties: Array.isArray(api?.specialties) ? api.specialties.map((s: any) => String(s)) : [],
+      certifications: Array.isArray(api?.certifications)
+        ? api.certifications.map((c: any) => ({
+            id: String(c?.id ?? ''),
+            name: String(c?.name ?? ''),
+            organization: String(c?.organization ?? ''),
+            year: Number(c?.year ?? 0),
+            verified: Boolean(c?.verified),
+          }))
+        : [],
+      experience: Number(api?.experience ?? 0),
+      rating: Number(api?.rating ?? 0),
+      reviewCount: Number(api?.reviewCount ?? 0),
+      hourlyRate,
+      availability: Array.isArray(api?.availability) ? api.availability : [],
+      profileImageUrl: String(api?.profileImageUrl ?? ''),
+      coverImageUrl: String(api?.profileImageUrl ?? ''),
+      featured: Boolean(api?.featured),
+      pricingVisibility: pricingVisibility ?? 'upfront',
+      consultationFee: undefined,
+      packageDeals: Array.isArray(api?.packages)
+        ? api.packages.map((p: any) => ({
+            id: String(p?.id ?? ''),
+            name: String(p?.name ?? ''),
+            description: String(p?.description ?? ''),
+            sessions: 1,
+            duration: Number(p?.duration ?? 0),
+            price: typeof p?.price === 'number' ? p.price : 0,
+            features: [],
+          }))
+        : undefined,
+    } as Coach;
+  }, [coachesQuery.data, id]);
 
   const isBooking = bookMutation.isPending ?? false;
+
+  const availableSlots = useMemo(() => {
+    const base = Array.isArray(coach?.availability) ? coach?.availability : [];
+
+    const slotsFromCoach = base.flatMap((day: any) => {
+      const dayName = String(day?.day ?? 'monday');
+      const slots = Array.isArray(day?.slots) ? day.slots : [];
+      return slots
+        .filter((slot: any) => !slot?.booked)
+        .map((slot: any) => ({
+          day: dayName,
+          startTime: String(slot?.startTime ?? ''),
+          endTime: String(slot?.endTime ?? ''),
+        }));
+    });
+
+    if (slotsFromCoach.length > 0) return slotsFromCoach;
+
+    return [
+      { day: 'monday', startTime: '09:00', endTime: '09:30' },
+      { day: 'tuesday', startTime: '12:00', endTime: '12:30' },
+      { day: 'wednesday', startTime: '18:00', endTime: '18:30' },
+      { day: 'thursday', startTime: '08:00', endTime: '08:30' },
+      { day: 'friday', startTime: '16:00', endTime: '16:30' },
+      { day: 'saturday', startTime: '10:00', endTime: '10:30' },
+    ];
+  }, [coach?.availability]);
+
+  if (coachesQuery.isLoading) {
+    return (
+      <View style={styles.errorContainer} testID="coach-detail-loading">
+        <Text style={styles.errorText}>Loading coach…</Text>
+      </View>
+    );
+  }
+
+  if (coachesQuery.error && !coachesQuery.isLoading) {
+    return (
+      <View style={styles.errorContainer} testID="coach-detail-error">
+        <Text style={styles.errorText}>Couldn’t load coach</Text>
+        <Button title="Go Back" onPress={() => router.back()} testID="coach-detail-back-error" />
+      </View>
+    );
+  }
 
   if (!coach) {
     return (
@@ -43,13 +138,6 @@ export default function CoachDetailScreen() {
       </View>
     );
   }
-
-  const availableSlots = coach.availability.flatMap(day => 
-    day.slots.filter(slot => !slot.booked).map(slot => ({
-      day: day.day,
-      ...slot
-    }))
-  );
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -337,7 +425,7 @@ export default function CoachDetailScreen() {
                   } else {
                     Alert.alert('Booking failed', 'Please try again.');
                   }
-                } catch (e) {
+                } catch {
                   Alert.alert('Booking failed', 'Please check your connection and try again.');
                 }
               }}
