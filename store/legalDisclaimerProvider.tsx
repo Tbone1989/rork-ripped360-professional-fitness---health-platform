@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import createContextHook from '@nkzw/create-context-hook';
+import createContextHook from '@/utils/createContextHook';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { LegalDisclaimer } from '@/components/ui/LegalDisclaimer';

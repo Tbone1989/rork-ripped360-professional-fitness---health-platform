@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import createContextHook from '@nkzw/create-context-hook';
+import createContextHook from '@/utils/createContextHook';
 import { 
   SleepData, 
   StressData, 
@@ -12,25 +12,7 @@ import {
   NutritionTestScenario
 } from '@/types/wellness';
 
-interface WellnessState {
-  sleepData: SleepData[];
-  stressData: StressData[];
-  recoveryMetrics: RecoveryMetrics[];
-  hormoneData: HormoneTracking[];
-  supplementInteractions: SupplementInteraction[];
-  wellnessGoals: WellnessGoals;
-  gymTestingScenarios: GymTestingScenario[];
-  nutritionTestScenarios: NutritionTestScenario[];
-  
-  // Actions
-  addSleepData: (data: Omit<SleepData, 'id'>) => void;
-  addStressData: (data: Omit<StressData, 'id'>) => void;
-  addRecoveryMetrics: (data: Omit<RecoveryMetrics, 'id'>) => void;
-  addHormoneData: (data: Omit<HormoneTracking, 'id'>) => void;
-  updateWellnessGoals: (goals: Partial<WellnessGoals>) => void;
-  runGymTest: (scenarioId: string, testCaseId: string, result: 'passed' | 'failed', notes?: string) => void;
-  runNutritionTest: (scenarioId: string, testCaseId: string, result: 'passed' | 'failed', notes?: string) => void;
-}
+
 
 const initialGymTestingScenarios: GymTestingScenario[] = [
   {
@@ -212,7 +194,7 @@ export const [WellnessProvider, useWellnessStore] = createContextHook(() => {
   const [stressData, setStressData] = useState<StressData[]>([]);
   const [recoveryMetrics, setRecoveryMetrics] = useState<RecoveryMetrics[]>([]);
   const [hormoneData, setHormoneData] = useState<HormoneTracking[]>([]);
-  const [supplementInteractions, setSupplementInteractions] = useState<SupplementInteraction[]>([]);
+  const [supplementInteractions] = useState<SupplementInteraction[]>([]);
   const [wellnessGoals, setWellnessGoals] = useState<WellnessGoals>({
     sleepHours: 8,
     stressLevel: 2,
@@ -224,7 +206,6 @@ export const [WellnessProvider, useWellnessStore] = createContextHook(() => {
   const [gymTestingScenarios, setGymTestingScenarios] = useState<GymTestingScenario[]>(initialGymTestingScenarios);
   const [nutritionTestScenarios, setNutritionTestScenarios] = useState<NutritionTestScenario[]>(initialNutritionTestScenarios);
 
-  // Load data from AsyncStorage on mount
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -235,7 +216,9 @@ export const [WellnessProvider, useWellnessStore] = createContextHook(() => {
           setStressData(data.stressData || []);
           setRecoveryMetrics(data.recoveryMetrics || []);
           setHormoneData(data.hormoneData || []);
-          setWellnessGoals(data.wellnessGoals || wellnessGoals);
+          if (data.wellnessGoals) {
+            setWellnessGoals(data.wellnessGoals);
+          }
         }
       } catch (error) {
         console.error('Error loading wellness data:', error);
