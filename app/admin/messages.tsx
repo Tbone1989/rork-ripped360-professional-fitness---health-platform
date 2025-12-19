@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   StyleSheet,
   Text,
@@ -9,12 +9,11 @@ import {
   TextInput,
 } from 'react-native';
 import { Stack, useRouter } from 'expo-router';
+
+import { useUserStore } from '@/store/userStore';
 import {
-  MessageSquare,
   Send,
-  Bell,
   Users,
-  Filter,
   Search,
   AlertCircle,
   CheckCircle,
@@ -93,7 +92,15 @@ export default function AdminMessagesScreen() {
     type: 'notification' as SystemMessage['type'],
     priority: 'medium' as SystemMessage['priority'],
   });
-  const { isAdmin, user } = require('@/store/userStore').useUserStore((s: any) => ({ isAdmin: s.isAdmin, user: s.user }));
+  const { isAdmin, user } = useUserStore((s) => ({ isAdmin: s.isAdmin, user: s.user }));
+
+  const headerOptions = useMemo(
+    () => ({
+      title: 'Message Management',
+      headerBackTitle: 'Admin',
+    }),
+    []
+  );
 
   useEffect(() => {
     const admin = isAdmin || (user?.role === 'admin');
@@ -200,12 +207,7 @@ export default function AdminMessagesScreen() {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <Stack.Screen
-        options={{
-          title: 'Message Management',
-          headerBackTitle: 'Admin',
-        }}
-      />
+      <Stack.Screen options={headerOptions} />
 
       <View style={styles.header}>
         <Text style={styles.title}>System Messages</Text>
