@@ -8,7 +8,6 @@ import {
   Image,
   Alert,
   ActivityIndicator,
-  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, Stack } from 'expo-router';
@@ -16,12 +15,9 @@ import { colors } from '@/constants/colors';
 import {
   Camera,
   Upload,
-  BarChart3,
-  TrendingUp,
   Info,
   Sparkles,
   ChevronRight,
-  Target,
   Zap,
 } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -298,7 +294,7 @@ export default function AIBodyScanScreen() {
                 <View style={styles.actionButtons}>
                   <Button
                     title="Track Progress"
-                    onPress={() => router.push('/profile')}
+                    onPress={() => router.push('/profile' as any)}
                     style={styles.actionButton}
                   />
                   <Button

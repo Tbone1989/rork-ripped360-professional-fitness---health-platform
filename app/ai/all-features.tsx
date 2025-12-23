@@ -20,15 +20,12 @@ import {
   Heart,
   Mic,
   BarChart3,
-  Target,
-  Zap,
   TrendingUp,
   Calendar,
   Dna,
   Moon,
   ShoppingBag,
   Users,
-  Trophy,
   ChevronRight,
 } from 'lucide-react-native';
 import { Card } from '@/components/ui/Card';
@@ -176,9 +173,6 @@ export default function AllAIFeaturesScreen() {
       route: '/meals/smart-list',
     },
   ];
-
-  const competitionFeatures: AIFeature[] = [];
-
 
   const socialFeatures: AIFeature[] = [
     {
@@ -329,7 +323,7 @@ export default function AllAIFeaturesScreen() {
           </Text>
           <TouchableOpacity
             style={styles.ctaButton}
-            onPress={() => router.push('/profile/subscription')}
+            onPress={() => router.push('/profile/subscription' as any)}
           >
             <Text style={styles.ctaButtonText}>Upgrade to Pro</Text>
           </TouchableOpacity>

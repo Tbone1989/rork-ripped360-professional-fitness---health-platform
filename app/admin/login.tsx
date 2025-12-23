@@ -31,8 +31,8 @@ export default function AdminLoginScreen() {
 
     try {
       await adminLogin(email, password);
-      router.replace('/admin/dashboard');
-    } catch (error) {
+      router.replace('/admin/dashboard' as any);
+    } catch {
       Alert.alert('Login Failed', 'Invalid admin credentials');
     }
   };

@@ -105,6 +105,19 @@
       "eas": {
         "projectId": "rork-app-2025"
       }
-    }
+    },
+    "updates": {
+      "enabled": true,
+      "url": "<UNKNOWN>",
+      "requestHeaders": {},
+      "checkAutomatically": "ALWAYS",
+      "fallbackToCacheTimeout": 0,
+      "useEmbeddedUpdate": true,
+      "codeSigningCertificate": "<UNKNOWN>",
+      "codeSigningMetadata": "<UNKNOWN>",
+      "assetPatternsToBeBundled": [],
+      "disableAntiBrickingMeasures": false
+    },
+    "runtimeVersion": "<UNKNOWN>"
   }
 }

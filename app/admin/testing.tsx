@@ -34,7 +34,7 @@ export default function AdminTestingScreen() {
 
   useEffect(() => {
     if (!isActuallyAdmin) {
-      router.replace('/admin/login');
+      router.replace('/admin/login' as any);
     }
   }, [isActuallyAdmin, router]);
 
@@ -339,7 +339,7 @@ export default function AdminTestingScreen() {
       <View style={styles.actionsSection}>
         <Button
           title="Start Gym Testing"
-          onPress={() => router.push('/testing/gym-environment')}
+          onPress={() => router.push('/testing/gym-environment' as any)}
           icon={<Smartphone size={18} color={colors.text.primary} />}
           style={styles.actionButton}
         />
@@ -347,7 +347,7 @@ export default function AdminTestingScreen() {
         <Button
           title="Test Nutrition Features"
           variant="outline"
-          onPress={() => router.push('/testing/nutrition-scenarios')}
+          onPress={() => router.push('/testing/nutrition-scenarios' as any)}
           icon={<UtensilsCrossed size={18} color={colors.accent.primary} />}
           style={styles.actionButton}
         />
@@ -355,7 +355,7 @@ export default function AdminTestingScreen() {
         <Button
           title="Wellness Tracking"
           variant="outline"
-          onPress={() => router.push('/testing/wellness-tracking')}
+          onPress={() => router.push('/testing/wellness-tracking' as any)}
           icon={<Heart size={18} color={colors.accent.primary} />}
           style={styles.actionButton}
         />

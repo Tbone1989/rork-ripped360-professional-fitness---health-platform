@@ -27,18 +27,6 @@ interface ApiStatus {
   endpoint?: string;
 }
 
-interface ApiStatusResponse {
-  apis: ApiStatus[];
-  summary: {
-    total: number;
-    configured: number;
-    placeholder: number;
-    missing: number;
-    active: number;
-  };
-  recommendations: (string | null)[];
-  timestamp: string;
-}
 
 export default function ApiStatusScreen() {
   const router = useRouter();
@@ -48,9 +36,9 @@ export default function ApiStatusScreen() {
   // Redirect if not admin
   React.useEffect(() => {
     if (!isAdmin) {
-      router.replace('/admin/login');
+      router.replace('/admin/login' as any);
     }
-  }, [isAdmin]);
+  }, [isAdmin, router]);
 
   const { data: apiStatus, isLoading, refetch } = (trpc as any).system?.apiStatus?.useQuery() || { data: undefined, isLoading: false, refetch: async () => {} };
 
@@ -241,7 +229,7 @@ export default function ApiStatusScreen() {
           onPress={() => {
             console.log('🧪 Starting comprehensive API connection tests...');
             // Navigate to the test APIs screen for detailed testing
-            router.push('/test-apis');
+            router.push('/test-apis' as any);
           }}
           icon={<Settings size={18} color={colors.text.primary} />}
           style={styles.testButton}

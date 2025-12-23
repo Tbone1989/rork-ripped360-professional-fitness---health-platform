@@ -91,7 +91,7 @@ export default function AdminDashboardScreen() {
 
   useEffect(() => {
     if (!isAdmin) {
-      router.replace('/admin/login');
+      router.replace('/admin/login' as any);
     }
   }, [isAdmin, router]);
 
@@ -106,7 +106,7 @@ export default function AdminDashboardScreen() {
           style: 'destructive',
           onPress: () => {
             logout();
-            router.replace('/');
+            router.replace('/' as any);
           },
         },
       ]
@@ -153,34 +153,34 @@ export default function AdminDashboardScreen() {
   const handleQuickAction = (action: string) => {
     switch (action) {
       case 'database':
-        router.push('/admin/database');
+        router.push('/admin/database' as any);
         break;
       case 'messages':
-        router.push('/admin/messages');
+        router.push('/admin/messages' as any);
         break;
       case 'reports':
-        router.push('/admin/reports');
+        router.push('/admin/reports' as any);
         break;
       case 'settings':
-        router.push('/admin/settings');
+        router.push('/admin/settings' as any);
         break;
       case 'testing':
-        router.push('/admin/testing');
+        router.push('/admin/testing' as any);
         break;
       case 'volume-tracking':
-        router.push('/admin/volume-tracking');
+        router.push('/admin/volume-tracking' as any);
         break;
       case 'user-issues':
-        router.push('/admin/user-issues');
+        router.push('/admin/user-issues' as any);
         break;
       case 'api-status':
-        router.push('/admin/api-status');
+        router.push('/admin/api-status' as any);
         break;
       case 'sales':
-        router.push('/admin/sales');
+        router.push('/admin/sales' as any);
         break;
       case 'marketing':
-        router.push('/admin/marketing');
+        router.push('/admin/marketing' as any);
         break;
       default:
         break;
@@ -446,7 +446,7 @@ export default function AdminDashboardScreen() {
           </TouchableOpacity>
           <TouchableOpacity 
             style={styles.actionCard}
-            onPress={() => router.push('/admin/api-test')}
+            onPress={() => router.push('/admin/api-test' as any)}
             activeOpacity={0.7}
           >
             <TestTube size={24} color={colors.status.info} />
