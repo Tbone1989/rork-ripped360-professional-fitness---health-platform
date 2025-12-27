@@ -161,7 +161,13 @@ export default function ShopScreen() {
   const [fallback, setFallback] = useState<ShopProduct[]>([]);
   const [isFallbackLoading, setIsFallbackLoading] = useState<boolean>(false);
   const [fallbackTried, setFallbackTried] = useState<boolean>(false);
-  const { cartItems, addToCart } = useShopStore();
+  const { cartItems, addToCart, fetchProducts, filteredProducts, isLoadingProducts } = useShopStore()
+
+  // Fetch products from Shopify on mount
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+;
 
   const tryFetchJson = useCallback(async (url: string) => {
     try {
