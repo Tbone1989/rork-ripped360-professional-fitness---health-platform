@@ -2,7 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { Product, CartItem, Order, Address, PaymentMethod, ProductCategory } from '@/types/product';
-import { products } from '@/mocks/products';
+import { fetchShopifyProducts } from '@/services/shopifyService';
+import { products as fallbackProducts } from '@/mocks/products';
 
 interface ShopState {
   // Products
@@ -25,12 +26,15 @@ interface ShopState {
   
   // Loading states
   isLoading: boolean;
+  isLoadingProducts: boolean;
+  productError: string | null;
   
   // Actions
   setCategory: (category: ProductCategory | 'all') => void;
   setSearchQuery: (query: string) => void;
   setSortBy: (sort: 'name' | 'price-low' | 'price-high' | 'rating' | 'newest') => void;
   filterProducts: () => void;
+  fetchProducts: () => Promise<void>;
   
   // Cart actions
   addToCart: (product: Product, quantity?: number, size?: string, color?: string) => void;
@@ -127,6 +131,27 @@ export const useShopStore = create<ShopState>()(
         
         set({ filteredProducts: filtered });
       },
+  fetchProducts: async () => {
+    set({ isLoadingProducts: true, productError: null });
+    try {
+      const shopifyProducts = await fetchShopifyProducts(50);
+      set({ 
+        products: shopifyProducts.length > 0 ? shopifyProducts : fallbackProducts,
+        filteredProducts: shopifyProducts.length > 0 ? shopifyProducts : fallbackProducts,
+        isLoadingProducts: false 
+      });
+      get().filterProducts();
+    } catch (error) {
+      console.error('[Shop Store] Error fetching products:', error);
+      set({ 
+        products: fallbackProducts,
+        filteredProducts: fallbackProducts,
+        isLoadingProducts: false,
+        productError: error instanceof Error ? error.message : 'Failed to fetch products'
+      });
+    }
+  },
+
       
       // Cart actions
       addToCart: (product, quantity = 1, size, color) => {
